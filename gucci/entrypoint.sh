@@ -138,7 +138,7 @@ if [ -f "$DB" ]; then
     db_setting_force subJsonURI "https://${RAILWAY_PUBLIC_DOMAIN}/json/"
     db_setting_force subClashURI "https://${RAILWAY_PUBLIC_DOMAIN}/clash/"
     db_setting subTitle "GUCCI PANEL"
-    db_setting subSupportUrl ""
+    db_setting subSupportUrl "https://t.me/MR_GUCCI_YT"
   fi
 fi
 
