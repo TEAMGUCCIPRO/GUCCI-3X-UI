@@ -1,0 +1,28 @@
+.setting-list-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border-bottom: 1px solid var(--ant-color-border-secondary);
+}
+
+.setting-list-item:last-child {
+  border-bottom: 0;
+}
+
+.setting-list-meta {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.setting-list-title {
+  font-size: 14px;
+  color: var(--ant-color-text);
+  font-weight: 500;
+}
+
+.setting-list-description {
+  font-size: 14px;
+  color: var(--ant-color-text-tertiary);
+  line-height: 1.5715;
+}

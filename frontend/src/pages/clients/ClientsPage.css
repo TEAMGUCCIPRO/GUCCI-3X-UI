@@ -1,0 +1,237 @@
+.clients-page .ant-pagination-options-size-changer,
+.clients-page .ant-pagination-options-size-changer .ant-select-selector {
+  min-width: 100px;
+}
+
+.client-email-list {
+  max-height: 280px;
+  min-width: 160px;
+  overflow-y: auto;
+  padding-right: 4px;
+}
+
+.client-email-list > div {
+  padding: 2px 0;
+  font-size: 12px;
+  white-space: nowrap;
+}
+
+.client-email-more {
+  margin-top: 4px;
+  padding-top: 4px;
+  border-top: 1px solid var(--ant-color-border-secondary, rgba(128, 128, 128, 0.2));
+  opacity: 0.65;
+}
+
+.filter-bar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 12px;
+}
+
+.filter-bar.mobile {
+  gap: 6px;
+  margin-bottom: 8px;
+}
+
+.filter-bar.mobile > * {
+  flex: 0 0 auto;
+}
+
+.filter-count {
+  margin-inline-start: auto;
+  color: var(--ant-color-text-secondary);
+  font-size: 13px;
+  white-space: nowrap;
+}
+
+.filter-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin: 0 0 12px;
+  padding: 6px 8px;
+  background: var(--ant-color-fill-quaternary);
+  border-radius: 8px;
+}
+
+.filter-chips .ant-tag {
+  margin: 0;
+}
+
+.dot {
+  display: inline-block;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  margin-right: 4px;
+  vertical-align: middle;
+}
+
+.dot-green { background: var(--ant-color-success); }
+.dot-blue { background: var(--ant-color-primary); }
+.dot-red { background: var(--ant-color-error); }
+.dot-orange { background: var(--ant-color-warning); }
+.dot-gray { background: var(--ant-color-text-quaternary); }
+
+.status-tag {
+  margin: 0 0 0 4px;
+  font-size: 11px;
+  padding: 0 6px;
+  line-height: 18px;
+}
+
+.card-toolbar {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+  padding: 6px 0;
+}
+
+@media (min-width: 769px) and (max-width: 920px) {
+  .card-toolbar {
+    gap: 6px;
+  }
+  .card-toolbar .ant-btn .ant-btn-icon + span,
+  .card-toolbar .ant-btn > span:not(.ant-btn-icon):not(.ant-tag):not(.anticon) {
+    display: none;
+  }
+  .card-toolbar .ant-btn {
+    padding-inline: 8px;
+  }
+}
+
+.email-cell {
+  display: flex;
+  flex-direction: column;
+}
+
+.email-cell .email {
+  font-weight: 500;
+}
+
+.email-cell .sub {
+  font-size: 11px;
+  opacity: 0.55;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 220px;
+}
+
+.client-cards {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-top: 4px;
+}
+
+.card-bulk-bar {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 4px 4px 8px;
+}
+
+.card-pagination {
+  display: flex;
+  justify-content: center;
+  flex-wrap: wrap;
+  padding: 4px 0 8px;
+}
+
+.card-pagination .ant-pagination-options-size-changer,
+.card-pagination .ant-pagination-options-size-changer .ant-select-selector {
+  min-width: 88px;
+}
+
+.bulk-count {
+  font-size: 12px;
+  background: color-mix(in srgb, var(--ant-color-primary) 12%, transparent);
+  color: var(--ant-color-primary);
+  padding: 1px 8px;
+  border-radius: 10px;
+}
+
+.client-card {
+  border: 1px solid var(--ant-color-border-secondary);
+  border-radius: 10px;
+  padding: 10px 12px;
+  background: var(--ant-color-fill-quaternary);
+}
+
+.client-card.is-selected {
+  border-color: var(--ant-color-primary);
+  background: color-mix(in srgb, var(--ant-color-primary) 6%, transparent);
+}
+
+.client-card-comment {
+  display: block;
+  margin-top: 6px;
+  color: var(--ant-color-text-secondary);
+  font-size: 12px;
+  max-height: 4.5em;
+  overflow-y: auto;
+  overflow-wrap: anywhere;
+  white-space: pre-wrap;
+}
+
+.client-card-speed {
+  margin-top: 6px;
+  font-size: 12px;
+  color: var(--ant-color-text-secondary);
+}
+
+.card-head {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  user-select: none;
+}
+
+.card-head .tag-name {
+  font-weight: 600;
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.card-actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-shrink: 0;
+}
+
+.row-action-trigger {
+  font-size: 18px;
+  cursor: pointer;
+  opacity: 0.75;
+  transition: opacity 120ms ease;
+}
+
+.row-action-trigger:hover {
+  opacity: 1;
+}
+
+.card-empty {
+  text-align: center;
+  padding: 40px 16px;
+  color: var(--ant-color-text-secondary);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+}
+
+.clients-empty {
+  padding: 32px 0;
+  text-align: center;
+  color: var(--ant-color-text-secondary);
+}

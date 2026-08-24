@@ -1,0 +1,59 @@
+<!doctype html>
+<html lang="fa" dir="rtl">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+  <meta name="theme-color" content="#020705">
+  <meta name="description" content="GUCCI PANEL — پنل اختصاصی و حرفه‌ای مدیریت سرویس">
+  <title>GUCCI PANEL</title>
+  <link rel="icon" href="/gucci-assets/favicon.svg" type="image/svg+xml">
+  <link rel="preload" href="/gucci-assets/gucci-bg.webp" as="image" type="image/webp" fetchpriority="high">
+  <style>
+    :root{--mint:#14f7c7;--mint2:#00a980;--gold:#f6d679;--gold2:#a86c18;--ink:#010403;--glass:rgba(3,12,10,.70);--line:rgba(74,255,213,.24)}
+    *{box-sizing:border-box}[hidden]{display:none!important}html{min-height:100%;background:#010302}body{margin:0;min-height:100vh;min-height:100svh;color:#f8fffdf0;font-family:Tahoma,"Segoe UI",Arial,sans-serif;overflow-x:hidden;background:#010302}
+    .backdrop{position:fixed;inset:0;z-index:-5;background-image:linear-gradient(180deg,rgba(0,0,0,.28),rgba(0,7,5,.68) 54%,#010403 100%),radial-gradient(circle at 50% 40%,transparent 0 24%,rgba(0,0,0,.82) 80%),url('/gucci-assets/gucci-bg.webp');background-position:center;background-size:cover;background-attachment:fixed;filter:saturate(1.17) contrast(1.08);transform:scale(1.025)}
+    .grid{position:fixed;inset:0;z-index:-4;opacity:.22;background-image:linear-gradient(rgba(25,245,197,.16) 1px,transparent 1px),linear-gradient(90deg,rgba(25,245,197,.12) 1px,transparent 1px);background-size:62px 62px;mask-image:linear-gradient(to bottom,transparent 4%,#000 44%,transparent 98%);perspective:500px;transform:rotateX(62deg) scale(1.7) translateY(31%);transform-origin:center bottom}
+    .vignette{position:fixed;inset:0;z-index:-3;pointer-events:none;box-shadow:inset 0 0 190px 55px #000;background:repeating-linear-gradient(0deg,rgba(255,255,255,.013) 0,rgba(255,255,255,.013) 1px,transparent 1px,transparent 4px)}
+    canvas{position:fixed;inset:0;z-index:-2;pointer-events:none}
+    main{width:min(1060px,calc(100% - 28px));margin:auto;padding:max(24px,5vh) 0 42px;display:grid;place-items:center;min-height:100svh}
+    .shell{position:relative;width:100%;overflow:hidden;border:1px solid var(--line);border-radius:32px;padding:clamp(24px,5vw,58px);text-align:center;background:linear-gradient(145deg,rgba(2,13,10,.83),rgba(1,5,4,.69));box-shadow:0 32px 100px #000,0 0 0 1px rgba(246,214,121,.09) inset,0 0 80px rgba(0,245,194,.09);backdrop-filter:blur(17px) saturate(1.35)}
+    .shell:before{content:"";position:absolute;inset:-2px;background:conic-gradient(from 180deg at 50% 50%,transparent,var(--mint),transparent 30%,var(--gold),transparent 62%,var(--mint),transparent);filter:blur(18px);opacity:.18;z-index:-1;animation:spin 12s linear infinite}.shell:after{content:"";position:absolute;inset:0;pointer-events:none;background:linear-gradient(112deg,transparent 25%,rgba(255,255,255,.075) 43%,transparent 60%);transform:translateX(-110%);animation:shine 7s ease-in-out infinite}
+    .badge{display:inline-flex;direction:ltr;align-items:center;gap:9px;padding:8px 14px;border:1px solid rgba(246,214,121,.34);border-radius:999px;background:#020706b8;color:var(--gold);font-size:12px;font-weight:800;letter-spacing:2.4px;box-shadow:0 0 22px rgba(246,214,121,.08)}.dot{width:7px;height:7px;border-radius:50%;background:var(--mint);box-shadow:0 0 14px 3px var(--mint);animation:pulse 1.6s ease-in-out infinite}
+    h1{direction:ltr;margin:20px 0 5px;font-family:Georgia,"Times New Roman",serif;font-size:clamp(38px,8.5vw,96px);line-height:.92;letter-spacing:clamp(4px,1.4vw,14px);padding-right:clamp(0px,1vw,12px);font-weight:900;background:linear-gradient(180deg,#fff3bd 0%,#d9a73d 34%,#7b4310 52%,#ffe9a0 73%,#a86c18 100%);background-clip:text;-webkit-background-clip:text;color:transparent;-webkit-text-stroke:1px rgba(255,238,165,.55);filter:drop-shadow(0 5px 0 #241002) drop-shadow(0 0 24px rgba(245,209,111,.25))}
+    .tagline{margin:13px auto 0;font-size:clamp(17px,2.6vw,24px);font-weight:900;line-height:1.85;color:#fff}.tagline strong{direction:ltr;display:inline-block;color:var(--mint);letter-spacing:3px;text-shadow:0 0 18px rgba(20,247,199,.54)}
+    .desc{max-width:680px;margin:8px auto 27px;color:#d7e9e4ba;line-height:2;font-size:clamp(13px,2vw,16px)}
+    .credit{margin:18px auto 0;display:inline-flex;align-items:center;gap:10px;padding:14px 26px;border:1px solid rgba(246,214,121,.38);border-radius:18px;background:linear-gradient(145deg,rgba(16,42,35,.78),rgba(2,10,8,.85));color:var(--gold);font-size:clamp(15px,2.3vw,20px);font-weight:1000;letter-spacing:.5px;box-shadow:0 10px 30px rgba(0,0,0,.4),0 0 26px rgba(20,247,199,.12)}.credit .crown{font-size:1.25em;filter:drop-shadow(0 0 10px rgba(246,214,121,.55))}.credit .flame{filter:drop-shadow(0 0 8px rgba(255,120,40,.6))}
+    .divider{height:1px;max-width:720px;margin:24px auto 24px;background:linear-gradient(90deg,transparent,var(--mint),var(--gold),transparent);opacity:.45}
+    .enter{direction:rtl;display:inline-flex;align-items:center;justify-content:center;gap:11px;width:min(430px,100%);min-height:62px;padding:14px 26px;border-radius:18px;text-decoration:none;color:#04100d;background:linear-gradient(120deg,#ebc75f,#fff0a7 44%,#19edbd 100%);font-size:17px;font-weight:1000;box-shadow:0 14px 38px rgba(0,0,0,.46),0 0 28px rgba(20,247,199,.16);transition:.28s ease}.enter:hover{transform:translateY(-3px) scale(1.01);filter:saturate(1.15) brightness(1.05);box-shadow:0 19px 46px rgba(0,0,0,.52),0 0 38px rgba(20,247,199,.26)}.arrow{font-size:25px;line-height:1}
+    footer{margin-top:20px;color:#8ba49e;font-size:11px;direction:ltr;letter-spacing:1.5px}.safe{display:flex;justify-content:center;align-items:center;gap:6px}.safe i{width:5px;height:5px;border-radius:50%;background:var(--mint);box-shadow:0 0 8px var(--mint)}
+    @keyframes spin{to{transform:rotate(360deg)}}@keyframes shine{0%,68%,100%{transform:translateX(-110%)}82%{transform:translateX(110%)}}@keyframes pulse{50%{opacity:.45;transform:scale(.7)}}
+    @media(max-width:720px){main{width:min(100% - 18px,1060px);padding:12px 0}.shell{border-radius:24px;padding:27px 15px 24px}.backdrop{background-attachment:scroll}h1{letter-spacing:4px}.tagline strong{letter-spacing:2px}}
+    @media(max-width:390px){.desc{font-size:12px}.shell{padding-inline:12px}.credit{padding:12px 18px;font-size:14px}}
+    @media(prefers-reduced-motion:reduce){*,*:before,*:after{animation:none!important;transition:none!important}canvas{display:none}}
+  </style>
+</head>
+<body>
+  <div class="backdrop" aria-hidden="true"></div><div class="grid" aria-hidden="true"></div><div class="vignette" aria-hidden="true"></div><canvas id="fx" aria-hidden="true"></canvas>
+  <main>
+    <section class="shell" aria-label="GUCCI Network">
+      <div class="badge"><span class="dot"></span>GUCCI PANEL • SECURE NETWORK</div>
+      <h1>GUCCI PANEL</h1>
+      <p class="tagline">پنل اختصاصی و حرفه‌ای <strong>GUCCI</strong></p>
+      <p class="desc">⚡ تجربه‌ای سریع، پایدار و کاملاً امن برای مدیریت سرویس‌های شما 🛡️<br>طراحی مدرن، عملکرد قدرتمند و همیشه آنلاین — فقط برای شما. 🚀</p>
+      <div class="divider"></div>
+      <div class="credit" dir="rtl">
+        <span class="crown">👑</span>
+        <span>ساخته شده توسط تیم GUCCI</span>
+        <span class="flame">🔥</span>
+      </div>
+      <div class="divider"></div>
+      <a id="panel-entry" class="enter" href="/gucci/enter" hidden><span>متوجه شدم → ورود به پنل</span><span class="arrow">←</span></a>
+      <footer><span class="safe"><i></i>POWERED BY GUCCI PANEL • ALWAYS LATEST • GUCCI NETWORK</span></footer>
+    </section>
+  </main>
+  <script>
+  (()=>{const entry=document.getElementById('panel-entry');if(entry&&location.pathname.replace(/\/+/g,'/')==='/gucci/')entry.hidden=false})();
+  (()=>{const c=document.getElementById('fx'),x=c.getContext('2d');let w,h,p=[];function size(){w=c.width=innerWidth*devicePixelRatio;h=c.height=innerHeight*devicePixelRatio;p=Array.from({length:Math.min(75,Math.floor(innerWidth/13))},()=>({x:Math.random()*w,y:Math.random()*h,r:(Math.random()*1.6+.35)*devicePixelRatio,v:(Math.random()*.22+.06)*devicePixelRatio,a:Math.random()*.55+.14}))}function draw(){x.clearRect(0,0,w,h);for(const q of p){q.y-=q.v;if(q.y<-8)q.y=h+8;q.x+=Math.sin(q.y*.002)*.08;x.beginPath();x.arc(q.x,q.y,q.r,0,7);x.fillStyle='rgba(31,255,205,'+q.a+')';x.shadowBlur=12*devicePixelRatio;x.shadowColor='#00f0bd';x.fill()}requestAnimationFrame(draw)}addEventListener('resize',size,{passive:true});size();draw()})();
+  </script>
+</body>
+</html>

@@ -1,0 +1,14 @@
+{
+  "network": "xhttp",
+  "xhttpSettings": {
+    "path": "/sp",
+    "host": "edge.example.test",
+    "mode": "packet-up",
+    "sessionIDPlacement": "header",
+    "sessionIDKey": "X-Session",
+    "seqPlacement": "cookie",
+    "seqKey": "X-Seq",
+    "uplinkDataPlacement": "cookie",
+    "uplinkDataKey": "u"
+  }
+}

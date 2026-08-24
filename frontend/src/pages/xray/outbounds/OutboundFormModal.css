@@ -1,0 +1,18 @@
+.item-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  font-weight: 500;
+  opacity: 0.85;
+}
+
+.sniffing-options {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 16px;
+}
+
+.sniffing-options .ant-checkbox-wrapper {
+  margin-inline-start: 0;
+}

@@ -1,0 +1,10 @@
+.git
+**/node_modules
+internal/web/dist
+build
+db
+cert
+pgdata
+x-ui/
+*.db
+*.dump

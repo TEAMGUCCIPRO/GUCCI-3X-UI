@@ -1,0 +1,16 @@
+.json-editor-host {
+  border: 1px solid var(--ant-color-border);
+  border-radius: 6px;
+  overflow: hidden;
+  background: var(--ant-color-bg-container);
+}
+
+.json-editor-host .cm-editor,
+.json-editor-host .cm-editor.cm-focused {
+  outline: none;
+}
+
+.json-editor-host:focus-within {
+  border-color: var(--ant-color-primary);
+  box-shadow: 0 0 0 2px color-mix(in srgb, var(--ant-color-primary) 10%, transparent);
+}

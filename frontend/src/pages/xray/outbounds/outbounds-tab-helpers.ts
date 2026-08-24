@@ -1,0 +1,99 @@
+import type { TFunction } from 'i18next';
+
+import { OutboundProtocols as Protocols } from '@/schemas/primitives';
+import { isUdpOutbound } from '@/hooks/useXraySetting';
+import type { OutboundTestMode, OutboundTestState, OutboundTrafficRow } from '@/hooks/useXraySetting';
+
+import type { OutboundRow } from './outbounds-tab-types';
+
+/**
+ * Translate a table row's positional index into that outbound's index in the
+ * full, unfiltered outbounds array. The table hides balancer-loopback outbounds
+ * but keeps each visible row's original index in `key`, so any handler that
+ * mutates the outbounds array (or probes an outbound by index) must map the
+ * positional index back through `key` or it operates on the wrong outbound once
+ * a hidden loopback precedes it.
+ */
+export function originalOutboundIndex(rows: OutboundRow[], positionalIndex: number): number {
+  const row = rows[positionalIndex];
+  return row ? row.key : positionalIndex;
+}
+
+export function outboundAddresses(o: OutboundRow): string[] {
+  const settings = o.settings as Record<string, unknown> | undefined;
+  switch (o.protocol) {
+    case Protocols.VMess: {
+      const serverObj = settings?.vnext as Array<{ address: string; port: number }> | undefined;
+      return serverObj ? serverObj.map((s) => `${s.address}:${s.port}`) : [];
+    }
+    case Protocols.VLESS:
+      return [`${settings?.address || ''}:${settings?.port || ''}`];
+    case Protocols.HTTP:
+    case Protocols.Socks:
+    case Protocols.Shadowsocks:
+    case Protocols.Trojan: {
+      const serverObj = settings?.servers as Array<{ address: string; port: number }> | undefined;
+      return serverObj ? serverObj.map((s) => `${s.address}:${s.port}`) : [];
+    }
+    case Protocols.DNS: {
+      const addr = (settings?.rewriteAddress as string) || (settings?.address as string) || '';
+      const port = (settings?.rewritePort as string | number) || (settings?.port as string | number) || '';
+      return addr || port ? [`${addr}:${port}`] : [];
+    }
+    case Protocols.Wireguard:
+      return (((settings?.peers as Array<{ endpoint?: string }>) || []).map((p) => p.endpoint || '').filter(Boolean));
+    default:
+      return [];
+  }
+}
+
+export function isUntestable(o: OutboundRow): boolean {
+  if (!o) return true;
+  if (o.protocol === Protocols.Blackhole || o.protocol === Protocols.Loopback || o.tag === 'blocked') return true;
+  // freedom ("direct") and dns aren't proxies — a TCP dial has no endpoint and
+  // an HTTP probe would only measure the host's own direct reachability, so
+  // they're untestable in every mode.
+  if (o.protocol === Protocols.Freedom || o.protocol === Protocols.DNS) return true;
+  return false;
+}
+
+export function showSecurity(security?: string): boolean {
+  return security === 'tls' || security === 'reality';
+}
+
+export function effectiveTestMode(o: unknown, mode: OutboundTestMode): OutboundTestMode {
+  return mode === 'tcp' && isUdpOutbound(o) ? 'http' : mode;
+}
+
+export function testModeLabel(mode: string, t: TFunction): string {
+  return mode === 'real' ? t('pages.xray.outbound.modeRealDelay') : mode.toUpperCase();
+}
+
+export function trafficFor(outboundsTraffic: OutboundTrafficRow[], o: OutboundRow): { up: number; down: number } {
+  const tr = outboundsTraffic.find((x) => x.tag === o.tag);
+  return { up: tr?.up || 0, down: tr?.down || 0 };
+}
+
+export function countryFlag(country?: string): string {
+  const code = (country || '').trim().toUpperCase();
+  if (!/^[A-Z]{2}$/.test(code)) return '';
+  return String.fromCodePoint(...[...code].map((ch) => 0x1f1e6 + ch.charCodeAt(0) - 65));
+}
+
+export function countryName(country?: string, locale?: string): string {
+  const code = (country || '').trim().toUpperCase();
+  if (!/^[A-Z]{2}$/.test(code)) return '';
+  try {
+    return new Intl.DisplayNames(locale ? [locale] : undefined, { type: 'region' }).of(code) || code;
+  } catch {
+    return code;
+  }
+}
+
+export function isTesting<K extends string | number>(states: Record<K, OutboundTestState>, idx: K): boolean {
+  return !!states?.[idx]?.testing;
+}
+
+export function testResult<K extends string | number>(states: Record<K, OutboundTestState>, idx: K) {
+  return states?.[idx]?.result || null;
+}

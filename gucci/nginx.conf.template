@@ -1,0 +1,143 @@
+worker_processes auto;
+pid /tmp/nginx.pid;
+error_log /dev/stderr warn;
+events { worker_connections 4096; }
+http {
+  include /etc/nginx/mime.types;
+  default_type application/octet-stream;
+  access_log /dev/stdout;
+  sendfile on;
+  tcp_nopush on;
+  tcp_nodelay on;
+  keepalive_timeout 65;
+  gzip on;
+  gzip_vary on;
+  gzip_min_length 1024;
+  gzip_comp_level 5;
+  gzip_types text/plain text/css application/json application/javascript application/xml image/svg+xml;
+  client_max_body_size 100m;
+  proxy_temp_path /tmp/nginx-proxy;
+  client_body_temp_path /tmp/nginx-client;
+  map $http_upgrade $connection_upgrade { default upgrade; '' close; }
+  map $cookie_gucci_panel_access $gucci_gate { default 1; "1" 0; }
+  map $cookie_gucci_panel_access $gucci_gate_file { default /index.html; "1" /__xui_panel__; }
+  server {
+    listen 1 default_server;
+    listen [::]:1 default_server;
+    __EXTRA_LISTEN__
+    server_tokens off;
+    absolute_redirect off;
+    include /app/gucci/security-headers.conf;
+
+    # Healthy only after x-ui and the configured TCP endpoints are listening.
+    # The watchdog atomically creates this marker and removes it on failure.
+    location = /healthz {
+      access_log off;
+      default_type text/plain;
+      root /tmp;
+      try_files /gucci-health-ok =503;
+    }
+    location = /favicon.ico {
+      alias /app/gucci/landing/assets/favicon.svg;
+      default_type image/svg+xml;
+      access_log off;
+      add_header Cache-Control "public, max-age=31536000, immutable" always;
+      include /app/gucci/security-headers.conf;
+    }
+    location /gucci-assets/ {
+      alias /app/gucci/landing/assets/;
+      access_log off;
+      add_header Cache-Control "public, max-age=31536000, immutable" always;
+      include /app/gucci/security-headers.conf;
+      try_files $uri =404;
+    }
+    location = / { root /app/gucci/landing; try_files /index.html =404; add_header Cache-Control 'no-store, max-age=0'; include /app/gucci/security-headers.conf; }
+    location = /gucci { return 308 /gucci/; }
+    location = /gucci/enter {
+      add_header Set-Cookie "gucci_panel_access=1; Path=/gucci/; HttpOnly; SameSite=Lax; Max-Age=1800" always;
+      return 303 /gucci/;
+    }
+    location = /gucci/ {
+      root /app/gucci/landing;
+      try_files $gucci_gate_file @xui_panel;
+      add_header Cache-Control 'no-store, max-age=0';
+      include /app/gucci/security-headers.conf;
+    }
+
+    # Compatibility transport: Railway terminates public TLS/443 and this
+    # long-lived WebSocket is forwarded to an optional Xray inbound on 1235.
+    # VLESS WS+TLS is supported by Xray, Mihomo/Clash Meta and sing-box clients.
+    location /gucci-connect/ws {
+      proxy_pass http://127.0.0.1:1235;
+      proxy_http_version 1.1;
+      proxy_set_header Host $host;
+      proxy_set_header Upgrade $http_upgrade;
+      proxy_set_header Connection $connection_upgrade;
+      proxy_set_header X-Forwarded-Proto https;
+      proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+      proxy_set_header X-Real-IP $remote_addr;
+      proxy_read_timeout 86400s;
+      proxy_send_timeout 86400s;
+      proxy_connect_timeout 5s;
+      proxy_buffering off;
+    }
+
+    # Preserve the native 3X-UI subscription routes and formats.
+    location ~ ^/(sub|json|clash)/ {
+      proxy_pass http://127.0.0.1:2096;
+      proxy_http_version 1.1;
+      proxy_set_header Host $host;
+      proxy_set_header X-Forwarded-Host $host;
+      proxy_set_header X-Forwarded-Proto https;
+      proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+      proxy_set_header X-Real-IP $remote_addr;
+      proxy_buffering off;
+      proxy_hide_header Cache-Control;
+      proxy_hide_header Expires;
+      add_header Cache-Control "no-store, no-cache, must-revalidate, max-age=0" always;
+      add_header Expires "0" always;
+    }
+
+    location @xui_panel {
+      proxy_pass http://127.0.0.1:2053;
+      proxy_http_version 1.1;
+      proxy_set_header Host $host;
+      proxy_set_header Upgrade $http_upgrade;
+      proxy_set_header Connection $connection_upgrade;
+      proxy_set_header X-Forwarded-Host $host;
+      proxy_set_header X-Forwarded-Proto $http_x_forwarded_proto;
+      proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+      proxy_set_header X-Real-IP $remote_addr;
+      proxy_read_timeout 3600s;
+      proxy_send_timeout 3600s;
+    }
+
+    location /gucci/ {
+      if ($gucci_gate = 1) { return 302 /gucci/; }
+      proxy_pass http://127.0.0.1:2053;
+      proxy_http_version 1.1;
+      proxy_set_header Host $host;
+      proxy_set_header Upgrade $http_upgrade;
+      proxy_set_header Connection $connection_upgrade;
+      proxy_set_header X-Forwarded-Host $host;
+      proxy_set_header X-Forwarded-Proto $http_x_forwarded_proto;
+      proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+      proxy_set_header X-Real-IP $remote_addr;
+      proxy_read_timeout 3600s;
+      proxy_send_timeout 3600s;
+    }
+
+    # Keep upstream API/public routes available without changing 3X-UI itself.
+    location / {
+      proxy_pass http://127.0.0.1:2053;
+      proxy_http_version 1.1;
+      proxy_set_header Host $host;
+      proxy_set_header Upgrade $http_upgrade;
+      proxy_set_header Connection $connection_upgrade;
+      proxy_set_header X-Forwarded-Host $host;
+      proxy_set_header X-Forwarded-Proto $http_x_forwarded_proto;
+      proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+      proxy_set_header X-Real-IP $remote_addr;
+    }
+  }
+}

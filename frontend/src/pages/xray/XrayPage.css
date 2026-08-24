@@ -1,0 +1,21 @@
+.xray-page .restart-icon {
+  font-size: 16px;
+  cursor: pointer;
+  color: var(--ant-color-primary);
+}
+
+.xray-page .restart-result {
+  max-width: 480px;
+  white-space: pre-wrap;
+  font-size: 12px;
+  margin: 0;
+}
+
+.xray-page .advanced-meta h4 {
+  margin: 0 0 4px;
+}
+
+.xray-page .advanced-meta p {
+  margin: 0;
+  opacity: 0.7;
+}

@@ -1,0 +1,9 @@
+.settings-page .conf-alert {
+  margin-bottom: 10px;
+}
+
+.ldap-no-inbounds {
+  margin-top: 6px;
+  color: var(--ant-color-text-tertiary);
+  font-size: 12px;
+}

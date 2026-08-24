@@ -1,0 +1,17 @@
+# Explicitly mark all files as vendored to hide Languages section
+* linguist-vendored
+** linguist-vendored
+**/*.js linguist-vendored
+**/*.sh linguist-vendored
+**/*.ts linguist-vendored
+**/*.tsx linguist-vendored
+**/*.go linguist-vendored
+**/*.css linguist-vendored
+**/*.scss linguist-vendored
+**/*.html linguist-vendored
+**/*.json linguist-vendored
+**/*.yml linguist-vendored
+**/*.yaml linguist-vendored
+Dockerfile linguist-vendored
+**/Dockerfile linguist-vendored
+**/Makefile linguist-vendored

@@ -1,0 +1,86 @@
+// Package random provides utilities for generating random strings and numbers.
+package random
+
+import (
+	"crypto/rand"
+	"encoding/base64"
+	"math/big"
+)
+
+var (
+	numSeq      [10]rune
+	lowerSeq    [26]rune
+	upperSeq    [26]rune
+	numLowerSeq [36]rune
+	numUpperSeq [36]rune
+	allSeq      [62]rune
+)
+
+// init initializes the character sequences used for random string generation.
+// It sets up arrays for numbers, lowercase letters, uppercase letters, and combinations.
+func init() {
+	for i := range 10 {
+		numSeq[i] = rune('0' + i)
+	}
+	for i := range 26 {
+		lowerSeq[i] = rune('a' + i)
+		upperSeq[i] = rune('A' + i)
+	}
+
+	copy(numLowerSeq[:], numSeq[:])
+	copy(numLowerSeq[len(numSeq):], lowerSeq[:])
+
+	copy(numUpperSeq[:], numSeq[:])
+	copy(numUpperSeq[len(numSeq):], upperSeq[:])
+
+	copy(allSeq[:], numSeq[:])
+	copy(allSeq[len(numSeq):], lowerSeq[:])
+	copy(allSeq[len(numSeq)+len(lowerSeq):], upperSeq[:])
+}
+
+// Seq generates a random string of length n containing alphanumeric characters (numbers, lowercase and uppercase letters).
+func Seq(n int) string {
+	runes := make([]rune, n)
+	for i := range n {
+		idx, err := rand.Int(rand.Reader, big.NewInt(int64(len(allSeq))))
+		if err != nil {
+			panic("crypto/rand failed: " + err.Error())
+		}
+		runes[i] = allSeq[idx.Int64()]
+	}
+	return string(runes)
+}
+
+// NumLower generates a random string of length n containing digits and lowercase letters only.
+func NumLower(n int) string {
+	runes := make([]rune, n)
+	for i := range n {
+		idx, err := rand.Int(rand.Reader, big.NewInt(int64(len(numLowerSeq))))
+		if err != nil {
+			panic("crypto/rand failed: " + err.Error())
+		}
+		runes[i] = numLowerSeq[idx.Int64()]
+	}
+	return string(runes)
+}
+
+// Num generates a random integer between 0 and n-1.
+func Num(n int) int {
+	bn := big.NewInt(int64(n))
+	r, err := rand.Int(rand.Reader, bn)
+	if err != nil {
+		panic("crypto/rand failed: " + err.Error())
+	}
+	return int(r.Int64())
+}
+
+// Base64Bytes returns n cryptographically-random bytes encoded as standard
+// base64 (with padding). Used for ss2022 keys, which xray expects as a
+// base64-encoded key of a specific byte length per cipher.
+func Base64Bytes(n int) string {
+	b := make([]byte, n)
+	if _, err := rand.Read(b); err != nil {
+		panic("crypto/rand failed: " + err.Error())
+	}
+	return base64.StdEncoding.EncodeToString(b)
+}

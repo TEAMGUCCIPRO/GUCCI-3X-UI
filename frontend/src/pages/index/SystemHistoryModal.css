@@ -1,0 +1,30 @@
+.metric-modal-title {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px;
+}
+
+.bucket-select {
+  width: 80px;
+}
+
+.history-tabs {
+  margin-bottom: 4px;
+}
+
+.history-chart-title {
+  margin-bottom: 12px;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--ant-color-text);
+}
+
+.cpu-chart-wrap {
+  margin: 8px 8px 16px;
+  padding: 16px 18px 18px;
+  border-radius: 14px;
+  background: linear-gradient(180deg, color-mix(in srgb, var(--ant-color-primary) 6%, transparent), transparent);
+  border: 1px solid var(--ant-color-border-secondary);
+  box-shadow: 0 2px 12px var(--ant-color-fill-quaternary);
+}

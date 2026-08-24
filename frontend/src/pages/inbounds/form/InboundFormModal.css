@@ -1,0 +1,62 @@
+.vless-auth-state {
+  display: block;
+  margin-top: 6px;
+}
+
+.wg-peer {
+  margin-top: 4px;
+}
+
+.advanced-shell {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.advanced-panel {
+  padding: 14px;
+  border: 1px solid var(--ant-color-border-secondary);
+  border-radius: 12px;
+  background: var(--ant-color-fill-quaternary);
+}
+
+.advanced-panel__header {
+  margin-bottom: 12px;
+}
+
+.advanced-panel__title {
+  font-size: 14px;
+  font-weight: 600;
+  line-height: 1.4;
+}
+
+.advanced-panel__subtitle {
+  margin-top: 4px;
+  opacity: 0.7;
+  line-height: 1.5;
+}
+
+.advanced-inner-tabs .ant-tabs-nav {
+  margin-bottom: 12px;
+}
+
+.advanced-inner-tabs .ant-tabs-tab {
+  padding-inline: 14px;
+}
+
+.advanced-editor-meta {
+  margin-bottom: 10px;
+  opacity: 0.75;
+  line-height: 1.5;
+}
+
+@media (max-width: 768px) {
+  .advanced-panel {
+    padding: 12px;
+    border-radius: 10px;
+  }
+
+  .advanced-inner-tabs .ant-tabs-tab {
+    padding-inline: 10px;
+  }
+}
