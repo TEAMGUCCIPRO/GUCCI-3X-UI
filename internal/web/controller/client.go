@@ -76,6 +76,9 @@ func (a *ClientController) initRouter(g *gin.RouterGroup) {
 	g.POST("/updateTraffic/:email", a.updateTrafficByEmail)
 	g.POST("/ips/:email", a.getIps)
 	g.POST("/clearIps/:email", a.clearIps)
+	g.POST("/hwids/:email", a.getHwids)
+	g.DELETE("/hwids/:email", a.clearHwids)
+	g.DELETE("/hwids/:email/:id", a.deleteHwid)
 	g.POST("/onlines", a.onlines)
 	g.POST("/onlinesByGuid", a.onlinesByGuid)
 	g.POST("/clientIpsByGuid", a.clientIpsByGuid)
@@ -124,11 +127,16 @@ func (a *ClientController) buildClientPayload(rec *model.ClientRecord) (gin.H, e
 	if t, tErr := a.inboundService.GetClientTrafficByEmail(rec.Email); tErr == nil && t != nil {
 		usedTraffic = t.Up + t.Down
 	}
+	tunnelAllowedIPs, err := a.clientService.TunnelAllowedIPsByInbound(&a.inboundService, rec.Email, inboundIds)
+	if err != nil {
+		return nil, err
+	}
 	return gin.H{
-		"client":        rec,
-		"inboundIds":    inboundIds,
-		"externalLinks": externalLinks,
-		"usedTraffic":   usedTraffic,
+		"client":           rec,
+		"inboundIds":       inboundIds,
+		"externalLinks":    externalLinks,
+		"usedTraffic":      usedTraffic,
+		"tunnelAllowedIPs": tunnelAllowedIPs,
 	}, nil
 }
 
@@ -191,13 +199,16 @@ func (a *ClientController) create(c *gin.Context) {
 
 func (a *ClientController) update(c *gin.Context) {
 	email := c.Param("email")
-	var updated model.Client
-	if err := c.ShouldBindJSON(&updated); err != nil {
+	var req struct {
+		model.Client
+		LimitHwid int `json:"limitHwid"`
+	}
+	if err := c.ShouldBindJSON(&req); err != nil {
 		jsonMsg(c, I18nWeb(c, "somethingWentWrong"), err)
 		return
 	}
 	inboundFilter := parseInboundIdsQuery(c.Query("inboundIds"))
-	needRestart, err := a.clientService.UpdateByEmail(&a.inboundService, email, updated, inboundFilter...)
+	needRestart, err := a.clientService.UpdateByEmail(&a.inboundService, email, req.Client, req.LimitHwid, inboundFilter...)
 	if err != nil {
 		jsonMsg(c, I18nWeb(c, "somethingWentWrong"), err)
 		return
@@ -538,6 +549,32 @@ func (a *ClientController) clearIps(c *gin.Context) {
 		return
 	}
 	jsonMsg(c, I18nWeb(c, "pages.inbounds.toasts.logCleanSuccess"), nil)
+}
+
+func (a *ClientController) getHwids(c *gin.Context) {
+	infos, err := a.clientService.ListClientHwids(c.Param("email"))
+	jsonObj(c, infos, err)
+}
+
+func (a *ClientController) clearHwids(c *gin.Context) {
+	if err := a.clientService.ClearClientHwids(c.Param("email")); err != nil {
+		jsonMsg(c, I18nWeb(c, "pages.inbounds.toasts.updateSuccess"), err)
+		return
+	}
+	jsonMsg(c, I18nWeb(c, "pages.inbounds.toasts.logCleanSuccess"), nil)
+}
+
+func (a *ClientController) deleteHwid(c *gin.Context) {
+	id, err := strconv.Atoi(c.Param("id"))
+	if err != nil {
+		jsonMsg(c, I18nWeb(c, "somethingWentWrong"), err)
+		return
+	}
+	if err := a.clientService.DeleteClientHwid(c.Param("email"), id); err != nil {
+		jsonMsg(c, I18nWeb(c, "somethingWentWrong"), err)
+		return
+	}
+	jsonMsg(c, I18nWeb(c, "pages.clients.hwidDeleted"), nil)
 }
 
 func (a *ClientController) onlines(c *gin.Context) {

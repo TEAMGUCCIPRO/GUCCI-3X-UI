@@ -39,6 +39,7 @@ func run(root, outDir string) error {
 				"ClientInbound",
 				"InboundFallback",
 				"Host",
+				"SubBalancer",
 			),
 			AliasAllow: setOf("Protocol"),
 			Overrides: map[string][]walkOverride{
@@ -75,6 +76,17 @@ func run(root, outDir string) error {
 			),
 		},
 		{
+			Path: resolveRel(root, "internal/xray/geodata"),
+			StructAllow: setOf(
+				"GeoFile",
+				"GeoCategory",
+				"GeoEntry",
+				"GeoCategoryPage",
+				"GeoEntryPage",
+			),
+			AliasAllow: setOf("GeoKind"),
+		},
+		{
 			Path: resolveRel(root, "internal/web/service"),
 			StructAllow: setOf(
 				"InboundOption",
@@ -82,11 +94,18 @@ func run(root, outDir string) error {
 				"NodeView",
 				"ProbeResultUI",
 				"RealityScanResult",
+				"GeodataTokenIssue",
+				"AmneziaWGLogs",
+				"PeerActivity",
 			),
 		},
 		{
 			Path:        resolveRel(root, "internal/web/service/panel"),
 			StructAllow: setOf("ApiTokenView", "PanelUpdateStatus"),
+		},
+		{
+			Path:        resolveRel(root, "internal/amneziawg"),
+			StructAllow: setOf("ServerSettings"),
 		},
 	}
 

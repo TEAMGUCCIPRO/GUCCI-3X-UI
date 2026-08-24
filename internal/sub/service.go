@@ -9,13 +9,16 @@ import (
 	"net"
 	"net/url"
 	"slices"
+	"sort"
 	"strconv"
 	"strings"
+	"sync"
 	"time"
 
 	"github.com/gin-gonic/gin"
 	"github.com/goccy/go-json"
 
+	"github.com/mhsanaei/3x-ui/v3/internal/amneziawg"
 	"github.com/mhsanaei/3x-ui/v3/internal/database"
 	"github.com/mhsanaei/3x-ui/v3/internal/database/model"
 	"github.com/mhsanaei/3x-ui/v3/internal/logger"
@@ -25,6 +28,8 @@ import (
 	"github.com/mhsanaei/3x-ui/v3/internal/web/service"
 	"github.com/mhsanaei/3x-ui/v3/internal/xray"
 )
+
+var salamanderWarningSeen sync.Map
 
 // SubService provides business logic for generating subscription links and managing subscription data.
 type SubService struct {
@@ -37,9 +42,8 @@ type SubService struct {
 	// other context — the sub info page, the panel's link/QR displays — renders
 	// the name-only template, like Remnawave.
 	subscriptionBody bool
-	// usageShown tracks, per client email, whether the info part of the template
-	// has already been emitted this request, so it appears on the first body
-	// link only. Per-request state; reset in PrepareForRequest.
+	// usageShown emits info once per subscription identity, including twins.
+	// PrepareForRequest resets this per-request state.
 	usageShown             map[string]bool
 	showIdentityOnAllLinks bool
 	inboundService         service.InboundService
@@ -274,6 +278,16 @@ func (s *SubService) matchingClients(inbound *model.Inbound, subId string) []mod
 	return out
 }
 
+// RecordSubscriptionFetch records a successful subscription response for all clients sharing subId.
+func (s *SubService) RecordSubscriptionFetch(subId string) error {
+	if strings.TrimSpace(subId) == "" {
+		return nil
+	}
+	return database.GetDB().Model(&xray.ClientTraffic{}).
+		Where("email IN (SELECT email FROM clients WHERE sub_id = ?)", subId).
+		Update("last_sub_fetch", time.Now().UnixMilli()).Error
+}
+
 // GetSubs retrieves subscription links for a given subscription ID and host.
 func (s *SubService) GetSubs(subId string, host string) ([]string, []string, int64, xray.ClientTraffic, error) {
 	return s.ForRequest(host).getSubs(subId)
@@ -470,7 +484,7 @@ func (s *SubService) getInboundsBySubId(subId string) ([]*model.Inbound, error) 
 		JOIN client_inbounds ON client_inbounds.inbound_id = inbounds.id
 		JOIN clients ON clients.id = client_inbounds.client_id
 		WHERE
-			inbounds.protocol in ('vmess','vless','trojan','shadowsocks','hysteria','wireguard','mtproto')
+			inbounds.protocol in ('vmess','vless','trojan','shadowsocks','hysteria','wireguard','amneziawg','mtproto')
 			AND clients.sub_id = ? AND inbounds.enable = ?
 	)`, subId, true).Order("sub_sort_index ASC").Order("id ASC").Find(&inbounds).Error
 	if err != nil {
@@ -621,6 +635,8 @@ func (s *SubService) GetLink(inbound *model.Inbound, email string) string {
 		return s.genMtprotoLink(inbound, email)
 	case "wireguard":
 		return s.genWireguardLink(inbound, email)
+	case "amneziawg":
+		return s.genAmneziaWGLink(inbound, email)
 	}
 	return ""
 }
@@ -665,6 +681,136 @@ func (s *SubService) genWireguardLink(inbound *model.Inbound, email string) stri
 		params["keepalive"] = strconv.Itoa(client.KeepAlive)
 	}
 	return buildLinkWithParams(link, params, s.genRemark(inbound, email, "", ""))
+}
+
+// amneziaWGHeaderOrDefault mirrors the frontend's amneziaWGHLine: AmneziaWG's
+// H1-H4 magic-header fields always render into the config text, falling back
+// to their protocol-default values (1/2/3/4) when unset rather than being
+// omitted, since a native AmneziaWG client needs all four to be present.
+func amneziaWGHeaderOrDefault(value, fallback string) string {
+	if strings.TrimSpace(value) == "" {
+		return fallback
+	}
+	return value
+}
+
+// amneziaWGConfigText builds the same plain AmneziaWG client .conf text the
+// frontend's genAmneziaWGConfig produces (same field order, same optional-field
+// conditionals) -- this is the payload wrapped into vpn:// links below.
+func amneziaWGConfigText(server *amneziawg.ServerSettings, client *model.Client, host string, port int, remark string) string {
+	// These land unescaped in [Interface]; a newline here would inject a
+	// config line (e.g. a rogue PostUp) into the subscriber's .conf.
+	for _, v := range []string{client.PrivateKey, server.PrimaryDNS, server.SecondaryDNS, remark} {
+		if strings.ContainsAny(v, "\r\n") {
+			return ""
+		}
+	}
+
+	var b strings.Builder
+
+	b.WriteString("[Interface]\n")
+	fmt.Fprintf(&b, "PrivateKey = %s\n", client.PrivateKey)
+	fmt.Fprintf(&b, "Address = %s\n", strings.Join(client.AllowedIPs, ", "))
+
+	var dns []string
+	if server.PrimaryDNS != "" {
+		dns = append(dns, server.PrimaryDNS)
+	}
+	if server.SecondaryDNS != "" {
+		dns = append(dns, server.SecondaryDNS)
+	}
+	if len(dns) > 0 {
+		fmt.Fprintf(&b, "DNS = %s\n", strings.Join(dns, ", "))
+	}
+	if server.MTU > 0 {
+		fmt.Fprintf(&b, "MTU = %d\n", server.MTU)
+	}
+
+	fmt.Fprintf(&b, "Jc = %d\n", server.Jc)
+	fmt.Fprintf(&b, "Jmin = %d\n", server.Jmin)
+	fmt.Fprintf(&b, "Jmax = %d\n", server.Jmax)
+	fmt.Fprintf(&b, "S1 = %d\n", server.S1)
+	fmt.Fprintf(&b, "S2 = %d\n", server.S2)
+	if server.S3 > 0 {
+		fmt.Fprintf(&b, "S3 = %d\n", server.S3)
+	}
+	if server.S4 > 0 {
+		fmt.Fprintf(&b, "S4 = %d\n", server.S4)
+	}
+	fmt.Fprintf(&b, "H1 = %s\n", amneziaWGHeaderOrDefault(server.H1, "1"))
+	fmt.Fprintf(&b, "H2 = %s\n", amneziaWGHeaderOrDefault(server.H2, "2"))
+	fmt.Fprintf(&b, "H3 = %s\n", amneziaWGHeaderOrDefault(server.H3, "3"))
+	fmt.Fprintf(&b, "H4 = %s\n", amneziaWGHeaderOrDefault(server.H4, "4"))
+	for i, v := range []string{server.I1, server.I2, server.I3, server.I4, server.I5} {
+		if v != "" {
+			fmt.Fprintf(&b, "I%d = %s\n", i+1, v)
+		}
+	}
+	optional := []struct{ key, v string }{
+		{"HeaderProtectionKey", server.HeaderProtectionKey},
+		{"ContentPaddingAddition", server.ContentPaddingAddition},
+		{"RekeyAfterTime", server.RekeyAfterTime},
+		{"RekeyTimeout", server.RekeyTimeout},
+		{"RejectAfterTime", server.RejectAfterTime},
+		{"KeepaliveTimeout", server.KeepaliveTimeout},
+		{"MaxHandshakeAttempts", server.MaxHandshakeAttempts},
+	}
+	for _, p := range optional {
+		if p.v != "" {
+			fmt.Fprintf(&b, "%s = %s\n", p.key, p.v)
+		}
+	}
+	if server.RandomTrailers {
+		b.WriteString("RandomTrailers = on\n")
+	}
+	if server.DisableCookies {
+		b.WriteString("DisableCookies = on\n")
+	}
+
+	// Peer field order follows wg-quick(8) and the panel's other two AmneziaWG
+	// emitters (genAmneziaWGConfig, buildAmneziaWGClientConfig); all three are
+	// independent implementations, so any drift here is invisible until a user
+	// compares a subscription link against a downloaded .conf.
+	fmt.Fprintf(&b, "\n# %s\n", remark)
+	b.WriteString("[Peer]\n")
+	fmt.Fprintf(&b, "PublicKey = %s\n", server.PublicKey)
+	if client.PreSharedKey != "" {
+		fmt.Fprintf(&b, "PresharedKey = %s\n", client.PreSharedKey)
+	}
+	b.WriteString("AllowedIPs = 0.0.0.0/0, ::/0\n")
+	fmt.Fprintf(&b, "Endpoint = %s:%d", host, port)
+	if client.KeepAlive > 0 {
+		fmt.Fprintf(&b, "\nPersistentKeepalive = %d", client.KeepAlive)
+	}
+
+	return b.String()
+}
+
+// genAmneziaWGLink builds a per-client vpn://<base64url .conf text> share
+// link matching the real AmneziaVPN app's own share-link scheme (see the
+// frontend's genAmneziaWGLink for the confirmed import-path reasoning).
+// Returns "" when the client or server has no key.
+func (s *SubService) genAmneziaWGLink(inbound *model.Inbound, email string) string {
+	if inbound.Protocol != model.AmneziaWG {
+		return ""
+	}
+	var parsed amneziawg.InboundSettings
+	if err := json.Unmarshal([]byte(inbound.Settings), &parsed); err != nil || parsed.Server == nil {
+		return ""
+	}
+	server := parsed.Server
+
+	resolved, ok := s.clientForLink(inbound, email)
+	if !ok || resolved.PrivateKey == "" {
+		return ""
+	}
+	client := &resolved
+
+	text := amneziaWGConfigText(server, client, s.resolveInboundAddress(inbound), inbound.Port, s.genRemark(inbound, email, "", ""))
+	if text == "" {
+		return ""
+	}
+	return "vpn://" + base64.RawURLEncoding.EncodeToString([]byte(text))
 }
 
 // genMtprotoLink builds a per-client Telegram proxy deep link for an mtproto
@@ -809,7 +955,7 @@ func (s *SubService) genVlessLink(inbound *model.Inbound, email string) string {
 	default:
 		params["security"] = "none"
 	}
-	if len(client.Flow) > 0 && vlessFlowAllowed(streamNetwork, security, settings) {
+	if len(client.Flow) > 0 && !inbound.DisableFlow && vlessFlowAllowed(streamNetwork, security, settings) {
 		params["flow"] = client.Flow
 	}
 
@@ -859,7 +1005,7 @@ func (s *SubService) genTrojanLink(inbound *model.Inbound, email string) string 
 		applyShareTLSParams(stream, params)
 	case "reality":
 		applyShareRealityParams(stream, params, subKey(client))
-		if streamNetwork == "tcp" && len(client.Flow) > 0 {
+		if streamNetwork == "tcp" && len(client.Flow) > 0 && !inbound.DisableFlow {
 			params["flow"] = client.Flow
 		}
 	default:
@@ -1042,6 +1188,12 @@ func (s *SubService) genHysteriaLink(inbound *model.Inbound, email string) strin
 				}
 				settings, _ := mask["settings"].(map[string]any)
 				if pw, ok := settings["password"].(string); ok && pw != "" {
+					if extra := extraSalamanderKeys(settings); len(extra) > 0 {
+						warningKey := fmt.Sprintf("%d:%v", inbound.Id, extra)
+						if _, loaded := salamanderWarningSeen.LoadOrStore(warningKey, struct{}{}); !loaded {
+							logger.Warningf("SubService - inbound %d: salamander settings %v cannot be expressed in a hysteria2 URI; standard clients will fail the handshake", inbound.Id, extra)
+						}
+					}
 					params["obfs"] = "salamander"
 					params["obfs-password"] = pw
 					break
@@ -1055,6 +1207,12 @@ func (s *SubService) genHysteriaLink(inbound *model.Inbound, email string) strin
 	protocol := "hysteria2"
 	if int(version) == 1 {
 		protocol = "hysteria"
+	}
+
+	// Set before the externalProxy fan-out: a Host overrides only the
+	// address, so every endpoint inherits the inbound's UDP hop range.
+	if hopPorts := hysteriaHopPorts(stream); hopPorts != "" {
+		params["mport"] = hopPorts
 	}
 
 	// Fan out one link per External Proxy entry if any. Previously this
@@ -1086,9 +1244,6 @@ func (s *SubService) genHysteriaLink(inbound *model.Inbound, email string) strin
 
 	// No external proxy configured — use the inbound's resolved address so
 	// node-managed inbounds get the node's host instead of the central panel's.
-	if hopPorts := hysteriaHopPorts(stream); hopPorts != "" {
-		params["mport"] = hopPorts
-	}
 	link := fmt.Sprintf("%s://%s@%s", protocol, auth, joinHostPort(s.resolveInboundAddress(inbound), inbound.Port))
 	return buildLinkWithParams(link, params, s.genRemark(inbound, email, "", "quic"))
 }
@@ -2479,6 +2634,7 @@ type PageData struct {
 	SubClashUrl   string
 	SubTitle      string
 	SubSupportUrl string
+	SubAnnounce   string
 	Result        []string
 	Emails        []string
 }
@@ -2685,4 +2841,17 @@ func getHostFromXFH(s string) (string, error) {
 		return realHost, nil
 	}
 	return s, nil
+}
+
+// extraSalamanderKeys lists salamander settings the hysteria2 URI cannot carry.
+// A server using them rejects every client built from the emitted link.
+func extraSalamanderKeys(settings map[string]any) []string {
+	var extra []string
+	for k := range settings {
+		if k != "password" {
+			extra = append(extra, k)
+		}
+	}
+	sort.Strings(extra)
+	return extra
 }

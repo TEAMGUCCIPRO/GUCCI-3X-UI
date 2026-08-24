@@ -19,11 +19,9 @@ import { Controller, FormProvider, useForm, useWatch } from 'react-hook-form';
 
 import { HttpUtil, NumberFormatter, RandomUtil, SizeFormatter, Wireguard } from '@/utils';
 import type { RealityScanResult } from '@/generated/types';
-import {
-  rawInboundToFormValues,
-  formValuesToWirePayload,
-} from '@/lib/xray/inbound-form-adapter';
+import { rawInboundToFormValues, formValuesToWirePayload } from '@/lib/xray/inbound-form-adapter';
 import { createDefaultInboundSettings } from '@/lib/xray/inbound-defaults';
+import { generateAwgObfuscation } from '@/lib/xray/amneziawg-obfuscation';
 import { composeInboundTag, isAutoInboundTag, type InboundTagInput } from '@/lib/xray/inbound-tag';
 import {
   canEnableReality,
@@ -39,10 +37,11 @@ import {
   type InboundFormValues,
 } from '@/schemas/forms/inbound-form';
 import { FormField, rhfZodValidate } from '@/components/form/rhf';
-import { Protocols } from '@/schemas/primitives';
+import { Protocols, TRAFFIC_RESETS } from '@/schemas/primitives';
 import { SockoptStreamSettingsSchema } from '@/schemas/protocols/stream/sockopt';
 import { HysteriaStreamSettingsSchema } from '@/schemas/protocols/stream/hysteria';
 import { createHysteriaTlsSettingsWithDefaultCert } from '@/lib/xray/inbound-tls-defaults';
+import { NODE_ELIGIBLE_PROTOCOLS } from '@/lib/xray/node-protocols';
 import { VLESS_AUTH_LABEL_KEYS, vlessEncryptionAuthKind } from '@/lib/xray/vless-encryption';
 import { SniffingSchema } from '@/schemas/primitives/sniffing';
 import { TcpStreamSettingsSchema } from '@/schemas/protocols/stream/tcp';
@@ -58,6 +57,7 @@ import './InboundFormModal.css';
 import { AdvancedAllEditor, AdvancedSliceEditor } from './advanced-editors';
 import { formatInboundIssue, formatInboundValidation } from './formatValidationError';
 import {
+  AmneziawgFields,
   HttpFields,
   HysteriaFields,
   MixedFields,
@@ -86,7 +86,6 @@ import SniffingTab from './SniffingTab';
 import type { DBInbound } from '@/models/dbinbound';
 import type { NodeRecord } from '@/api/queries/useNodesQuery';
 
-
 /* Render a field label with a hover tooltip icon instead of an `extra` help line below. */
 const labelWithHint = (label: string, hint: string) => (
   <span>
@@ -98,17 +97,9 @@ const labelWithHint = (label: string, hint: string) => (
 );
 
 const PROTOCOL_OPTIONS = Object.values(Protocols).map((p) => ({ value: p, label: p }));
-const TRAFFIC_RESETS = ['never', 'hourly', 'daily', 'weekly', 'monthly'] as const;
 const SHARE_ADDR_STRATEGIES = ['node', 'listen', 'custom'] as const;
-const SHARE_ADDR_HOSTNAME_RE = /^[A-Za-z0-9]([A-Za-z0-9-]*[A-Za-z0-9])?(\.[A-Za-z0-9]([A-Za-z0-9-]*[A-Za-z0-9])?)*$/;
-const NODE_ELIGIBLE_PROTOCOLS = new Set<string>([
-  Protocols.VLESS,
-  Protocols.VMESS,
-  Protocols.TROJAN,
-  Protocols.SHADOWSOCKS,
-  Protocols.HYSTERIA,
-  Protocols.WIREGUARD,
-]);
+const SHARE_ADDR_HOSTNAME_RE =
+  /^[A-Za-z0-9]([A-Za-z0-9-]*[A-Za-z0-9])?(\.[A-Za-z0-9]([A-Za-z0-9-]*[A-Za-z0-9])?)*$/;
 
 function isValidShareAddrInput(value: string): boolean {
   const v = value.trim();
@@ -132,6 +123,39 @@ function isValidShareAddrInput(value: string): boolean {
     }
   }
   return SHARE_ADDR_HOSTNAME_RE.test(v);
+}
+
+interface RhfValidationIssue {
+  path: PropertyKey[];
+  message: string;
+}
+
+function firstRhfValidationIssue(
+  value: unknown,
+  path: PropertyKey[] = [],
+): RhfValidationIssue | null {
+  if (!value || typeof value !== 'object') return null;
+  const record = value as Record<string, unknown>;
+  // `type` is what marks a react-hook-form leaf FieldError; anything else is a group.
+  if ('type' in record) {
+    return { path, message: typeof record.message === 'string' ? record.message : '' };
+  }
+  for (const key of Object.keys(record)) {
+    const issue = firstRhfValidationIssue(record[key], [...path, key]);
+    if (issue) return issue;
+  }
+  return null;
+}
+
+function tabForValidationPath(path: PropertyKey[]): string {
+  if (path[0] === 'settings') return 'protocol';
+  if (path[0] === 'sniffing') return 'sniffing';
+  if (path[0] === 'streamSettings') {
+    if (path[1] === 'security' || path[1] === 'realitySettings' || path[1] === 'tlsSettings')
+      return 'security';
+    return 'stream';
+  }
+  return 'basic';
 }
 
 interface InboundFormModalProps {
@@ -173,13 +197,20 @@ function buildAddModeValues(): InboundFormValues {
  */
 function newStreamSlice(n: string): Record<string, unknown> {
   switch (n) {
-    case 'tcp': return TcpStreamSettingsSchema.parse({ header: { type: 'none' } });
-    case 'kcp': return KcpStreamSettingsSchema.parse({});
-    case 'ws': return WsStreamSettingsSchema.parse({});
-    case 'grpc': return GrpcStreamSettingsSchema.parse({});
-    case 'httpupgrade': return HttpUpgradeStreamSettingsSchema.parse({});
-    case 'xhttp': return XHttpStreamSettingsSchema.parse({});
-    default: return {};
+    case 'tcp':
+      return TcpStreamSettingsSchema.parse({ header: { type: 'none' } });
+    case 'kcp':
+      return KcpStreamSettingsSchema.parse({});
+    case 'ws':
+      return WsStreamSettingsSchema.parse({});
+    case 'grpc':
+      return GrpcStreamSettingsSchema.parse({});
+    case 'httpupgrade':
+      return HttpUpgradeStreamSettingsSchema.parse({});
+    case 'xhttp':
+      return XHttpStreamSettingsSchema.parse({});
+    default:
+      return {};
   }
 }
 
@@ -195,6 +226,7 @@ export default function InboundFormModal({
 }: InboundFormModalProps) {
   const { t } = useTranslation();
   const [messageApi, messageContextHolder] = message.useMessage();
+  const [modal, modalContextHolder] = Modal.useModal();
   const methods = useForm<InboundFormValues>({ defaultValues: buildAddModeValues() });
   const setV = methods.setValue as unknown as (name: string, value: unknown) => void;
   const getV = methods.getValues as unknown as (name?: string) => unknown;
@@ -202,6 +234,7 @@ export default function InboundFormModal({
   const [saving, setSaving] = useState(false);
   const [scanning, setScanning] = useState(false);
   const [scanResult, setScanResult] = useState<RealityScanResult | null>(null);
+  const [activeTab, setActiveTab] = useState('basic');
   const {
     fallbacks,
     fallbackChildOptions,
@@ -216,7 +249,7 @@ export default function InboundFormModal({
 
   const selectableNodes = (availableNodes || []).filter((n) => n.enable);
   const protocol = (useWatch({ control, name: 'protocol' }) ?? '') as string;
-  const isNodeEligible = NODE_ELIGIBLE_PROTOCOLS.has(protocol);
+  const isNodeEligible = !!NODE_ELIGIBLE_PROTOCOLS[protocol];
   /*
    * The `node` share-address strategy only means something when the inbound can
    * actually live on a node — otherwise the node address it would resolve to is
@@ -242,9 +275,9 @@ export default function InboundFormModal({
    * picker and the per-network sub-forms are hidden.
    */
   const hasSelectableTransport =
-    protocol !== Protocols.HYSTERIA
-    && protocol !== Protocols.WIREGUARD
-    && protocol !== Protocols.TUNNEL;
+    protocol !== Protocols.HYSTERIA &&
+    protocol !== Protocols.WIREGUARD &&
+    protocol !== Protocols.TUNNEL;
 
   const wPort = useWatch({ control, name: 'port' });
   const wListen = (useWatch({ control, name: 'listen' }) ?? '') as string;
@@ -267,9 +300,9 @@ export default function InboundFormModal({
     settings: { network: wSsNetwork, allowedNetwork: wTunnelNetwork, udp: mixedUdpOn },
   });
   const isFallbackHost =
-    (protocol === Protocols.VLESS || protocol === Protocols.TROJAN)
-    && network === 'tcp'
-    && (security === 'tls' || security === 'reality');
+    (protocol === Protocols.VLESS || protocol === Protocols.TROJAN) &&
+    network === 'tcp' &&
+    (security === 'tls' || security === 'reality');
 
   const {
     genRealityKeypair,
@@ -288,8 +321,15 @@ export default function InboundFormModal({
     setCertFromPanel,
     clearCertFiles,
     onSecurityChange,
-  } = useSecurityActions({ methods, setSaving, messageApi, nodeId: typeof wNodeId === 'number' ? wNodeId : null, setScanResult, setScanning });
-
+  } = useSecurityActions({
+    methods,
+    setSaving,
+    messageApi,
+    modal,
+    nodeId: typeof wNodeId === 'number' ? wNodeId : null,
+    setScanResult,
+    setScanning,
+  });
 
   const toggleSockopt = (on: boolean) => {
     if (on) {
@@ -299,13 +339,49 @@ export default function InboundFormModal({
     }
   };
   const wgSecretKey = useWatch({ control, name: 'settings.secretKey' });
-  const wgPubKey = typeof wgSecretKey === 'string' && wgSecretKey.length > 0
-    ? Wireguard.generateKeypair(wgSecretKey).publicKey
-    : '';
+  const wgPubKey =
+    typeof wgSecretKey === 'string' && wgSecretKey.length > 0
+      ? Wireguard.generateKeypair(wgSecretKey).publicKey
+      : '';
 
   const regenInboundWg = () => {
     const kp = Wireguard.generateKeypair();
     setV('settings.secretKey', kp.privateKey);
+  };
+
+  // AmneziaWG uses the same Curve25519 keys as WireGuard, just nested under
+  // settings.server instead of flat on settings — see amneziawg.ts. Unlike
+  // WireGuard's Xray-native inbound (which re-derives its public key at
+  // runtime and never stores one), AmneziaWG's server.publicKey is a real,
+  // persisted field the Go backend reads directly, so it must be kept in
+  // sync even when the user free-types a new private key instead of using
+  // the regenerate button.
+  const awgPrivateKey = useWatch({ control, name: 'settings.server.privateKey' });
+  const awgPubKey =
+    typeof awgPrivateKey === 'string' && awgPrivateKey.length > 0
+      ? Wireguard.generateKeypair(awgPrivateKey).publicKey
+      : '';
+
+  useEffect(() => {
+    if (protocol === Protocols.AMNEZIAWG) {
+      setV('settings.server.publicKey', awgPubKey);
+    }
+    /* eslint-disable-next-line react-hooks/exhaustive-deps */
+  }, [awgPubKey, protocol]);
+
+  const regenInboundAwg = () => {
+    const kp = Wireguard.generateKeypair();
+    setV('settings.server.privateKey', kp.privateKey);
+    setV('settings.server.publicKey', kp.publicKey);
+  };
+
+  // Randomizes the AmneziaWG 3.1 obfuscation set client-side; the shared
+  // generator mirrors the Go backend's amneziawg.GenerateObfuscation31.
+  const regenInboundAwgObfuscation = () => {
+    const obf = generateAwgObfuscation();
+    for (const [field, value] of Object.entries(obf)) {
+      setV(`settings.server.${field}`, value);
+    }
   };
 
   const matchesVlessAuth = (
@@ -314,8 +390,10 @@ export default function InboundFormModal({
   ) => {
     if (block?.id === authId) return true;
     const label = (block?.label || '').toLowerCase().replace(/[-_\s]/g, '');
-    if (authId === 'mlkem768') return label.includes('mlkem768') && !label.includes('xorpub') && !label.includes('random');
-    if (authId === 'x25519') return label.includes('x25519') && !label.includes('xorpub') && !label.includes('random');
+    if (authId === 'mlkem768')
+      return label.includes('mlkem768') && !label.includes('xorpub') && !label.includes('random');
+    if (authId === 'x25519')
+      return label.includes('x25519') && !label.includes('xorpub') && !label.includes('random');
     if (authId === 'mlkem768_xorpub') return label.includes('mlkem768') && label.includes('xorpub');
     if (authId === 'mlkem768_random') return label.includes('mlkem768') && label.includes('random');
     if (authId === 'x25519_xorpub') return label.includes('x25519') && label.includes('xorpub');
@@ -358,11 +436,11 @@ export default function InboundFormModal({
 
   useEffect(() => {
     if (!open) return;
-    const initial = mode === 'edit' && dbInbound
-      ? rawInboundToFormValues(dbInbound)
-      : buildAddModeValues();
+    const initial =
+      mode === 'edit' && dbInbound ? rawInboundToFormValues(dbInbound) : buildAddModeValues();
     methods.reset(initial);
     setScanResult(null);
+    setActiveTab('basic');
     const initialTag = (initial.tag ?? '') as string;
     autoTagRef.current = isAutoInboundTag(initialTag, {
       port: initial.port ?? 0,
@@ -373,9 +451,9 @@ export default function InboundFormModal({
     });
     lastWrittenTagRef.current = initialTag;
     if (
-      mode === 'edit'
-      && dbInbound
-      && (dbInbound.protocol === Protocols.VLESS || dbInbound.protocol === Protocols.TROJAN)
+      mode === 'edit' &&
+      dbInbound &&
+      (dbInbound.protocol === Protocols.VLESS || dbInbound.protocol === Protocols.TROJAN)
     ) {
       loadFallbacks(dbInbound.id);
     } else {
@@ -434,8 +512,11 @@ export default function InboundFormModal({
       const next = getV('protocol') as string;
       const settings = createDefaultInboundSettings(next) ?? undefined;
       setV('settings', settings);
-      if (!NODE_ELIGIBLE_PROTOCOLS.has(next)) {
+      if (!NODE_ELIGIBLE_PROTOCOLS[next]) {
         setV('nodeId', null);
+      }
+      if (next !== Protocols.VLESS) {
+        setV('disableFlow', false);
       }
       if (next === Protocols.HYSTERIA) {
         setV('streamSettings', {
@@ -445,10 +526,12 @@ export default function InboundFormModal({
           tlsSettings: createHysteriaTlsSettingsWithDefaultCert(),
           finalmask: {
             tcp: [],
-            udp: [{
-              type: 'salamander',
-              settings: { password: RandomUtil.randomLowerAndNum(16) },
-            }],
+            udp: [
+              {
+                type: 'salamander',
+                settings: { password: RandomUtil.randomLowerAndNum(16) },
+              },
+            ],
           },
         });
       } else if (next === Protocols.WIREGUARD || next === Protocols.TUNNEL) {
@@ -464,8 +547,7 @@ export default function InboundFormModal({
     /* eslint-disable-next-line react-hooks/exhaustive-deps */
   }, [mode, methods]);
 
-  const submit = async () => {
-    if (!(await methods.trigger())) return;
+  const saveValues = async () => {
     /*
      * getValues() returns the entire form store, including settings.clients and
      * settings.fallbacks which have no bound field (clients are managed via the
@@ -487,16 +569,15 @@ export default function InboundFormModal({
     setSaving(true);
     try {
       const payload = formValuesToWirePayload(parsed.data);
-      const url = mode === 'edit' && dbInbound
-        ? `/panel/api/inbounds/update/${dbInbound.id}`
-        : '/panel/api/inbounds/add';
+      const url =
+        mode === 'edit' && dbInbound
+          ? `/panel/api/inbounds/update/${dbInbound.id}`
+          : '/panel/api/inbounds/add';
       const msg = await HttpUtil.post(url, payload);
       if (msg?.success) {
         if (isFallbackHost) {
           const obj = msg.obj as { id?: number; Id?: number } | null;
-          const masterId = mode === 'edit'
-            ? dbInbound!.id
-            : (obj?.id ?? obj?.Id ?? 0);
+          const masterId = mode === 'edit' ? dbInbound!.id : (obj?.id ?? obj?.Id ?? 0);
           if (masterId) await saveFallbacks(masterId);
         }
         onSaved();
@@ -507,13 +588,21 @@ export default function InboundFormModal({
     }
   };
 
-  const title = mode === 'edit'
-    ? t('pages.inbounds.modifyInbound')
-    : t('pages.inbounds.addInbound');
+  /*
+   * Field errors render inline, but every tab is force-rendered, so an error on
+   * a hidden tab looks like a dead Save button — jump to it and say what broke.
+   */
+  const submit = methods.handleSubmit(saveValues, (errors) => {
+    const issue = firstRhfValidationIssue(errors);
+    if (!issue) return;
+    setActiveTab(tabForValidationPath(issue.path));
+    messageApi.error(formatInboundIssue(issue, methods.getValues(), t));
+  });
 
-  const okText = mode === 'edit'
-    ? t('pages.clients.submitEdit')
-    : t('create');
+  const title =
+    mode === 'edit' ? t('pages.inbounds.modifyInbound') : t('pages.inbounds.addInbound');
+
+  const okText = mode === 'edit' ? t('pages.clients.submitEdit') : t('create');
 
   const basicTab = (
     <>
@@ -534,8 +623,10 @@ export default function InboundFormModal({
             allowClear
             options={selectableNodes.map((n) => ({
               value: n.id,
-              label: `${n.name}${n.status === 'offline' ? ' (offline)' : ''}`,
-              disabled: n.status === 'offline',
+              // Same rule as the clone target picker: only online is
+              // deployable (`unknown` = no heartbeat yet).
+              label: `${n.name}${n.status === 'online' ? '' : ` (${n.status || 'offline'})`}`,
+              disabled: n.status !== 'online',
             }))}
           />
         </FormField>
@@ -554,22 +645,28 @@ export default function InboundFormModal({
 
       <FormField
         name="shareAddrStrategy"
-        label={labelWithHint(t('pages.inbounds.form.shareAddrStrategy'), t('pages.inbounds.form.shareAddrStrategyHelp'))}
+        label={labelWithHint(
+          t('pages.inbounds.form.shareAddrStrategy'),
+          t('pages.inbounds.form.shareAddrStrategyHelp'),
+        )}
       >
         <Select
-          options={SHARE_ADDR_STRATEGIES
-            .filter((strategy) => strategy !== 'node' || nodeShareOptionAvailable)
-            .map((strategy) => ({
-              value: strategy,
-              label: t(`pages.inbounds.form.shareAddrStrategyOptions.${strategy}`),
-            }))}
+          options={SHARE_ADDR_STRATEGIES.filter(
+            (strategy) => strategy !== 'node' || nodeShareOptionAvailable,
+          ).map((strategy) => ({
+            value: strategy,
+            label: t(`pages.inbounds.form.shareAddrStrategyOptions.${strategy}`),
+          }))}
         />
       </FormField>
 
       {shareAddrStrategy === 'custom' && (
         <FormField
           name="shareAddr"
-          label={labelWithHint(t('pages.inbounds.form.shareAddr'), t('pages.inbounds.form.shareAddrHelp'))}
+          label={labelWithHint(
+            t('pages.inbounds.form.shareAddr'),
+            t('pages.inbounds.form.shareAddrHelp'),
+          )}
           rules={{
             validate: (value) =>
               isValidShareAddrInput(String(value ?? '')) || t('pages.inbounds.form.shareAddrHelp'),
@@ -581,10 +678,26 @@ export default function InboundFormModal({
 
       <FormField
         name="subSortIndex"
-        label={labelWithHint(t('pages.inbounds.form.subSortIndex'), t('pages.inbounds.form.subSortIndexHelp'))}
+        label={labelWithHint(
+          t('pages.inbounds.form.subSortIndex'),
+          t('pages.inbounds.form.subSortIndexHelp'),
+        )}
       >
         <InputNumber min={1} />
       </FormField>
+
+      {protocol === Protocols.VLESS && (
+        <FormField
+          name="disableFlow"
+          valueProp="checked"
+          label={labelWithHint(
+            t('pages.inbounds.form.disableFlow'),
+            t('pages.inbounds.form.disableFlowHelp'),
+          )}
+        >
+          <Switch />
+        </FormField>
+      )}
 
       <FormField
         name="port"
@@ -660,7 +773,17 @@ export default function InboundFormModal({
 
   const protocolTab = (
     <>
-      {protocol === Protocols.WIREGUARD && <WireguardFields wgPubKey={wgPubKey} regenInboundWg={regenInboundWg} />}
+      {protocol === Protocols.WIREGUARD && (
+        <WireguardFields wgPubKey={wgPubKey} regenInboundWg={regenInboundWg} />
+      )}
+
+      {protocol === Protocols.AMNEZIAWG && (
+        <AmneziawgFields
+          awgPubKey={awgPubKey}
+          regenInboundAwg={regenInboundAwg}
+          regenInboundAwgObfuscation={regenInboundAwgObfuscation}
+        />
+      )}
 
       {protocol === Protocols.TUN && <TunFields />}
 
@@ -673,11 +796,22 @@ export default function InboundFormModal({
 
       {protocol === Protocols.SHADOWSOCKS && <ShadowsocksFields isSSWith2022={isSSWith2022} />}
 
-      {protocol === Protocols.VLESS && <VlessFields saving={saving} selectedVlessAuth={selectedVlessAuth} vlessAuthKind={vlessAuthKind} network={network} security={security} getNewVlessEnc={getNewVlessEnc} clearVlessEnc={clearVlessEnc} />}
+      {protocol === Protocols.VLESS && (
+        <VlessFields
+          saving={saving}
+          selectedVlessAuth={selectedVlessAuth}
+          vlessAuthKind={vlessAuthKind}
+          network={network}
+          security={security}
+          getNewVlessEnc={getNewVlessEnc}
+          clearVlessEnc={clearVlessEnc}
+        />
+      )}
 
       {isFallbackHost && fallbacksCard}
-      {(protocol === Protocols.VLESS || protocol === Protocols.TROJAN)
-        && network === 'tcp' && !isFallbackHost && (
+      {(protocol === Protocols.VLESS || protocol === Protocols.TROJAN) &&
+        network === 'tcp' &&
+        !isFallbackHost && (
           <Alert
             className="mt-12"
             type="info"
@@ -694,7 +828,14 @@ export default function InboundFormModal({
    * FinalMask mkcp-legacy UDP mask when moving to mKCP (removed otherwise).
    */
   const onNetworkChange = (next: string) => {
-    const ALL = ['tcpSettings', 'kcpSettings', 'wsSettings', 'grpcSettings', 'httpupgradeSettings', 'xhttpSettings'];
+    const ALL = [
+      'tcpSettings',
+      'kcpSettings',
+      'wsSettings',
+      'grpcSettings',
+      'httpupgradeSettings',
+      'xhttpSettings',
+    ];
     const current = (getV('streamSettings') as Record<string, unknown>) ?? {};
     const cleaned: Record<string, unknown> = { ...current, network: next };
     for (const k of ALL) {
@@ -717,7 +858,9 @@ export default function InboundFormModal({
     } else {
       const fm = cleaned.finalmask as Record<string, unknown> | undefined;
       if (fm && Array.isArray(fm.udp)) {
-        const udp = (fm.udp as unknown[]).filter((m) => (m as { type?: string })?.type !== 'mkcp-legacy');
+        const udp = (fm.udp as unknown[]).filter(
+          (m) => (m as { type?: string })?.type !== 'mkcp-legacy',
+        );
         cleaned.finalmask = { ...fm, udp };
       }
     }
@@ -858,10 +1001,11 @@ export default function InboundFormModal({
               label: t('pages.inbounds.advanced.all'),
               children: (
                 <>
-                  <div className="advanced-editor-meta">
-                    {t('pages.inbounds.advanced.allHelp')}
-                  </div>
-                  <AdvancedAllEditor streamEnabled={streamEnabled} sniffingEnabled={sniffingSupported} />
+                  <div className="advanced-editor-meta">{t('pages.inbounds.advanced.allHelp')}</div>
+                  <AdvancedAllEditor
+                    streamEnabled={streamEnabled}
+                    sniffingEnabled={sniffingSupported}
+                  />
                 </>
               ),
             },
@@ -884,44 +1028,48 @@ export default function InboundFormModal({
               ),
             },
             ...(streamEnabled
-              ? [{
-                key: 'stream',
-                label: t('pages.inbounds.advanced.stream'),
-                children: (
-                  <>
-                    <div className="advanced-editor-meta">
-                      {t('pages.inbounds.advanced.streamHelp')}{' '}
-                      <code>{'{ streamSettings: { ... } }'}</code>.
-                    </div>
-                    <AdvancedSliceEditor
-                      path="streamSettings"
-                      wrapKey="streamSettings"
-                      minHeight="320px"
-                      maxHeight="540px"
-                    />
-                  </>
-                ),
-              }]
+              ? [
+                  {
+                    key: 'stream',
+                    label: t('pages.inbounds.advanced.stream'),
+                    children: (
+                      <>
+                        <div className="advanced-editor-meta">
+                          {t('pages.inbounds.advanced.streamHelp')}{' '}
+                          <code>{'{ streamSettings: { ... } }'}</code>.
+                        </div>
+                        <AdvancedSliceEditor
+                          path="streamSettings"
+                          wrapKey="streamSettings"
+                          minHeight="320px"
+                          maxHeight="540px"
+                        />
+                      </>
+                    ),
+                  },
+                ]
               : []),
             ...(sniffingSupported
-              ? [{
-                key: 'sniffing',
-                label: t('pages.inbounds.advanced.sniffing'),
-                children: (
-                  <>
-                    <div className="advanced-editor-meta">
-                      {t('pages.inbounds.advanced.sniffingHelp')}{' '}
-                      <code>{'{ sniffing: { ... } }'}</code>.
-                    </div>
-                    <AdvancedSliceEditor
-                      path="sniffing"
-                      wrapKey="sniffing"
-                      minHeight="240px"
-                      maxHeight="420px"
-                    />
-                  </>
-                ),
-              }]
+              ? [
+                  {
+                    key: 'sniffing',
+                    label: t('pages.inbounds.advanced.sniffing'),
+                    children: (
+                      <>
+                        <div className="advanced-editor-meta">
+                          {t('pages.inbounds.advanced.sniffingHelp')}{' '}
+                          <code>{'{ sniffing: { ... } }'}</code>.
+                        </div>
+                        <AdvancedSliceEditor
+                          path="sniffing"
+                          wrapKey="sniffing"
+                          minHeight="240px"
+                          maxHeight="420px"
+                        />
+                      </>
+                    ),
+                  },
+                ]
               : []),
           ]}
         />
@@ -934,6 +1082,7 @@ export default function InboundFormModal({
   return (
     <>
       {messageContextHolder}
+      {modalContextHolder}
       <Modal
         open={open}
         title={title}
@@ -953,33 +1102,76 @@ export default function InboundFormModal({
             wrapperCol={{ sm: { span: 14 } }}
             labelWrap
           >
-            <Tabs items={[
-              { key: 'basic', label: t('pages.xray.basicTemplate'), children: basicTab, forceRender: true },
-              ...(([
-                Protocols.VLESS,
-                Protocols.SHADOWSOCKS,
-                Protocols.HTTP,
-                Protocols.MIXED,
-                Protocols.TUNNEL,
-                Protocols.TUN,
-                Protocols.WIREGUARD,
-                Protocols.MTPROTO,
-              ] as string[]).includes(protocol) || isFallbackHost
-                ? [{ key: 'protocol', label: t('pages.inbounds.protocol'), children: protocolTab, forceRender: true }]
-                : []),
-              ...(streamEnabled
-                ? [
-                  { key: 'stream', label: t('pages.inbounds.streamTab'), children: streamTab, forceRender: true },
-                  ...(protocol !== Protocols.WIREGUARD && protocol !== Protocols.TUNNEL
-                    ? [{ key: 'security', label: t('pages.inbounds.securityTab'), children: securityTab, forceRender: true }]
-                    : []),
-                ]
-                : []),
-              ...(sniffingSupported
-                ? [{ key: 'sniffing', label: t('pages.inbounds.sniffingTab'), children: sniffingTab, forceRender: true }]
-                : []),
-              { key: 'advanced', label: t('pages.xray.advancedTemplate'), children: advancedTab, forceRender: true },
-            ]} />
+            <Tabs
+              activeKey={activeTab}
+              onChange={setActiveTab}
+              items={[
+                {
+                  key: 'basic',
+                  label: t('pages.xray.basicTemplate'),
+                  children: basicTab,
+                  forceRender: true,
+                },
+                ...((
+                  [
+                    Protocols.VLESS,
+                    Protocols.SHADOWSOCKS,
+                    Protocols.HTTP,
+                    Protocols.MIXED,
+                    Protocols.TUNNEL,
+                    Protocols.TUN,
+                    Protocols.WIREGUARD,
+                    Protocols.MTPROTO,
+                    Protocols.AMNEZIAWG,
+                  ] as string[]
+                ).includes(protocol) || isFallbackHost
+                  ? [
+                      {
+                        key: 'protocol',
+                        label: t('pages.inbounds.protocol'),
+                        children: protocolTab,
+                        forceRender: true,
+                      },
+                    ]
+                  : []),
+                ...(streamEnabled
+                  ? [
+                      {
+                        key: 'stream',
+                        label: t('pages.inbounds.streamTab'),
+                        children: streamTab,
+                        forceRender: true,
+                      },
+                      ...(protocol !== Protocols.WIREGUARD && protocol !== Protocols.TUNNEL
+                        ? [
+                            {
+                              key: 'security',
+                              label: t('pages.inbounds.securityTab'),
+                              children: securityTab,
+                              forceRender: true,
+                            },
+                          ]
+                        : []),
+                    ]
+                  : []),
+                ...(sniffingSupported
+                  ? [
+                      {
+                        key: 'sniffing',
+                        label: t('pages.inbounds.sniffingTab'),
+                        children: sniffingTab,
+                        forceRender: true,
+                      },
+                    ]
+                  : []),
+                {
+                  key: 'advanced',
+                  label: t('pages.xray.advancedTemplate'),
+                  children: advancedTab,
+                  forceRender: true,
+                },
+              ]}
+            />
           </Form>
         </FormProvider>
       </Modal>

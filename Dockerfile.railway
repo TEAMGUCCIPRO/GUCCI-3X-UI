@@ -14,12 +14,9 @@ ENV TZ=Asia/Tehran
 # nginx       = reverse proxy / landing gate in front of the panel
 # sqlite3     = one-time DB normalisations performed by the entrypoint
 # netcat      = used by the health watchdog
-# The official 3x-ui image already ships ca-certificates, tzdata, fail2ban,
-# bash, curl and openssl, so we only add what is missing.
-RUN apt-get update \
-    && DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends \
-         nginx sqlite3 netcat-openbsd \
-    && rm -rf /var/lib/apt/lists/* \
+# The official 3x-ui image is Alpine-based and already ships ca-certificates,
+# tzdata, fail2ban, bash, curl and openssl, so we only add what is missing.
+RUN apk add --no-cache nginx sqlite netcat-openbsd \
     && ln -snf /usr/share/zoneinfo/$TZ /etc/localtime \
     && echo $TZ > /etc/timezone \
     && mkdir -p /tmp/nginx-proxy /tmp/nginx-client /run/nginx /var/log/nginx /var/log
