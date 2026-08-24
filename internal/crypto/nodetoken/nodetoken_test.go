@@ -95,8 +95,15 @@ func TestPlaintextPassThrough(t *testing.T) {
 func TestEncryptedNeverFallsBackToPlaintext(t *testing.T) {
 	c, _ := NewCodec(ModeRequired, testRing(t, "k1", "k1"))
 	enc, _ := c.Encrypt(1, "tok")
-	// Corrupt the ciphertext body — must error, never return raw bytes.
-	bad := enc[:len(enc)-2] + "AA"
+	// Corrupt the ciphertext body deterministically — must error, never return raw bytes.
+	// Do not replace the final base64 quantum: depending on unused bits it can decode
+	// to the original byte sequence and make the test flaky.
+	prefix := "enc:v1:k1:"
+	badChar := "A"
+	if enc[len(prefix)] == 'A' {
+		badChar = "B"
+	}
+	bad := enc[:len(prefix)] + badChar + enc[len(prefix)+1:]
 	if _, err := c.Decrypt(1, bad); err == nil {
 		t.Fatal("corrupted ciphertext must fail, not fall back to plaintext")
 	}
