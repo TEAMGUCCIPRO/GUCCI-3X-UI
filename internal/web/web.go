@@ -199,9 +199,9 @@ func (s *Server) initRouter() (*gin.Engine, error) {
 	store := cookie.NewStore(secret)
 	// Configure default session cookie options, including expiration (MaxAge)
 	sessionOptions := sessions.Options{
-		Path:     basePath,
+		Path:     "/",
 		HttpOnly: true,
-		Secure:   directHTTPS,
+		Secure:   false,
 		SameSite: http.SameSiteLaxMode,
 	}
 	if sessionMaxAge, err := s.settingService.GetSessionMaxAge(); err == nil && sessionMaxAge > 0 {
