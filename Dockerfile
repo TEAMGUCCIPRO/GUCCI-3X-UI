@@ -2,7 +2,7 @@
 # This keeps the GUCCI-branded panel UI while running the latest upstream 3x-ui code.
 
 # ── Frontend ─────────────────────────────────────────────────────────────────
-FROM --platform=$BUILDPLATFORM node:24-alpine AS frontend
+FROM --platform=$BUILDPLATFORM node:22-alpine AS frontend
 WORKDIR /src/frontend
 COPY frontend/package.json frontend/package-lock.json ./
 RUN npm ci --ignore-scripts
