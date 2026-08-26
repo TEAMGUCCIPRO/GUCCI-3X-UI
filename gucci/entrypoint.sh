@@ -7,7 +7,7 @@ set -eu
 PUBLIC_PORT="${GUCCI_PUBLIC_PORT:-1}"
 HEALTH_PORT="${PORT:-8080}"
 PANEL_PORT="${XUI_INTERNAL_PORT:-2053}"
-PANEL_PATH="${XUI_WEB_BASE_PATH:-/gucci/}"
+PANEL_PATH="${XUI_WEB_BASE_PATH:-/}"
 INITIAL_USER="${XUI_INITIAL_USERNAME:-gucci}"
 INITIAL_PASS="${XUI_INITIAL_PASSWORD:-gucci}"
 DATA_ROOT="${XUI_DATA_ROOT:-/gucci}"
@@ -134,7 +134,7 @@ db_setting_force() {
   sqlite3 "$DB" "INSERT INTO settings(key,value) SELECT '${key}','${value}' WHERE NOT EXISTS (SELECT 1 FROM settings WHERE key='${key}'); UPDATE settings SET value='${value}' WHERE key='${key}';"
 }
 if [ -f "$DB" ]; then
-  sqlite3 "$DB" "UPDATE settings SET value='/gucci/' WHERE key='webBasePath';"
+  sqlite3 "$DB" "UPDATE settings SET value='/' WHERE key='webBasePath';"
   db_setting subListen 127.0.0.1
   db_setting subPort 2096
   if [ -n "${RAILWAY_PUBLIC_DOMAIN:-}" ]; then

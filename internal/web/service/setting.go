@@ -61,7 +61,7 @@ var defaultValueMap = map[string]string{
 	"nodeMtlsClientKeyPem":        "",
 	"nodeMtlsClientCertSha256":    "",
 	"nodeMtlsClientCAPem":         "",
-	"webBasePath":                 normalizeBasePath(getEnv("XUI_INIT_WEB_BASE_PATH", getEnv("XUI_WEB_BASE_PATH", "/gucci/"))),
+	"webBasePath":                 normalizeBasePath(getEnv("XUI_INIT_WEB_BASE_PATH", getEnv("XUI_WEB_BASE_PATH", "/"))),
 	"sessionMaxAge":               "360",
 	"trustedProxyCIDRs":           DefaultTrustedProxyCIDRs,
 	"ipLimitAllowlist":            "",

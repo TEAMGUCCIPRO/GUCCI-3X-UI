@@ -65,8 +65,8 @@ ENV XUI_IN_DOCKER=true \
     GUCCI_PUBLIC_PORT=1 \
     XUI_DB_FOLDER=/gucci/x-ui \
     XUI_INTERNAL_PORT=2053 \
-    XUI_WEB_BASE_PATH=/gucci/ \
-    XUI_INIT_WEB_BASE_PATH=/gucci/ \
+    XUI_WEB_BASE_PATH=/ \
+    XUI_INIT_WEB_BASE_PATH=/ \
     XUI_DATA_ROOT=/gucci \
     XUI_FORCE_INITIAL_CREDENTIALS=false
 
