@@ -66,17 +66,31 @@ http {
       include /app/gucci/security-headers.conf;
     }
 
-    # Redirect panel and enter shortcuts cleanly to /gucci/
-    location ^~ /gucci/panel {
-      return 302 /gucci/;
+    location = /gucci/panel {
+      return 301 /gucci/panel/;
+    }
+
+    # /gucci/panel/ proxies directly to 3X-UI
+    location /gucci/panel/ {
+      proxy_pass http://127.0.0.1:2053/gucci/;
+      proxy_http_version 1.1;
+      proxy_set_header Host $host;
+      proxy_set_header Upgrade $http_upgrade;
+      proxy_set_header Connection $connection_upgrade;
+      proxy_set_header X-Forwarded-Host $host;
+      proxy_set_header X-Forwarded-Proto $http_x_forwarded_proto;
+      proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+      proxy_set_header X-Real-IP $remote_addr;
+      proxy_read_timeout 3600s;
+      proxy_send_timeout 3600s;
     }
 
     location ^~ /gucci/enter {
-      return 302 /gucci/;
+      return 302 /gucci/panel/;
     }
 
     location = /gucci {
-      return 302 /gucci/;
+      return 302 /gucci/panel/;
     }
 
     # Compatibility transport for Xray WS
