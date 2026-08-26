@@ -1,6 +1,6 @@
 module github.com/mhsanaei/3x-ui/v3
 
-go 1.24.0
+go 1.26.0
 
 require (
 	github.com/amnezia-vpn/amneziawg-go/v3 v3.1.20260814

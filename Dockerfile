@@ -11,9 +11,10 @@ COPY internal/web/translation /src/internal/web/translation
 RUN npm run build
 
 # ── 3X-UI Go binary + bundled resources ──────────────────────────────────────
-FROM golang:1.24-alpine AS builder
+FROM golang:alpine AS builder
 WORKDIR /app
 ARG TARGETARCH
+ENV GOTOOLCHAIN=auto
 RUN apk add --no-cache build-base gcc curl unzip ca-certificates
 COPY . .
 COPY --from=frontend /src/internal/web/dist ./internal/web/dist
