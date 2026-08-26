@@ -60,9 +60,8 @@ http {
     }
     location = / { root /app/gucci/landing; try_files /index.html =404; add_header Cache-Control 'no-store, max-age=0'; include /app/gucci/security-headers.conf; }
     location = /gucci { return 308 /gucci/; }
-    location = /gucci/panel { return 303 /gucci/enter; }
-    location = /gucci/panel/ { return 303 /gucci/enter; }
-    location = /gucci/enter {
+    location ^~ /gucci/panel { return 303 /gucci/enter; }
+    location ^~ /gucci/enter {
       add_header Set-Cookie "gucci_panel_access=1; Path=/gucci/; HttpOnly; SameSite=Lax; Max-Age=1800" always;
       return 303 /gucci/;
     }
