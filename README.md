@@ -55,6 +55,22 @@
 
 </div>
 
+<br/>
+
+<div align="center">
+
+### 🚀 Deploy on Railway
+
+[![Deploy on Railway](https://railway.app/button.svg)](https://railway.app/new?template=https%3A%2F%2Fgithub.com%2FTEAMGUCCIPRO%2Fgucci-panel)
+
+**راهنمای استقرار روی Railway:**  
+۱. این ریپازیتوری را **Fork** کنید.  
+۲. در [Railway](https://railway.com) پروژه جدید از گیت‌هاب ایجاد کنید.  
+۳. یک **Volume** با مسیر `/gucci` به سرویس متصل کنید تا اطلاعات دائمی بمانند.  
+*(برای توضیحات بیشتر فایل [GUCCI_RAILWAY_FA.md](./GUCCI_RAILWAY_FA.md) را مطالعه کنید)*
+
+</div>
+
 ---
 
 </div>

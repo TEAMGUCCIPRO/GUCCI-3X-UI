@@ -10,7 +10,7 @@ PANEL_PORT="${XUI_INTERNAL_PORT:-2053}"
 PANEL_PATH="${XUI_WEB_BASE_PATH:-/gucci/}"
 INITIAL_USER="${XUI_INITIAL_USERNAME:-gucci}"
 INITIAL_PASS="${XUI_INITIAL_PASSWORD:-gucci}"
-DATA_ROOT="${XUI_DATA_ROOT:-/GUCCI}"
+DATA_ROOT="${XUI_DATA_ROOT:-/gucci}"
 DB_FOLDER="${XUI_DB_FOLDER:-$DATA_ROOT/x-ui}"
 
 # Railway's actual mounted-volume path is authoritative. This prevents a stale
@@ -21,14 +21,17 @@ if [ -n "${RAILWAY_VOLUME_MOUNT_PATH:-}" ]; then
   DB_FOLDER="$DATA_ROOT/x-ui"
 fi
 
-# Zero-loss transition for an existing Railway volume that is still mounted at
-# /data. The first image using /GUCCI continues reading the old mount; after the
-# same volume is remounted at /GUCCI, its existing x-ui directory is found there
-# automatically. No database copy, reset, or temporary storage is involved.
-if [ "$DATA_ROOT" = "/GUCCI" ] && [ ! -f "$DB_FOLDER/x-ui.db" ] && [ -f /data/x-ui/x-ui.db ]; then
-  DATA_ROOT=/data
-  DB_FOLDER=/data/x-ui
-  echo 'Persistent volume is using legacy mount /data; retaining it without migration.'
+# Zero-loss transition for an existing Railway volume that is mounted at /GUCCI or /data
+if [ ! -f "$DB_FOLDER/x-ui.db" ]; then
+  if [ -f /GUCCI/x-ui/x-ui.db ]; then
+    DATA_ROOT=/GUCCI
+    DB_FOLDER=/GUCCI/x-ui
+    echo 'Persistent volume is using legacy mount /GUCCI; retaining it without migration.'
+  elif [ -f /data/x-ui/x-ui.db ]; then
+    DATA_ROOT=/data
+    DB_FOLDER=/data/x-ui
+    echo 'Persistent volume is using legacy mount /data; retaining it without migration.'
+  fi
 fi
 export XUI_DATA_ROOT="$DATA_ROOT"
 export XUI_DB_FOLDER="$DB_FOLDER"
