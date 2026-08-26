@@ -14,7 +14,7 @@ RUN npm run build
 FROM golang:1.24-alpine AS builder
 WORKDIR /app
 ARG TARGETARCH
-RUN apk add --no-cache build-base gcc curl unzip
+RUN apk add --no-cache build-base gcc curl unzip ca-certificates
 COPY . .
 COPY --from=frontend /src/internal/web/dist ./internal/web/dist
 ENV CGO_ENABLED=1
