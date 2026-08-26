@@ -1,0 +1,65 @@
+# Builds the GUCCI Railway production image from this repository's source
+# (Dockerfile.railway) and pushes it to GHCR so the Railway service can deploy
+# the exact pinned panel + Xray version, independent of any GitHub account the
+# Railway integration happens to be linked to.
+name: Build GUCCI Railway Image
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - 'Dockerfile.railway'
+      - 'Dockerfile'
+      - 'DockerInit.sh'
+      - 'gucci/**'
+      - 'frontend/**'
+      - 'internal/**'
+      - 'go.mod'
+      - 'go.sum'
+      - 'main.go'
+      - 'UPSTREAM_VERSION'
+      - '.github/workflows/gucci-railway-image.yml'
+
+permissions:
+  contents: read
+  packages: write
+
+concurrency:
+  group: gucci-railway-image
+  cancel-in-progress: true
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+        with:
+          submodules: true
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v4
+
+      - name: Login to GitHub Container Registry
+        uses: docker/login-action@v4
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Build and push image
+        uses: docker/build-push-action@v7
+        with:
+          context: .
+          file: Dockerfile.railway
+          push: true
+          tags: |
+            ghcr.io/teamguccipro/gucci-panel:3.7.0
+            ghcr.io/teamguccipro/gucci-panel:latest
+          labels: |
+            org.opencontainers.image.title=GUCCI 3X-UI
+            org.opencontainers.image.version=3.7.0
+            org.opencontainers.image.description=GUCCI panel on upstream 3x-ui v3.7.0
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
