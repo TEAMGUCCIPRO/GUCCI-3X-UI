@@ -12,7 +12,7 @@ jobs:
   sync_latest_from_upstream:
     name: Sync latest commits from upstream repo
     runs-on: ubuntu-latest
-    if: ${{ github.repository != 'TEAMGUCCIPRO/gucci-panel' }}
+    if: ${{ github.repository != 'TEAMGUCCIPRO/GUCCI-3X-UI' }}
     steps:
       - name: Checkout target repo
         uses: actions/checkout@v4
@@ -23,5 +23,5 @@ jobs:
           target_sync_branch: main
           target_repo_token: ${{ secrets.GITHUB_TOKEN }}
           upstream_sync_branch: main
-          upstream_sync_repo: TEAMGUCCIPRO/gucci-panel
+          upstream_sync_repo: TEAMGUCCIPRO/GUCCI-3X-UI
           test_mode: false

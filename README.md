@@ -61,7 +61,7 @@
 
 ### 🚀 Deploy on Railway
 
-[![Deploy on Railway](https://railway.app/button.svg)](https://railway.app/new?template=https%3A%2F%2Fgithub.com%2FTEAMGUCCIPRO%2Fgucci-panel)
+[![Deploy on Railway](https://railway.app/button.svg)](https://railway.app/new?template=https%3A%2F%2Fgithub.com%2FTEAMGUCCIPRO%2FGUCCI-3X-UI)
 
 **راهنمای استقرار روی Railway:**  
 ۱. این ریپازیتوری را **Fork** کنید.  
