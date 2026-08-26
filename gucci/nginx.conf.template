@@ -71,7 +71,7 @@ http {
     }
 
     location ^~ /gucci/enter {
-      return 302 /gucci/;
+      return 302 /gucci/panel/;
     }
 
     # Compatibility transport for Xray WS
