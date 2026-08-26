@@ -65,8 +65,9 @@ ENV XUI_IN_DOCKER=true \
     XUI_DB_FOLDER=/gucci/x-ui \
     XUI_INTERNAL_PORT=2053 \
     XUI_WEB_BASE_PATH=/gucci/ \
+    XUI_INIT_WEB_BASE_PATH=/gucci/ \
     XUI_DATA_ROOT=/gucci \
-    XUI_FORCE_INITIAL_CREDENTIALS=true
+    XUI_FORCE_INITIAL_CREDENTIALS=false
 
 EXPOSE 1 8080
 ENTRYPOINT ["/app/gucci/entrypoint.sh"]
