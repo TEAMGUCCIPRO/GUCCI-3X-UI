@@ -134,6 +134,7 @@ db_setting_force() {
   sqlite3 "$DB" "INSERT INTO settings(key,value) SELECT '${key}','${value}' WHERE NOT EXISTS (SELECT 1 FROM settings WHERE key='${key}'); UPDATE settings SET value='${value}' WHERE key='${key}';"
 }
 if [ -f "$DB" ]; then
+  sqlite3 "$DB" "UPDATE settings SET value='/gucci/' WHERE key='webBasePath';"
   db_setting subListen 127.0.0.1
   db_setting subPort 2096
   if [ -n "${RAILWAY_PUBLIC_DOMAIN:-}" ]; then
