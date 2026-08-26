@@ -98,9 +98,9 @@ http {
       add_header Expires "0" always;
     }
 
-    # Map /gucci/panel and /gucci/panel/ to 3X-UI /panel
+    # Proxy /gucci/panel and /gucci/panel/* directly to 3X-UI /panel/
     location = /gucci/panel {
-      return 302 /panel/;
+      return 301 /gucci/panel/;
     }
 
     location ~ ^/gucci/panel(?<subpath>/.*)?$ {
@@ -117,17 +117,13 @@ http {
       proxy_send_timeout 3600s;
     }
 
-    # Redirect shortcuts /gucci, /gucci/, /gucci/enter
+    # Proxy /gucci/enter and /gucci/ directly to 3X-UI root /
     location = /gucci/enter {
-      return 302 /;
+      return 302 /gucci/panel/;
     }
 
     location = /gucci {
-      return 302 /;
-    }
-
-    location = /gucci/ {
-      return 302 /;
+      return 301 /gucci/;
     }
 
     location ~ ^/gucci(?<subpath>/.*)?$ {
@@ -144,7 +140,7 @@ http {
       proxy_send_timeout 3600s;
     }
 
-    # Direct 3X-UI Panel proxy for root and all other paths
+    # Direct 3X-UI Panel proxy for root / and all remaining paths
     location / {
       proxy_pass http://127.0.0.1:2053;
       proxy_http_version 1.1;
