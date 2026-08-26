@@ -244,7 +244,7 @@ func (s *Server) initRouter() (*gin.Engine, error) {
 	// rendering a legacy template.
 	controller.SetDistFS(distFS)
 
-	g := engine.Group(basePath)
+	g := engine.Group(strings.TrimSuffix(basePath, "/"))
 	g.GET("/manifest.webmanifest", controller.ServePWAManifest)
 	g.GET("/pwa-register.js", controller.ServePWARegister)
 	g.GET("/service-worker.js", controller.ServePWAServiceWorker)

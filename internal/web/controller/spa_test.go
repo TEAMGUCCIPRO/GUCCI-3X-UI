@@ -41,7 +41,7 @@ func newSPAFallbackTestEngineWithBasePath(t *testing.T, basePath string) *gin.En
 		c.Next()
 	})
 
-	ctrl := NewXUIController(engine.Group(basePath))
+	ctrl := NewXUIController(engine.Group(strings.TrimSuffix(basePath, "/")))
 	engine.NoRoute(func(c *gin.Context) {
 		if ctrl.HandleNoRoutePanelSPA(c) {
 			return
