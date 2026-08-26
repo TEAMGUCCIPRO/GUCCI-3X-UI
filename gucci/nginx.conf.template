@@ -67,15 +67,11 @@ http {
     }
 
     location = /gucci {
-      return 301 /gucci/panel/;
-    }
-
-    location = /gucci/ {
-      return 301 /gucci/panel/;
+      return 301 /gucci/;
     }
 
     location ^~ /gucci/enter {
-      return 302 /gucci/panel/;
+      return 302 /gucci/;
     }
 
     # Compatibility transport for Xray WS
