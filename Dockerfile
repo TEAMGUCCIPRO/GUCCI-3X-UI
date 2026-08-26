@@ -1,74 +1,73 @@
-# ========================================================
-# Stage: Frontend (Vite)
-# ========================================================
-FROM --platform=$BUILDPLATFORM node:22-alpine AS frontend
+# GUCCI Railway production image — built from this repository's full v3.7.0 source.
+# This keeps the GUCCI-branded panel UI while running the latest upstream 3x-ui code.
+
+# ── Frontend ─────────────────────────────────────────────────────────────────
+FROM --platform=$BUILDPLATFORM node:24-alpine AS frontend
 WORKDIR /src/frontend
 COPY frontend/package.json frontend/package-lock.json ./
-RUN npm ci
+RUN npm ci --ignore-scripts
 COPY frontend/ ./
 COPY internal/web/translation /src/internal/web/translation
 RUN npm run build
 
-# ========================================================
-# Stage: Builder
-# ========================================================
+# ── 3X-UI Go binary + bundled resources ──────────────────────────────────────
 FROM golang:1.27-alpine AS builder
 WORKDIR /app
 ARG TARGETARCH
-
-RUN apk --no-cache --update add \
-  build-base \
-  gcc \
-  curl \
-  unzip
-
+RUN apk add --no-cache build-base gcc curl unzip
 COPY . .
 COPY --from=frontend /src/internal/web/dist ./internal/web/dist
-
 ENV CGO_ENABLED=1
 ENV CGO_CFLAGS="-D_LARGEFILE64_SOURCE"
 RUN go build -ldflags "-w -s" -o build/x-ui main.go
-RUN ./DockerInit.sh "$TARGETARCH"
+RUN chmod 0755 DockerInit.sh && ./DockerInit.sh "$TARGETARCH"
 
-# ========================================================
-# Stage: Final Image of 3x-ui
-# ========================================================
-FROM alpine
+# ── Runtime ──────────────────────────────────────────────────────────────────
+FROM alpine:3.22
 ENV TZ=Asia/Tehran
 WORKDIR /app
-
-RUN apk add --no-cache --update \
-  ca-certificates \
-  tzdata \
-  fail2ban \
-  bash \
-  curl \
-  openssl
+ARG XRAY_COMPAT_VERSION=v26.7.28
+ARG XRAY_COMPAT_SHA256=8195d909f1109b8f3d99eefe401a3c451d7bf4af71f24d3815420f77e5dd2a40
+LABEL org.opencontainers.image.title="GUCCI 3X-UI" \
+      org.opencontainers.image.version="3.7.0" \
+      org.opencontainers.image.description="GUCCI panel on upstream 3x-ui v3.7.0"
+RUN apk add --no-cache \
+      ca-certificates tzdata fail2ban bash curl openssl nginx netcat-openbsd sqlite unzip \
+    && rm -f /etc/fail2ban/jail.d/alpine-ssh.conf \
+    && cp /etc/fail2ban/jail.conf /etc/fail2ban/jail.local \
+    && sed -i "s/^\[ssh\]$/&\nenabled = false/" /etc/fail2ban/jail.local \
+    && sed -i "s/^\[sshd\]$/&\nenabled = false/" /etc/fail2ban/jail.local \
+    && sed -i "s/#allowipv6 = auto/allowipv6 = auto/g" /etc/fail2ban/fail2ban.conf
 
 COPY --from=builder /app/build/ /app/
 COPY --from=builder /app/DockerEntrypoint.sh /app/
 COPY --from=builder /app/x-ui.sh /usr/bin/x-ui
 COPY --from=builder /app/internal/web/translation /app/internal/web/translation
+COPY gucci /app/gucci
 
+# Keep the Xray core pinned to the known-compatible v26.7.28 binary.
+RUN curl -fsSL --retry 3 -o /tmp/xray.zip \
+      "https://github.com/XTLS/Xray-core/releases/download/${XRAY_COMPAT_VERSION}/Xray-linux-64.zip" \
+    && echo "${XRAY_COMPAT_SHA256}  /tmp/xray.zip" | sha256sum -c - \
+    && unzip -p /tmp/xray.zip xray > /app/bin/xray-linux-amd64 \
+    && chmod 0755 /app/bin/xray-linux-amd64 \
+    && rm -f /tmp/xray.zip \
+    && chmod 0755 /app/DockerEntrypoint.sh /app/x-ui /usr/bin/x-ui \
+         /app/gucci/entrypoint.sh /app/gucci/healthcheck.sh
 
-# Configure fail2ban
-RUN rm -f /etc/fail2ban/jail.d/alpine-ssh.conf \
-  && cp /etc/fail2ban/jail.conf /etc/fail2ban/jail.local \
-  && sed -i "s/^\[ssh\]$/&\nenabled = false/" /etc/fail2ban/jail.local \
-  && sed -i "s/^\[sshd\]$/&\nenabled = false/" /etc/fail2ban/jail.local \
-  && sed -i "s/#allowipv6 = auto/allowipv6 = auto/g" /etc/fail2ban/fail2ban.conf
+ENV XUI_IN_DOCKER=true \
+    XUI_MAIN_FOLDER=/app \
+    XUI_ENABLE_FAIL2BAN=true \
+    XUI_DB_TYPE=sqlite \
+    XUI_DB_DSN="" \
+    GUCCI_PANEL_VERSION=3.7.0 \
+    GUCCI_PUBLIC_PORT=1 \
+    XUI_DB_FOLDER=/gucci/x-ui \
+    XUI_INTERNAL_PORT=2053 \
+    XUI_WEB_BASE_PATH=/gucci/ \
+    XUI_DATA_ROOT=/gucci \
+    XUI_FORCE_INITIAL_CREDENTIALS=false
 
-RUN chmod +x \
-  /app/DockerEntrypoint.sh \
-  /app/x-ui \
-  /usr/bin/x-ui
-
-ENV XUI_IN_DOCKER="true"
-ENV XUI_MAIN_FOLDER="/app"
-ENV XUI_ENABLE_FAIL2BAN="true"
-ENV XUI_DB_TYPE=""
-ENV XUI_DB_DSN=""
-EXPOSE 2053
-VOLUME [ "/etc/x-ui" ]
-CMD [ "./x-ui" ]
-ENTRYPOINT [ "/app/DockerEntrypoint.sh" ]
+EXPOSE 1 8080
+ENTRYPOINT ["/app/gucci/entrypoint.sh"]
+CMD []
