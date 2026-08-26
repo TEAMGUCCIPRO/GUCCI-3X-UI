@@ -54,6 +54,7 @@ jobs:
           context: .
           file: Dockerfile
           push: true
+          no-cache: true
           tags: |
             ghcr.io/teamguccipro/gucci-3x-ui:3.7.0
             ghcr.io/teamguccipro/gucci-3x-ui:latest
@@ -61,5 +62,3 @@ jobs:
             org.opencontainers.image.title=GUCCI 3X-UI
             org.opencontainers.image.version=3.7.0
             org.opencontainers.image.description=GUCCI panel on upstream 3x-ui v3.7.0
-          cache-from: type=gha
-          cache-to: type=gha,mode=max
