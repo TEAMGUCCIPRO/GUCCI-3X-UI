@@ -52,7 +52,7 @@ jobs:
         uses: docker/build-push-action@v7
         with:
           context: .
-          file: Dockerfile.railway
+          file: Dockerfile
           push: true
           tags: |
             ghcr.io/teamguccipro/gucci-panel:3.7.0
