@@ -19,7 +19,7 @@ http {
   gzip_comp_level 5;
   gzip_types text/plain text/css application/json application/javascript application/xml image/svg+xml;
   client_max_body_size 100m;
-  # Writable temp paths inside the container (the base image has no /var/cache/nginx).
+
   proxy_temp_path /tmp/nginx-proxy;
   fastcgi_temp_path /tmp/nginx-proxy;
   uwsgi_temp_path /tmp/nginx-proxy;
@@ -35,7 +35,6 @@ http {
     absolute_redirect off;
     include /app/gucci/security-headers.conf;
 
-    # Healthy only after x-ui and the configured TCP endpoints are listening.
     location = /healthz {
       access_log off;
       default_type text/plain;
@@ -59,7 +58,7 @@ http {
       try_files $uri =404;
     }
 
-    # Root landing page
+    # Root landing page ONLY on exact match = /
     location = / {
       root /app/gucci/landing;
       try_files /index.html =404;
@@ -67,31 +66,17 @@ http {
       include /app/gucci/security-headers.conf;
     }
 
-    # /gucci/panel/ proxies directly to 3X-UI on 2053
-    location /gucci/panel/ {
-      proxy_pass http://127.0.0.1:2053/gucci/;
-      proxy_http_version 1.1;
-      proxy_set_header Host $host;
-      proxy_set_header Upgrade $http_upgrade;
-      proxy_set_header Connection $connection_upgrade;
-      proxy_set_header X-Forwarded-Host $host;
-      proxy_set_header X-Forwarded-Proto $http_x_forwarded_proto;
-      proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
-      proxy_set_header X-Real-IP $remote_addr;
-      proxy_read_timeout 3600s;
-      proxy_send_timeout 3600s;
-    }
-
-    location = /gucci/panel {
-      return 301 /gucci/panel/;
+    # Redirect panel and enter shortcuts cleanly to /gucci/
+    location ^~ /gucci/panel {
+      return 302 /gucci/;
     }
 
     location ^~ /gucci/enter {
-      return 301 /gucci/panel/;
+      return 302 /gucci/;
     }
 
     location = /gucci {
-      return 301 /gucci/;
+      return 302 /gucci/;
     }
 
     # Compatibility transport for Xray WS
