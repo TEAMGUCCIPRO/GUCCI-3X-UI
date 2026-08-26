@@ -25,10 +25,9 @@ case $1 in
         FNAME="amd64"
         ;;
 esac
-MTG_MULTI_VER=$(curl -sfL "https://api.github.com/repos/mhsanaei/mtg-multi/releases/latest" | sed -n 's/.*"tag_name": *"\([^"]*\)".*/\1/p' | head -n 1)
+MTG_MULTI_VER=$(curl -sIL "https://github.com/mhsanaei/mtg-multi/releases/latest" | grep -i "^location:" | sed -n 's/.*\/tag\/\([^[:space:]\r\n]*\).*/\1/p' | head -n 1)
 if [ -z "$MTG_MULTI_VER" ]; then
-    echo "DockerInit: could not resolve the latest mtg-multi release tag" >&2
-    exit 1
+    MTG_MULTI_VER="v1.15.0"
 fi
 mkdir -p build/bin
 cd build/bin
