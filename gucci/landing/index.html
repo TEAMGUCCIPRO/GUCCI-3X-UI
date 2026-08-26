@@ -58,12 +58,12 @@
         <span class="flame">🔥</span>
       </div>
       <div class="divider"></div>
-      <a id="panel-entry" class="enter" href="/gucci/enter" hidden><span>متوجه شدم → ورود به پنل</span><span class="arrow">←</span></a>
+      <a id="panel-entry" class="enter" href="/gucci/panel/"><span>ورود به پنل مدیریت</span><span class="arrow">←</span></a>
       <footer><span class="safe"><i></i>POWERED BY GUCCI PANEL • ALWAYS LATEST • GUCCI NETWORK</span></footer>
     </section>
   </main>
   <script>
-  (()=>{const entry=document.getElementById('panel-entry');if(entry&&location.pathname.replace(/\/+/g,'/')==='/gucci/')entry.hidden=false})();
+  (()=>{const entry=document.getElementById('panel-entry');if(entry)entry.hidden=false})();
   (()=>{const c=document.getElementById('fx'),x=c.getContext('2d');let w,h,p=[];function size(){w=c.width=innerWidth*devicePixelRatio;h=c.height=innerHeight*devicePixelRatio;p=Array.from({length:Math.min(75,Math.floor(innerWidth/13))},()=>({x:Math.random()*w,y:Math.random()*h,r:(Math.random()*1.6+.35)*devicePixelRatio,v:(Math.random()*.22+.06)*devicePixelRatio,a:Math.random()*.55+.14}))}function draw(){x.clearRect(0,0,w,h);for(const q of p){q.y-=q.v;if(q.y<-8)q.y=h+8;q.x+=Math.sin(q.y*.002)*.08;x.beginPath();x.arc(q.x,q.y,q.r,0,7);x.fillStyle='rgba(31,255,205,'+q.a+')';x.shadowBlur=12*devicePixelRatio;x.shadowColor='#00f0bd';x.fill()}requestAnimationFrame(draw)}addEventListener('resize',size,{passive:true});size();draw()})();
   </script>
 </body>
