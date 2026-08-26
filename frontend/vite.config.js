@@ -2,7 +2,13 @@ import { defineConfig } from 'vite';
 import react from '@vitejs/plugin-react';
 import fs from 'node:fs';
 import path from 'node:path';
-import { DatabaseSync } from 'node:sqlite';
+
+let DatabaseSync;
+try {
+  DatabaseSync = (await import('node:sqlite')).DatabaseSync;
+} catch (_e) {
+  DatabaseSync = null;
+}
 
 const outDir = path.resolve(import.meta.dirname, '../internal/web/dist');
 const BACKEND_TARGET = 'http://localhost:2053';

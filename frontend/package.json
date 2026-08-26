@@ -23,7 +23,7 @@
     "storybook": "storybook dev -p 6006",
     "build-storybook": "storybook build",
     "gen": "npm run gen:zod && npm run gen:api",
-    "gen:api": "node scripts/build-openapi.mjs",
+    "gen:api": "npx --yes tsx scripts/build-openapi.mjs",
     "gen:zod": "cd .. && go run ./tools/openapigen",
     "prepare": "cd .. && husky frontend/.husky || true"
   },
