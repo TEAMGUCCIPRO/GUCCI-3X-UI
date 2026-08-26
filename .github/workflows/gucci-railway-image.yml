@@ -58,6 +58,8 @@ jobs:
           tags: |
             ghcr.io/teamguccipro/gucci-3x-ui:3.7.0
             ghcr.io/teamguccipro/gucci-3x-ui:latest
+            ghcr.io/teamguccipro/gucci-panel:3.7.0
+            ghcr.io/teamguccipro/gucci-panel:latest
           labels: |
             org.opencontainers.image.title=GUCCI 3X-UI
             org.opencontainers.image.version=3.7.0
