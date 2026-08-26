@@ -37,7 +37,8 @@ export XUI_DATA_ROOT="$DATA_ROOT"
 export XUI_DB_FOLDER="$DB_FOLDER"
 
 case "$PUBLIC_PORT:$PANEL_PORT" in *[!0-9:]*|:*) echo 'Invalid port configuration' >&2; exit 1;; esac
-case "$PANEL_PATH" in /*/) ;; *) echo 'XUI_WEB_BASE_PATH must start and end with /' >&2; exit 1;; esac
+case "$PANEL_PATH" in /*) ;; *) PANEL_PATH="/$PANEL_PATH" ;; esac
+case "$PANEL_PATH" in */) ;; *) PANEL_PATH="$PANEL_PATH/" ;; esac
 
 persist_dir() {
   source="$1"; target="$2"
