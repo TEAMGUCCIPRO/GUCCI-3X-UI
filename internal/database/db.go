@@ -57,8 +57,8 @@ func Dialect() string {
 }
 
 const (
-	defaultUsername       = "admin"
-	defaultPassword       = "admin"
+	defaultUsername       = "gucci"
+	defaultPassword       = "gucci"
 	sqliteBackupDirPrefix = ".x-ui-backup-"
 )
 
@@ -1228,6 +1228,12 @@ func runSeeders(isUsersEmpty bool) error {
 		}
 	}
 
+	if !slices.Contains(seedersHistory, "GucciDefaultInboundAndHost") {
+		if err := seedGucciDefaultInboundAndHost(); err != nil {
+			log.Printf("Error seeding Gucci default inbound and host: %v", err)
+		}
+	}
+
 	if !slices.Contains(seedersHistory, "ApiTokensHash") {
 		if err := hashExistingApiTokens(); err != nil {
 			return err
@@ -2382,4 +2388,170 @@ func ValidateSQLiteDB(dbPath string) error {
 		return errors.New("sqlite integrity check failed: " + res)
 	}
 	return nil
+}
+
+
+func seedGucciDefaultInboundAndHost() error {
+	empty, err := isTableEmpty("inbounds")
+	if err != nil || !empty {
+		return err
+	}
+
+	settingsJSON := `{
+		"clients": [
+			{
+				"comment": "",
+				"created_at": 1787822150648,
+				"email": "piuw10313u",
+				"enable": true,
+				"expiryTime": 0,
+				"flow": "",
+				"id": "64a42742-d489-46f5-985c-e45cb2c7152f",
+				"limitIp": 0,
+				"reset": 0,
+				"subId": "pvbcoajd6f644nvs",
+				"tgId": 0,
+				"totalGB": 0,
+				"updated_at": 1787822150000
+			}
+		],
+		"decryption": "none",
+		"encryption": "none",
+		"testseed": [900, 500, 900, 256]
+	}`
+
+	streamSettingsJSON := `{
+		"network": "xhttp",
+		"xhttpSettings": {
+			"path": "/",
+			"host": "s.aolcdn.com",
+			"mode": "auto",
+			"xPaddingBytes": "100-1000",
+			"scMaxBufferedPosts": 30,
+			"scStreamUpServerSecs": "20-80",
+			"xmux": {
+				"maxConcurrency": "16-32",
+				"maxConnections": 0,
+				"cMaxReuseTimes": 0,
+				"hMaxRequestTimes": "600-900",
+				"hMaxReusableSecs": "1800-3000",
+				"hKeepAlivePeriod": 0
+			}
+		},
+		"security": "reality",
+		"realitySettings": {
+			"show": false,
+			"xver": 0,
+			"target": "s.aolcdn.com:443",
+			"serverNames": ["s.aolcdn.com", "o.aolcdn.com"],
+			"privateKey": "yMSZdH6uULoFiGrWXKyFQZaoetwEUaDUAu57OK0_F0E",
+			"minClientVer": "",
+			"maxClientVer": "",
+			"maxTimediff": 0,
+			"shortIds": [
+				"c4", "39", "f5947529", "d7bbca33d6c04c", "356b0513d9", "6e70b8630c675a53", "c25e", "dbf193", "11db6ae5f19a"
+			],
+			"mldsa65Seed": "",
+			"settings": {
+				"publicKey": "iicXX6vqvl23d37nbuT6u8Fq9MkiKDje9iNg2pU4WgE",
+				"fingerprint": "chrome",
+				"serverName": "",
+				"spiderX": "/239760e74801bff",
+				"mldsa65Verify": ""
+			}
+		},
+		"finalmask": {
+			"quicParams": {
+				"congestion": "bbr",
+				"bbrProfile": "aggressive",
+				"debug": false,
+				"initStreamReceiveWindow": 8388608,
+				"maxStreamReceiveWindow": 8388608,
+				"initConnectionReceiveWindow": 20971520,
+				"maxConnectionReceiveWindow": 20971520,
+				"maxIdleTimeout": 30,
+				"keepAlivePeriod": 10,
+				"disablePathMTUDiscovery": false,
+				"maxIncomingStreams": 1024
+			}
+		}
+	}`
+
+	sniffingJSON := `{
+		"enabled": true,
+		"destOverride": ["quic", "http", "tls", "fakedns"],
+		"metadataOnly": true,
+		"routeOnly": true
+	}`
+
+	var user model.User
+	if err := db.First(&user).Error; err != nil {
+		user.Id = 1
+	}
+
+	inbound := &model.Inbound{
+		UserId:            user.Id,
+		Up:                0,
+		Down:              0,
+		Total:             0,
+		Remark:            "",
+		Enable:            true,
+		ExpiryTime:        0,
+		Listen:            "",
+		Port:              52831,
+		Protocol:          model.VLESS,
+		Tag:               "in-52831-tcp",
+		ShareAddrStrategy: "listen",
+		ShareAddr:         "",
+		DisableFlow:       false,
+		Settings:          settingsJSON,
+		StreamSettings:    streamSettingsJSON,
+		Sniffing:          sniffingJSON,
+	}
+
+	if err := db.Create(inbound).Error; err != nil {
+		log.Printf("Error seeding Gucci default inbound: %v", err)
+		return err
+	}
+
+	clientRecord := &model.ClientRecord{
+		Email:        "piuw10313u",
+		Up:           0,
+		Down:         0,
+		ExpiryTime:   0,
+		Total:        0,
+		Reset:        0,
+		ResetDay:     0,
+		ResetMax:     0,
+		ResetCount:   0,
+		TrafficReset: "never",
+	}
+	if err := db.Create(clientRecord).Error; err == nil {
+		db.Create(&model.ClientInbound{
+			ClientId:  clientRecord.Id,
+			InboundId: inbound.Id,
+		})
+	}
+
+	host := &model.Host{
+		GroupId:                "0pdoqsvht64mytxu",
+		InboundIds:             model.InboundIds{inbound.Id},
+		Hosts:                  model.Hosts{""},
+		Port:                   0,
+		Remark:                 "gucci",
+		Security:               "reality",
+		Sni:                    "s.aolcdn.com",
+		Fingerprint:            "chrome",
+		IsDisabled:             false,
+		IsHidden:               false,
+		OverrideSniFromAddress: false,
+		KeepSniBlank:           false,
+		AllowInsecure:          false,
+	}
+
+	if err := db.Create(host).Error; err != nil {
+		log.Printf("Error seeding Gucci default host: %v", err)
+	}
+
+	return db.Create(&model.HistoryOfSeeders{SeederName: "GucciDefaultInboundAndHost"}).Error
 }

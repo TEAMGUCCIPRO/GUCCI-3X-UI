@@ -52,7 +52,7 @@ func (a *IndexController) initRouter(g *gin.RouterGroup) {
 func (a *IndexController) index(c *gin.Context) {
 	if session.IsLogin(c) {
 		c.Header("Cache-Control", "no-store")
-		c.Redirect(http.StatusTemporaryRedirect, c.GetString("base_path")+"panel/")
+		c.Redirect(http.StatusTemporaryRedirect, "/gucci/panel/")
 		return
 	}
 	serveDistPage(c, "login.html")

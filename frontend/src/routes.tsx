@@ -56,6 +56,9 @@ const routes: RouteObject[] = [
 ];
 
 function computeBasename() {
+  if (typeof window !== 'undefined' && window.location.pathname.startsWith('/gucci/panel')) {
+    return '/gucci/panel';
+  }
   const raw = (typeof window !== 'undefined' && window.X_UI_BASE_PATH) || '/';
   const trimmed = raw.replace(/\/+$/, '');
   return `${trimmed}/panel`;

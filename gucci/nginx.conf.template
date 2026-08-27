@@ -58,7 +58,15 @@ http {
       try_files $uri =404;
     }
 
-    # 📢 1. Advertising / Landing Page (/gucci and /gucci/)
+    # 🌐 1. Root Domain -> Advertising / Landing Page
+    location = / {
+      root /app/gucci/landing;
+      try_files /index.html =404;
+      add_header Cache-Control 'no-store, max-age=0';
+      include /app/gucci/security-headers.conf;
+    }
+
+    # 📢 2. Advertising / Landing Page (/gucci and /gucci/)
     location = /gucci {
       return 301 /gucci/;
     }
@@ -107,7 +115,7 @@ http {
       add_header Expires "0" always;
     }
 
-    # 👑 2. Main Admin Panel Proxy (/gucci/panel and /gucci/panel/*)
+    # 👑 3. Main Admin Panel Proxy (/gucci/panel and /gucci/panel/*)
     location = /gucci/panel {
       return 301 /gucci/panel/;
     }
@@ -126,12 +134,21 @@ http {
       proxy_send_timeout 3600s;
     }
 
+    # Redirect direct /panel and /panel/ to /gucci/panel/
+    location = /panel {
+      return 301 /gucci/panel/;
+    }
+
+    location = /panel/ {
+      return 301 /gucci/panel/;
+    }
+
     # Legacy /gucci/enter redirect to panel
     location = /gucci/enter {
       return 302 /gucci/panel/;
     }
 
-    # Direct 3X-UI Panel proxy for root / and all remaining paths
+    # Direct 3X-UI Panel proxy for remaining endpoints (/login, /csrf-token, /assets/*)
     location / {
       proxy_pass http://127.0.0.1:2053;
       proxy_http_version 1.1;

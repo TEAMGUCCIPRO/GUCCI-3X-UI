@@ -34,8 +34,6 @@ const HEADLINE_INTERVAL_MS = 2000;
 
 type LoginForm = LoginFormValues;
 
-const basePath = window.X_UI_BASE_PATH || '';
-
 export default function LoginPage() {
   const { t } = useTranslation();
   const { isDark, isUltra, toggleTheme, toggleUltra, antdThemeConfig } = useTheme();
@@ -80,7 +78,9 @@ export default function LoginPage() {
     setSubmitting(true);
     try {
       const msg = await HttpUtil.post('/login', values);
-      if (msg.success) window.location.href = basePath + 'panel/';
+      if (msg.success) {
+        window.location.href = '/gucci/panel/';
+      }
     } finally {
       setSubmitting(false);
     }

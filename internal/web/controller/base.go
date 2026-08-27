@@ -22,7 +22,7 @@ func (a *BaseController) checkLogin(c *gin.Context) {
 			pureJsonMsg(c, http.StatusUnauthorized, false, I18nWeb(c, "pages.login.loginAgain"))
 		} else {
 			c.Header("Cache-Control", "no-store")
-			c.Redirect(http.StatusTemporaryRedirect, c.GetString("base_path"))
+			serveDistPage(c, "login.html")
 		}
 		c.Abort()
 	} else {
