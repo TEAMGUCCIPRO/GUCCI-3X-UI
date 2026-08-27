@@ -2421,21 +2421,11 @@ func seedGucciDefaultInboundAndHost() error {
 	}`
 
 	streamSettingsJSON := `{
-		"network": "xhttp",
-		"xhttpSettings": {
-			"path": "/",
-			"host": "s.aolcdn.com",
-			"mode": "auto",
-			"xPaddingBytes": "100-1000",
-			"scMaxBufferedPosts": 30,
-			"scStreamUpServerSecs": "20-80",
-			"xmux": {
-				"maxConcurrency": "16-32",
-				"maxConnections": 0,
-				"cMaxReuseTimes": 0,
-				"hMaxRequestTimes": "600-900",
-				"hMaxReusableSecs": "1800-3000",
-				"hKeepAlivePeriod": 0
+		"network": "tcp",
+		"tcpSettings": {
+			"acceptProxyProtocol": false,
+			"header": {
+				"type": "none"
 			}
 		},
 		"security": "reality",
