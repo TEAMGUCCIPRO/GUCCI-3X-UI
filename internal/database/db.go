@@ -2449,21 +2449,6 @@ func seedGucciDefaultInboundAndHost() error {
 				"spiderX": "/239760e74801bff",
 				"mldsa65Verify": ""
 			}
-		},
-		"finalmask": {
-			"quicParams": {
-				"congestion": "bbr",
-				"bbrProfile": "aggressive",
-				"debug": false,
-				"initStreamReceiveWindow": 8388608,
-				"maxStreamReceiveWindow": 8388608,
-				"initConnectionReceiveWindow": 20971520,
-				"maxConnectionReceiveWindow": 20971520,
-				"maxIdleTimeout": 30,
-				"keepAlivePeriod": 10,
-				"disablePathMTUDiscovery": false,
-				"maxIncomingStreams": 1024
-			}
 		}
 	}`
 
