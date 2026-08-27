@@ -2398,23 +2398,7 @@ func seedGucciDefaultInboundAndHost() error {
 	}
 
 	settingsJSON := `{
-		"clients": [
-			{
-				"comment": "",
-				"created_at": 1787822150648,
-				"email": "piuw10313u",
-				"enable": true,
-				"expiryTime": 0,
-				"flow": "",
-				"id": "64a42742-d489-46f5-985c-e45cb2c7152f",
-				"limitIp": 0,
-				"reset": 0,
-				"subId": "pvbcoajd6f644nvs",
-				"tgId": 0,
-				"totalGB": 0,
-				"updated_at": 1787822150000
-			}
-		],
+		"clients": [],
 		"decryption": "none",
 		"encryption": "none",
 		"testseed": [900, 500, 900, 256]
@@ -2487,20 +2471,6 @@ func seedGucciDefaultInboundAndHost() error {
 	if err := db.Create(inbound).Error; err != nil {
 		log.Printf("Error seeding Gucci default inbound: %v", err)
 		return err
-	}
-
-	clientRecord := &model.ClientRecord{
-		Email:        "piuw10313u",
-		SubID:        "pvbcoajd6f644nvs",
-		UUID:         "64a42742-d489-46f5-985c-e45cb2c7152f",
-		Enable:       true,
-		TrafficReset: "never",
-	}
-	if err := db.Create(clientRecord).Error; err == nil {
-		db.Create(&model.ClientInbound{
-			ClientId:  clientRecord.Id,
-			InboundId: inbound.Id,
-		})
 	}
 
 	host := &model.Host{

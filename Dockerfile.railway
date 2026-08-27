@@ -70,6 +70,6 @@ ENV XUI_IN_DOCKER=true \
     XUI_DATA_ROOT=/gucci \
     XUI_FORCE_INITIAL_CREDENTIALS=false
 
-EXPOSE 1 8080
+EXPOSE 1
 ENTRYPOINT ["/app/gucci/entrypoint.sh"]
 CMD []
