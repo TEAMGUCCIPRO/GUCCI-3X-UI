@@ -58,12 +58,21 @@ http {
       try_files $uri =404;
     }
 
-    # Optional Landing Page
-    location = /landing {
+    # 📢 1. Advertising / Landing Page (/gucci and /gucci/)
+    location = /gucci {
+      return 301 /gucci/;
+    }
+
+    location = /gucci/ {
       root /app/gucci/landing;
       try_files /index.html =404;
       add_header Cache-Control 'no-store, max-age=0';
       include /app/gucci/security-headers.conf;
+    }
+
+    # Optional alias /landing -> /gucci/
+    location = /landing {
+      return 301 /gucci/;
     }
 
     # Compatibility transport for Xray WS
@@ -98,7 +107,7 @@ http {
       add_header Expires "0" always;
     }
 
-    # Proxy /gucci/panel and /gucci/panel/* directly to 3X-UI /panel/
+    # 👑 2. Main Admin Panel Proxy (/gucci/panel and /gucci/panel/*)
     location = /gucci/panel {
       return 301 /gucci/panel/;
     }
@@ -117,27 +126,9 @@ http {
       proxy_send_timeout 3600s;
     }
 
-    # Proxy /gucci/enter and /gucci/ directly to 3X-UI root /
+    # Legacy /gucci/enter redirect to panel
     location = /gucci/enter {
       return 302 /gucci/panel/;
-    }
-
-    location = /gucci {
-      return 301 /gucci/;
-    }
-
-    location ~ ^/gucci(?<subpath>/.*)?$ {
-      proxy_pass http://127.0.0.1:2053$subpath;
-      proxy_http_version 1.1;
-      proxy_set_header Host $host;
-      proxy_set_header Upgrade $http_upgrade;
-      proxy_set_header Connection $connection_upgrade;
-      proxy_set_header X-Forwarded-Host $host;
-      proxy_set_header X-Forwarded-Proto $http_x_forwarded_proto;
-      proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
-      proxy_set_header X-Real-IP $remote_addr;
-      proxy_read_timeout 3600s;
-      proxy_send_timeout 3600s;
     }
 
     # Direct 3X-UI Panel proxy for root / and all remaining paths
