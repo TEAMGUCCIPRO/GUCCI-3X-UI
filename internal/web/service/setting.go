@@ -1417,10 +1417,10 @@ func (s *SettingService) BuildSubURIBase(host string) string {
 		subDomain = extractHostname(host)
 	}
 	scheme := "http"
-	if subTLS {
+	if subTLS || strings.HasPrefix(host, "https://") || strings.Contains(host, "railway.app") || os.Getenv("XUI_IN_DOCKER") == "true" {
 		scheme = "https"
 	}
-	if (subPort == 443 && subTLS) || (subPort == 80 && !subTLS) {
+	if subPort == 2096 || (subPort == 443 && subTLS) || (subPort == 80 && !subTLS) || os.Getenv("XUI_IN_DOCKER") == "true" {
 		return scheme + "://" + subDomain
 	}
 	return fmt.Sprintf("%s://%s:%d", scheme, subDomain, subPort)

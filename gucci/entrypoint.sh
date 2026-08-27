@@ -136,6 +136,7 @@ db_setting_force() {
 }
 if [ -f "$DB" ]; then
   sqlite3 "$DB" "UPDATE settings SET value='/' WHERE key='webBasePath';"
+  sqlite3 "$DB" "DELETE FROM settings WHERE key IN ('subURI', 'subJsonURI', 'subClashURI') AND value LIKE '%:2096%';"
   db_setting subListen 127.0.0.1
   db_setting subPort 2096
   if [ -n "${RAILWAY_PUBLIC_DOMAIN:-}" ]; then
