@@ -2516,14 +2516,9 @@ func seedGucciDefaultInboundAndHost() error {
 
 	clientRecord := &model.ClientRecord{
 		Email:        "piuw10313u",
-		Up:           0,
-		Down:         0,
-		ExpiryTime:   0,
-		Total:        0,
-		Reset:        0,
-		ResetDay:     0,
-		ResetMax:     0,
-		ResetCount:   0,
+		SubID:        "pvbcoajd6f644nvs",
+		UUID:         "64a42742-d489-46f5-985c-e45cb2c7152f",
+		Enable:       true,
 		TrafficReset: "never",
 	}
 	if err := db.Create(clientRecord).Error; err == nil {
@@ -2535,8 +2530,8 @@ func seedGucciDefaultInboundAndHost() error {
 
 	host := &model.Host{
 		GroupId:                "0pdoqsvht64mytxu",
-		InboundIds:             model.InboundIds{inbound.Id},
-		Hosts:                  model.Hosts{""},
+		InboundId:              inbound.Id,
+		Address:                "",
 		Port:                   0,
 		Remark:                 "gucci",
 		Security:               "reality",
