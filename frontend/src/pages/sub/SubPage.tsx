@@ -309,9 +309,6 @@ export default function SubPage() {
                   <div style={{ fontSize: '22px', fontWeight: 'bold', color: '#f3e8ff', marginBottom: '8px', letterSpacing: '1px', textShadow: '0 0 10px rgba(192, 132, 252, 0.8)' }}>
                     ⚡️ 👑 G U C C I T E A M 👑 ⚡️
                   </div>
-                  <div style={{ fontSize: '15px', fontWeight: '600', color: '#e9d5ff', marginBottom: '12px' }}>
-                    ✨ ساخته شده توسط تیم G U C C I ✨
-                  </div>
                   <div style={{ fontSize: '13px', color: '#d8b4fe', marginBottom: '18px' }}>
                     برای دریافت پنل و اطلاعات بیشتر حتما با آی‌دی‌های زیر در تلگرام با ما در ارتباط باشید:
                   </div>
