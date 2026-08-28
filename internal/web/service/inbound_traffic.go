@@ -175,6 +175,13 @@ func (s *InboundService) addClientTraffic(tx *gorm.DB, traffics []*xray.ClientTr
 		if !ok || (t.Up == 0 && t.Down == 0) {
 			continue
 		}
+		var mult float64 = 1.0
+		var rec model.ClientRecord
+		if err := tx.Where("email = ?", ct.Email).First(&rec).Error; err == nil && rec.TrafficMultiplier > 0 {
+			mult = rec.TrafficMultiplier
+		}
+		upVal := int64(float64(t.Up) * mult)
+		downVal := int64(float64(t.Down) * mult)
 		if err = tx.Exec(
 			fmt.Sprintf(
 				`UPDATE client_traffics SET up = %s, down = %s, last_online = %s WHERE email = ?`,
@@ -182,7 +189,7 @@ func (s *InboundService) addClientTraffic(tx *gorm.DB, traffics []*xray.ClientTr
 				database.ClampedAddExpr("down"),
 				database.GreatestExpr("last_online", "?"),
 			),
-			t.Up, t.Down, now, ct.Email,
+			upVal, downVal, now, ct.Email,
 		).Error; err != nil {
 			logger.Warning("AddClientTraffic update data ", err)
 		}

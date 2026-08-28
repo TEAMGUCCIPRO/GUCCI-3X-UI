@@ -744,6 +744,7 @@
       "actions": "عملیات",
       "totalGB": "سقف حجم (گیگابایت)",
       "totalGBDesc": "سهمیه‌ی حجم مصرفی کلاینت. ۰ = نامحدود",
+      "trafficMultiplier": "ضریب مصرف ترافیک",
       "expiryTime": "انقضا",
       "addClients": "افزودن کلاینت‌ها",
       "limitIp": "محدودیت IP",

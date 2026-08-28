@@ -146,6 +146,7 @@ const EMPTY: Values = {
   security: 'auto',
   reverseTag: '',
   totalGB: 0,
+  trafficMultiplier: 1.0,
   expiryDate: 0,
   delayedStart: false,
   delayedDays: 0,
@@ -359,6 +360,7 @@ export default function ClientFormModal({
             : client.security,
         reverseTag: client.reverse?.tag || '',
         totalGB: bytesToGB(client.totalGB || 0),
+        trafficMultiplier: Number(client?.trafficMultiplier) || 1.0,
         reset: Number(client.reset) || 0,
         resetDay: Number(client.resetDay) || 0,
         resetMax: Number(client.resetMax) || 0,
@@ -636,6 +638,7 @@ export default function ClientFormModal({
       security: values.security,
       reverseTag: values.reverseTag,
       totalGB: values.totalGB,
+      trafficMultiplier: values.trafficMultiplier,
       delayedStart: values.delayedStart,
       delayedDays: values.delayedDays,
       reset: values.reset,
@@ -669,6 +672,7 @@ export default function ClientFormModal({
       flow: showFlow ? values.flow || '' : '',
       security: showSecurity ? values.security || 'auto' : 'auto',
       totalGB: totalBytes,
+      trafficMultiplier: Number(values.trafficMultiplier) || 1.0,
       expiryTime,
       reset: Number(values.reset) || 0,
       resetDay: Number(values.resetDay) || 0,
@@ -856,6 +860,31 @@ export default function ClientFormModal({
                             transform={{ output: (v) => Number(v) || 0 }}
                           >
                             <InputNumber min={0} step={1} style={{ width: '100%' }} />
+                          </FormField>
+                        </Col>
+                        <Col xs={24} md={6}>
+                          <FormField
+                            name="trafficMultiplier"
+                            label={t('pages.clients.trafficMultiplier') || "ضریب مصرف ترافیک"}
+                            transform={{ output: (v) => Number(v) || 1.0 }}
+                          >
+                            <Select style={{ width: '100%' }}>
+                              <Select.Option value={0.5}>0.5</Select.Option>
+                              <Select.Option value={1.0}>1.0</Select.Option>
+                              <Select.Option value={1.5}>1.5</Select.Option>
+                              <Select.Option value={2.0}>2.0</Select.Option>
+                              <Select.Option value={2.5}>2.5</Select.Option>
+                              <Select.Option value={3.0}>3.0</Select.Option>
+                              <Select.Option value={3.5}>3.5</Select.Option>
+                              <Select.Option value={4.0}>4.0</Select.Option>
+                              <Select.Option value={4.5}>4.5</Select.Option>
+                              <Select.Option value={5.0}>5.0</Select.Option>
+                              <Select.Option value={6.0}>6.0</Select.Option>
+                              <Select.Option value={7.0}>7.0</Select.Option>
+                              <Select.Option value={8.0}>8.0</Select.Option>
+                              <Select.Option value={9.0}>9.0</Select.Option>
+                              <Select.Option value={10.0}>10.0</Select.Option>
+                            </Select>
                           </FormField>
                         </Col>
                         <Col xs={24} md={6}>
