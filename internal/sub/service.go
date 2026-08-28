@@ -370,8 +370,16 @@ func (s *SubService) getSubs(subId string) ([]string, []string, int64, xray.Clie
 			firstEmail = uniqueEmails[0]
 		}
 
+		clientRec := s.lookupClient(nil, firstEmail)
+		if clientRec.SubID == "" {
+			clientRec.SubID = subId
+		}
+		if clientRec.Email == "" {
+			clientRec.Email = firstEmail
+		}
+
 		ctx := remarkContext{
-			client: model.Client{Email: firstEmail, SubID: subId},
+			client: clientRec,
 			stats:  traffic,
 		}
 		secondRemark := expandRemarkVars("{{STATUS_EMOJI}} 👤 {{EMAIL}} | 📊 {{TRAFFIC_LEFT}} | 🕔 {{TIME_LEFT}}", ctx)

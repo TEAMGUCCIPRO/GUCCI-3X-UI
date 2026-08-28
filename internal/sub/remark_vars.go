@@ -65,15 +65,8 @@ func remarkTokens(seg string) []remarkToken {
 // information, so it is dropped rather than printed as "∞" (see expandRemarkVars).
 const unlimitedMark = "∞"
 
-// unlimitedDropTokens are the tokens that render unlimitedMark for an unlimited
-// client. A "|"-separated segment whose only value comes from one of these is
-// dropped whole when unlimited, so the operator never sees "📊∞|⏳∞D".
-var unlimitedDropTokens = map[string]bool{
-	"TRAFFIC_LEFT":  true,
-	"TRAFFIC_TOTAL": true,
-	"DAYS_LEFT":     true,
-	"TIME_LEFT":     true,
-}
+// unlimitedDropTokens are tokens that would be dropped if unlimited, but we keep them so quota/time stay visible.
+var unlimitedDropTokens = map[string]bool{}
 
 // uiTokenMap translates user-friendly single-brace tokens (used in the frontend
 // Remark/Host Name fields) to their internal double-brace equivalents. Tokens
