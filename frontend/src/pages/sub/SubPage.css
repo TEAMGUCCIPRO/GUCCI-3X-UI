@@ -5,6 +5,57 @@
   background: var(--bg-page);
 }
 
+@keyframes gucciPulseGlow {
+  0% {
+    border-color: #a855f7;
+    box-shadow: 0 0 15px rgba(168, 85, 247, 0.4), inset 0 0 15px rgba(168, 85, 247, 0.2);
+  }
+  50% {
+    border-color: #ec4899;
+    box-shadow: 0 0 30px rgba(236, 72, 153, 0.6), inset 0 0 20px rgba(236, 72, 153, 0.3);
+  }
+  100% {
+    border-color: #a855f7;
+    box-shadow: 0 0 15px rgba(168, 85, 247, 0.4), inset 0 0 15px rgba(168, 85, 247, 0.2);
+  }
+}
+
+@keyframes gucciGradientShift {
+  0% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}
+
+.gucci-promo-banner {
+  background: linear-gradient(-45deg, #2e1065, #581c87, #7e22ce, #3b0764);
+  background-size: 300% 300%;
+  animation: gucciGradientShift 8s ease infinite, gucciPulseGlow 4s ease-in-out infinite;
+  border-radius: 20px;
+  padding: 24px 16px;
+  margin-bottom: 24px;
+  text-align: center;
+  position: relative;
+  overflow: hidden;
+}
+
+.gucci-promo-banner .promo-btn {
+  background: linear-gradient(135deg, #7e22ce 0%, #a855f7 100%) !important;
+  border: 1px solid #c084fc !important;
+  border-radius: 12px !important;
+  height: 44px !important;
+  font-size: 14px !important;
+  font-weight: 700 !important;
+  color: #ffffff !important;
+  transition: all 0.3s ease !important;
+  box-shadow: 0 4px 15px rgba(126, 34, 206, 0.4) !important;
+}
+
+.gucci-promo-banner .promo-btn:hover {
+  transform: translateY(-2px) scale(1.02);
+  box-shadow: 0 6px 20px rgba(168, 85, 247, 0.7) !important;
+  background: linear-gradient(135deg, #9333ea 0%, #c084fc 100%) !important;
+}
+
 .subscription-page.is-dark {
   --bg-page: #1a1b1f;
   --bg-card: #23252b;
@@ -35,7 +86,37 @@
 }
 
 .info-table {
-  margin-top: 4px;
+  margin-top: 12px;
+  border-radius: 16px;
+  overflow: hidden;
+  border: 1px solid rgba(168, 85, 247, 0.4);
+  box-shadow: 0 0 20px rgba(126, 34, 206, 0.25);
+  background: rgba(20, 10, 35, 0.6);
+}
+
+.info-table .ant-descriptions-view {
+  border-color: rgba(168, 85, 247, 0.3) !important;
+}
+
+.info-table .ant-descriptions-row {
+  border-bottom: 1px solid rgba(168, 85, 247, 0.2) !important;
+}
+
+.info-table .ant-descriptions-item-label {
+  background: linear-gradient(90deg, rgba(88, 28, 135, 0.5) 0%, rgba(126, 34, 206, 0.25) 100%) !important;
+  color: #d8b4fe !important;
+  font-weight: 700 !important;
+  font-size: 13px !important;
+  border-inline-end: 1px solid rgba(168, 85, 247, 0.3) !important;
+  padding: 12px 16px !important;
+}
+
+.info-table .ant-descriptions-item-content {
+  background: rgba(15, 10, 25, 0.7) !important;
+  color: #f3e8ff !important;
+  font-size: 13px !important;
+  font-weight: 600 !important;
+  padding: 12px 16px !important;
 }
 
 .links-section {
@@ -57,28 +138,28 @@
   display: flex;
   align-items: center;
   gap: 8px;
-  padding: 8px 12px;
-  border-radius: 10px;
-  background: rgba(0, 0, 0, 0.03);
-  border: 1px solid rgba(0, 0, 0, 0.08);
-  transition:
-    background 120ms ease,
-    border-color 120ms ease;
+  padding: 10px 14px;
+  border-radius: 12px;
+  background: linear-gradient(135deg, rgba(46, 16, 101, 0.6) 0%, rgba(88, 28, 135, 0.4) 100%);
+  border: 1px solid rgba(192, 132, 252, 0.4);
+  box-shadow: 0 0 10px rgba(168, 85, 247, 0.2);
+  transition: all 0.3s ease;
 }
 
 .sub-link-row:hover {
-  background: rgba(0, 0, 0, 0.05);
-  border-color: rgba(0, 0, 0, 0.14);
+  border-color: #ec4899;
+  box-shadow: 0 0 15px rgba(236, 72, 153, 0.5);
+  transform: translateY(-1px);
 }
 
 .is-dark .sub-link-row {
-  background: rgba(0, 0, 0, 0.2);
-  border-color: rgba(255, 255, 255, 0.1);
+  background: linear-gradient(135deg, rgba(20, 10, 35, 0.8) 0%, rgba(46, 16, 101, 0.6) 100%);
+  border-color: rgba(168, 85, 247, 0.4);
 }
 
 .is-dark .sub-link-row:hover {
-  background: rgba(0, 0, 0, 0.3);
-  border-color: rgba(255, 255, 255, 0.2);
+  border-color: #ec4899;
+  box-shadow: 0 0 20px rgba(236, 72, 153, 0.6);
 }
 
 .sub-link-tag {

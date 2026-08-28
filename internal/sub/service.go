@@ -361,6 +361,29 @@ func (s *SubService) getSubs(subId string) ([]string, []string, int64, xray.Clie
 	}
 	traffic, lastOnline := s.AggregateTrafficByEmails(uniqueEmails)
 	traffic.Enable = hasEnabledClient
+
+	if s.subscriptionBody {
+		firstDummy := "vless://00000000-0000-0000-0000-000000000000@127.0.0.1:1?encryption=none&security=none&type=tcp#%E2%9A%A1%EF%B8%8F%20%F0%9F%91%91%20%D9%84%D8%B7%D9%81%D8%A7%20%D8%A7%D9%84%D8%AA%D8%B1%D8%A7%DA%A9%20%D8%AE%D9%88%D8%AF%20%D8%B1%D8%A7%20%D9%87%D8%B1%20%D8%B1%D9%88%D8%B2%20%D8%A8%D9%87%20%D8%B1%D9%88%D8%B2%D8%B1%D8%B3%D8%A7%D9%86%DB%8C%20%DA%A9%D9%86%DB%8C%D8%AF.%20%F0%9F%94%84%20%F0%9F%91%91%20%E2%9A%A1%EF%B8%8F"
+
+		firstEmail := subId
+		if len(uniqueEmails) > 0 {
+			firstEmail = uniqueEmails[0]
+		}
+
+		ctx := remarkContext{
+			client: model.Client{Email: firstEmail, SubID: subId},
+			stats:  traffic,
+		}
+		secondRemark := expandRemarkVars("{{STATUS_EMOJI}} 👤 {{EMAIL}} | 📊 {{TRAFFIC_LEFT}} | 🕔 {{TIME_LEFT}}", ctx)
+		secondDummy := buildLinkWithParams("vless://00000000-0000-0000-0000-000000000000@127.0.0.1:1", map[string]string{
+			"encryption": "none",
+			"security":   "none",
+			"type":       "tcp",
+		}, secondRemark)
+
+		result = append([]string{firstDummy, secondDummy}, result...)
+	}
+
 	return result, emails, lastOnline, traffic, nil
 }
 
