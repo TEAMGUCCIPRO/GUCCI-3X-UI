@@ -77,11 +77,18 @@ func subMetadataUsesPlaceholders(values ...string) bool {
 }
 
 func (a *SUBController) metadataForSubRequest(getSubReq func() *SubService, subID string, fallbackProfileURL string) renderedSubMetadata {
+	subReq := getSubReq()
+	_, emails, _, traffic, _ := subReq.getSubs(subID)
+	clientEmail := subID
+	if len(emails) > 0 {
+		clientEmail = emails[0]
+	}
+	dynamicTitle := FormatGucciDynamicRemark(clientEmail, traffic)
+
 	var context remarkContext
 	var hasContext bool
 	if subMetadataUsesPlaceholders(a.subTitle, a.subSupportUrl, a.subProfileUrl, a.subAnnounce) {
 		var err error
-		subReq := getSubReq()
 		context, hasContext, err = subReq.subscriptionTemplateContextBySubID(subID)
 		if err != nil {
 			logger.Warning("sub: load template contexts for subscription metadata:", err)
@@ -95,7 +102,7 @@ func (a *SUBController) metadataForSubRequest(getSubReq func() *SubService, subI
 	}
 	data := subPlaceholderData{SubID: subID, Context: context, HasCtx: hasContext}
 	return renderedSubMetadata{
-		Title:      renderSubPlaceholders(a.subTitle, data),
+		Title:      dynamicTitle,
 		SupportURL: renderSubPlaceholders(a.subSupportUrl, subPlaceholderData{SubID: subID, Context: context, HasCtx: hasContext, Escape: true}),
 		ProfileURL: profileURL,
 		Announce:   renderSubPlaceholders(a.subAnnounce, data),

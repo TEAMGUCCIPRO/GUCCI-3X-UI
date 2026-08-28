@@ -129,3 +129,114 @@
 .toolbar-btn .anticon {
   font-size: 18px;
 }
+
+/* Gucci Royal Purple Gaming Notification Card */
+.gucci-royal-banner {
+  background: linear-gradient(135deg, #1e0036 0%, #3b0764 40%, #581c87 70%, #2e1065 100%);
+  border: 2px solid #a855f7;
+  border-radius: 16px;
+  padding: 20px;
+  margin-bottom: 20px;
+  box-shadow: 0 0 25px rgba(168, 85, 247, 0.4), inset 0 0 15px rgba(216, 180, 254, 0.2);
+  position: relative;
+  overflow: hidden;
+  color: #ffffff;
+  direction: rtl;
+  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.8);
+}
+
+.gucci-royal-banner::before {
+  content: "";
+  position: absolute;
+  top: -50%;
+  left: -50%;
+  width: 200%;
+  height: 200%;
+  background: radial-gradient(circle, rgba(192, 132, 252, 0.15) 0%, transparent 60%);
+  animation: gucciGlowPulse 4s infinite alternate ease-in-out;
+  pointer-events: none;
+}
+
+@keyframes gucciGlowPulse {
+  0% { transform: scale(0.8) rotate(0deg); opacity: 0.5; }
+  100% { transform: scale(1.2) rotate(10deg); opacity: 1; }
+}
+
+.gucci-title-box {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  margin-bottom: 12px;
+  text-align: center;
+}
+
+.gucci-lightning-icon {
+  font-size: 24px;
+  animation: gucciLightningFlash 1.5s infinite alternate ease-in-out;
+}
+
+@keyframes gucciLightningFlash {
+  0% { opacity: 0.3; transform: scale(0.9); filter: drop-shadow(0 0 2px #c084fc); }
+  100% { opacity: 1; transform: scale(1.2); filter: drop-shadow(0 0 12px #f0abfc); }
+}
+
+.gucci-royal-title {
+  font-size: 20px;
+  font-weight: 800;
+  letter-spacing: 2px;
+  background: linear-gradient(90deg, #f0abfc, #e879f9, #c084fc, #a855f7, #f0abfc);
+  background-size: 200% auto;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  animation: gucciGradientText 3s linear infinite;
+}
+
+@keyframes gucciGradientText {
+  to { background-position: 200% center; }
+}
+
+.gucci-sub-text {
+  text-align: center;
+  font-size: 14px;
+  font-weight: 600;
+  margin-bottom: 16px;
+  color: #e9d5ff;
+  line-height: 1.6;
+}
+
+.gucci-links-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 12px;
+}
+
+.gucci-link-card {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(192, 132, 252, 0.3);
+  padding: 10px 14px;
+  border-radius: 12px;
+  color: #ffffff;
+  text-decoration: none;
+  font-weight: 600;
+  font-size: 13px;
+  backdrop-filter: blur(5px);
+  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.gucci-link-card:hover {
+  background: rgba(168, 85, 247, 0.35);
+  border-color: #d8b4fe;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 15px rgba(168, 85, 247, 0.5);
+  color: #ffffff;
+}
+
+.gucci-link-icon {
+  width: 22px;
+  height: 22px;
+  flex-shrink: 0;
+}

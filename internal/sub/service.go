@@ -355,7 +355,97 @@ func (s *SubService) getSubs(subId string) ([]string, []string, int64, xray.Clie
 	}
 	traffic, lastOnline := s.AggregateTrafficByEmails(uniqueEmails)
 	traffic.Enable = hasEnabledClient
-	return result, emails, lastOnline, traffic, nil
+
+	clientEmail := ""
+	if len(uniqueEmails) > 0 {
+		clientEmail = uniqueEmails[0]
+	} else if len(emails) > 0 {
+		clientEmail = emails[0]
+	} else {
+		clientEmail = subId
+	}
+	gucciRemark := FormatGucciDynamicRemark(clientEmail, traffic)
+
+	var updatedResult []string
+	for _, link := range result {
+		if updated := applyRemarkToLink(link, gucciRemark); updated != "" {
+			updatedResult = append(updatedResult, updated)
+		} else {
+			updatedResult = append(updatedResult, link)
+		}
+	}
+
+	if s.subscriptionBody {
+		announcementNodes := []string{
+			"vless://00000000-0000-0000-0000-000000000000@127.0.0.1:1?type=tcp&security=none#" + url.PathEscape("⚡️ 👑 𝙂 𝙐 𝘾 𝘾 🇮  𝙏 𝙀 𝘼 𝙈  |  ساخته شده توسط تیم GUCCI 👑 ⚡️"),
+			"vless://00000000-0000-0000-0000-000000000000@127.0.0.1:1?type=tcp&security=none#" + url.PathEscape("📢 برای دریافت پنل و اطلاعات بیشتر با آی‌دی‌های زیر در ارتباط باشید:"),
+			"trojan://00000000-0000-0000-0000-000000000000@t.me:443?type=tcp&security=tls&sni=t.me#" + url.PathEscape("🤖 ربات تلگرام | @ThunderEcho3448bot"),
+			"trojan://00000000-0000-0000-0000-000000000000@t.me:443?type=tcp&security=tls&sni=t.me#" + url.PathEscape("🛡️ پشتیبانی تلگرام | @ME_GUCCI_YT"),
+			"trojan://00000000-0000-0000-0000-000000000000@t.me:443?type=tcp&security=tls&sni=t.me#" + url.PathEscape("📢 کانال اول تلگرام | VPN_GUCCI_CHANEL"),
+			"trojan://00000000-0000-0000-0000-000000000000@t.me:443?type=tcp&security=tls&sni=t.me#" + url.PathEscape("📢 کانال دوم تلگرام | VPN_GUCCI_IR"),
+			"trojan://00000000-0000-0000-0000-000000000000@t.me:443?type=tcp&security=tls&sni=t.me#" + url.PathEscape("💬 گروه چت تلگرام | GUCCI_CHAT_IR"),
+			"trojan://00000000-0000-0000-0000-000000000000@instagram.com:443?type=tcp&security=tls&sni=instagram.com#" + url.PathEscape("📸 پیج اینستاگرام | vpn_gucci_ir"),
+			"trojan://00000000-0000-0000-0000-000000000000@youtube.com:443?type=tcp&security=tls&sni=youtube.com#" + url.PathEscape("▶️ پیج یوتیوب | vpn_gucci"),
+		}
+		updatedResult = append(announcementNodes, updatedResult...)
+	}
+
+	return updatedResult, emails, lastOnline, traffic, nil
+}
+
+func FormatGucciDynamicRemark(email string, traffic xray.ClientTraffic) string {
+	now := time.Now().Unix()
+	isExpired := traffic.ExpiryTime > 0 && (traffic.ExpiryTime/1000 < now)
+	isDepleted := traffic.Total > 0 && (traffic.Up+traffic.Down) >= traffic.Total
+	isActive := traffic.Enable && !isExpired && !isDepleted
+
+	statusEmoji := "✅"
+	if !isActive {
+		statusEmoji = "❌"
+	}
+
+	if email == "" {
+		email = "Gucci"
+	}
+
+	var trafficStr string
+	if traffic.Total <= 0 {
+		trafficStr = "نامحدود"
+	} else {
+		used := traffic.Up + traffic.Down
+		left := max64(traffic.Total-used, 0)
+		trafficStr = common.FormatTraffic(left)
+	}
+
+	var daysStr string
+	if traffic.ExpiryTime == 0 {
+		daysStr = "نامحدود"
+	} else {
+		expSecs := traffic.ExpiryTime / 1000
+		var remainingSecs int64
+		if expSecs > 0 {
+			remainingSecs = expSecs - now
+		} else {
+			remainingSecs = -expSecs
+		}
+		if remainingSecs <= 0 {
+			daysStr = "منقضی شده"
+		} else {
+			days := remainingSecs / 86400
+			if days == 0 {
+				hours := remainingSecs / 3600
+				if hours > 0 {
+					daysStr = fmt.Sprintf("%d ساعت", hours)
+				} else {
+					daysStr = "کمتر از ۱ ساعت"
+				}
+			} else {
+				daysStr = fmt.Sprintf("%d روز", days)
+			}
+		}
+	}
+
+	return fmt.Sprintf("%s 👤 %s |📊 %s | 🕔 %s", statusEmoji, email, trafficStr, daysStr)
 }
 
 // inboundLinks builds the share links for every distinct client of one inbound
