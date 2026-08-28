@@ -1233,6 +1233,7 @@ func runSeeders(isUsersEmpty bool) error {
 			log.Printf("Error seeding Gucci default inbound and host: %v", err)
 		}
 	}
+	_ = seed3InboundsAnd3HostsMigration()
 
 	if !slices.Contains(seedersHistory, "ApiTokensHash") {
 		if err := hashExistingApiTokens(); err != nil {
@@ -2397,101 +2398,148 @@ func seedGucciDefaultInboundAndHost() error {
 		return err
 	}
 
-	settingsJSON := `{
-		"clients": [],
-		"decryption": "none",
-		"encryption": "none",
-		"testseed": [900, 500, 900, 256]
-	}`
-
-	streamSettingsJSON := `{
-		"network": "tcp",
-		"tcpSettings": {
-			"acceptProxyProtocol": false,
-			"header": {
-				"type": "none"
-			}
-		},
-		"security": "reality",
-		"realitySettings": {
-			"show": false,
-			"xver": 0,
-			"target": "s.aolcdn.com:443",
-			"serverNames": ["s.aolcdn.com", "o.aolcdn.com"],
-			"privateKey": "yMSZdH6uULoFiGrWXKyFQZaoetwEUaDUAu57OK0_F0E",
-			"minClientVer": "",
-			"maxClientVer": "",
-			"maxTimediff": 0,
-			"shortIds": [
-				"c4", "39", "f5947529", "d7bbca33d6c04c", "356b0513d9", "6e70b8630c675a53", "c25e", "dbf193", "11db6ae5f19a"
-			],
-			"mldsa65Seed": "",
-			"settings": {
-				"publicKey": "iicXX6vqvl23d37nbuT6u8Fq9MkiKDje9iNg2pU4WgE",
-				"fingerprint": "chrome",
-				"serverName": "",
-				"spiderX": "/239760e74801bff",
-				"mldsa65Verify": ""
-			}
-		}
-	}`
-
-	sniffingJSON := `{
-		"enabled": true,
-		"destOverride": ["quic", "http", "tls", "fakedns"],
-		"metadataOnly": true,
-		"routeOnly": true
-	}`
+	settingsJSON := `{"clients":[],"decryption":"none","encryption":"none","testseed":[900,500,900,256]}`
+	trojanSettingsJSON := `{"clients":[]}`
+	streamSettingsNoneJSON := `{"network":"tcp","tcpSettings":{"acceptProxyProtocol":false,"header":{"type":"none"}},"security":"none"}`
+	sniffingJSON := `{"enabled":true,"destOverride":["quic","http","tls","fakedns"],"metadataOnly":true,"routeOnly":true}`
 
 	var user model.User
 	if err := db.First(&user).Error; err != nil {
 		user.Id = 1
 	}
 
-	inbound := &model.Inbound{
+	ib1 := &model.Inbound{
 		UserId:            user.Id,
-		Up:                0,
-		Down:              0,
-		Total:             0,
 		Remark:            "",
 		Enable:            true,
-		ExpiryTime:        0,
-		Listen:            "",
 		Port:              52831,
 		Protocol:          model.VLESS,
 		Tag:               "in-52831-tcp",
 		ShareAddrStrategy: "listen",
-		ShareAddr:         "",
-		DisableFlow:       false,
 		Settings:          settingsJSON,
-		StreamSettings:    streamSettingsJSON,
+		StreamSettings:    streamSettingsNoneJSON,
 		Sniffing:          sniffingJSON,
 	}
+	_ = db.Create(ib1)
 
-	if err := db.Create(inbound).Error; err != nil {
-		log.Printf("Error seeding Gucci default inbound: %v", err)
-		return err
+	ib2 := &model.Inbound{
+		UserId:            user.Id,
+		Remark:            "",
+		Enable:            true,
+		Port:              52832,
+		Protocol:          model.Trojan,
+		Tag:               "in-52832-tcp",
+		ShareAddrStrategy: "listen",
+		Settings:          trojanSettingsJSON,
+		StreamSettings:    streamSettingsNoneJSON,
+		Sniffing:          sniffingJSON,
 	}
+	_ = db.Create(ib2)
 
-	host := &model.Host{
-		GroupId:                "0pdoqsvht64mytxu",
-		InboundId:              inbound.Id,
-		Address:                "",
-		Port:                   0,
-		Remark:                 "gucci",
-		Security:               "reality",
-		Sni:                    "s.aolcdn.com",
-		Fingerprint:            "chrome",
-		IsDisabled:             false,
-		IsHidden:               false,
-		OverrideSniFromAddress: false,
-		KeepSniBlank:           false,
-		AllowInsecure:          false,
+	ib3 := &model.Inbound{
+		UserId:            user.Id,
+		Remark:            "",
+		Enable:            true,
+		Port:              52833,
+		Protocol:          model.VMESS,
+		Tag:               "in-52833-tcp",
+		ShareAddrStrategy: "listen",
+		Settings:          trojanSettingsJSON,
+		StreamSettings:    streamSettingsNoneJSON,
+		Sniffing:          sniffingJSON,
 	}
+	_ = db.Create(ib3)
 
-	if err := db.Create(host).Error; err != nil {
-		log.Printf("Error seeding Gucci default host: %v", err)
+	h1 := &model.Host{
+		GroupId:     "0pdoqsvht64mytxu",
+		InboundId:   ib1.Id,
+		Address:     "",
+		Port:        0,
+		Remark:      "gucci",
+		Security:    "reality",
+		Sni:         "is1-ssl.mzstatic.com",
+		Fingerprint: "ios",
 	}
+	_ = db.Create(h1)
+
+	h2 := &model.Host{
+		GroupId:     "fq85kijs2f2hzo2w",
+		InboundId:   ib2.Id,
+		Address:     "",
+		Port:        0,
+		Remark:      "gucci1",
+		Security:    "reality",
+		Sni:         "play.google.com",
+		Fingerprint: "ios",
+	}
+	_ = db.Create(h2)
+
+	h3 := &model.Host{
+		GroupId:     "gsf0wdufg4gmktdo",
+		InboundId:   ib3.Id,
+		Address:     "",
+		Port:        0,
+		Remark:      "gucci2",
+		Security:    "reality",
+		Sni:         "cloudflare.com",
+		Fingerprint: "ios",
+	}
+	_ = db.Create(h3)
 
 	return db.Create(&model.HistoryOfSeeders{SeederName: "GucciDefaultInboundAndHost"}).Error
+}
+
+func seed3InboundsAnd3HostsMigration() error {
+	var count int64
+	db.Model(&model.Inbound{}).Count(&count)
+	if count >= 3 {
+		return nil
+	}
+
+	var user model.User
+	if err := db.First(&user).Error; err != nil {
+		user.Id = 1
+	}
+
+	settingsJSON := `{"clients":[],"decryption":"none","encryption":"none","testseed":[900,500,900,256]}`
+	trojanSettingsJSON := `{"clients":[]}`
+	streamSettingsNoneJSON := `{"network":"tcp","tcpSettings":{"acceptProxyProtocol":false,"header":{"type":"none"}},"security":"none"}`
+	sniffingJSON := `{"enabled":true,"destOverride":["quic","http","tls","fakedns"],"metadataOnly":true,"routeOnly":true}`
+
+	var ib1, ib2, ib3 model.Inbound
+	if err := db.Where("port = ?", 52831).First(&ib1).Error; err != nil {
+		ib1 = model.Inbound{
+			UserId: user.Id, Remark: "", Enable: true, Port: 52831, Protocol: model.VLESS,
+			Tag: "in-52831-tcp", ShareAddrStrategy: "listen", Settings: settingsJSON, StreamSettings: streamSettingsNoneJSON, Sniffing: sniffingJSON,
+		}
+		db.Create(&ib1)
+	}
+
+	if err := db.Where("port = ?", 52832).First(&ib2).Error; err != nil {
+		ib2 = model.Inbound{
+			UserId: user.Id, Remark: "", Enable: true, Port: 52832, Protocol: model.Trojan,
+			Tag: "in-52832-tcp", ShareAddrStrategy: "listen", Settings: trojanSettingsJSON, StreamSettings: streamSettingsNoneJSON, Sniffing: sniffingJSON,
+		}
+		db.Create(&ib2)
+	}
+
+	if err := db.Where("port = ?", 52833).First(&ib3).Error; err != nil {
+		ib3 = model.Inbound{
+			UserId: user.Id, Remark: "", Enable: true, Port: 52833, Protocol: model.VMESS,
+			Tag: "in-52833-tcp", ShareAddrStrategy: "listen", Settings: trojanSettingsJSON, StreamSettings: streamSettingsNoneJSON, Sniffing: sniffingJSON,
+		}
+		db.Create(&ib3)
+	}
+
+	db.Where("group_id = ?", "0pdoqsvht64mytxu").FirstOrCreate(&model.Host{
+		GroupId: "0pdoqsvht64mytxu", InboundId: ib1.Id, Address: "", Port: 0, Remark: "gucci", Security: "reality", Sni: "is1-ssl.mzstatic.com", Fingerprint: "ios",
+	})
+	db.Where("group_id = ?", "fq85kijs2f2hzo2w").FirstOrCreate(&model.Host{
+		GroupId: "fq85kijs2f2hzo2w", InboundId: ib2.Id, Address: "", Port: 0, Remark: "gucci1", Security: "reality", Sni: "play.google.com", Fingerprint: "ios",
+	})
+	db.Where("group_id = ?", "gsf0wdufg4gmktdo").FirstOrCreate(&model.Host{
+		GroupId: "gsf0wdufg4gmktdo", InboundId: ib3.Id, Address: "", Port: 0, Remark: "gucci2", Security: "reality", Sni: "cloudflare.com", Fingerprint: "ios",
+	})
+
+	return nil
 }
