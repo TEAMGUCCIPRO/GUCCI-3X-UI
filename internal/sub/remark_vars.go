@@ -344,14 +344,8 @@ func statusEmoji(st xray.ClientTraffic) string {
 	switch clientStatus(st) {
 	case "active":
 		return "✅"
-	case "expired":
-		return "⏳"
-	case "depleted":
-		return "🚫"
-	case "disabled":
-		return "🚫"
 	default:
-		return ""
+		return "❌"
 	}
 }
 

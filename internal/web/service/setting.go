@@ -36,7 +36,7 @@ var xrayTemplateConfig string
 const (
 	DefaultSubClashUserAgentRegex = `(?i)(clash|mihomo)`
 	DefaultSubJsonUserAgentRegex  = ``
-	DefaultRemarkTemplate         = "{{INBOUND}}-{{EMAIL}}|📊{{TRAFFIC_LEFT}}|⏳{{DAYS_LEFT}}D"
+	DefaultRemarkTemplate         = "{{STATUS_EMOJI}} 👤 {{EMAIL}} | 📊 {{TRAFFIC_LEFT}} | 🕔 {{TIME_LEFT}}"
 	DefaultTrustedProxyCIDRs      = "127.0.0.1/32,::1/128"
 	maxRegexLength                = 2048
 )
@@ -90,10 +90,10 @@ var defaultValueMap = map[string]string{
 	"subJsonUserAgentRegex":       "",
 	"subClashAutoDetect":          "false",
 	"subClashUserAgentRegex":      "",
-	"subTitle":                    "",
-	"subSupportUrl":               "",
+	"subTitle":                    "{{STATUS_EMOJI}} 👤 {{EMAIL}} | 📊 {{TRAFFIC_LEFT}} | 🕔 {{TIME_LEFT}}",
+	"subSupportUrl":               "https://t.me/MR_GUCCI_YT",
 	"subProfileUrl":               "",
-	"subAnnounce":                 "",
+	"subAnnounce":                 "⚡️ 👑 G U C C I T E A M 👑 ⚡️\n✨ ساخته شده توسط تیم G U C C I ✨",
 	"subEnableRouting":            "false",
 	"subRoutingRules":             "",
 	"subHideSettings":             "false",
