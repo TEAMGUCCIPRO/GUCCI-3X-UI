@@ -46,11 +46,19 @@ func renderSubPlaceholders(value string, data subPlaceholderData) string {
 }
 
 var subMetadataTokens = map[string]bool{
-	"EMAIL":       true,
-	"ID":          true,
-	"SHORT_ID":    true,
-	"TELEGRAM_ID": true,
-	"SUB_ID":      true,
+	"EMAIL":              true,
+	"ID":                 true,
+	"SHORT_ID":           true,
+	"TELEGRAM_ID":        true,
+	"SUB_ID":             true,
+	"STATUS_EMOJI":       true,
+	"TRAFFIC_LEFT":       true,
+	"TRAFFIC_TOTAL":      true,
+	"TRAFFIC_USED":       true,
+	"TIME_LEFT":          true,
+	"DAYS_LEFT":          true,
+	"EXPIRE_DATE":        true,
+	"JALALI_EXPIRE_DATE": true,
 }
 
 func expandSubMetadataVars(template string, ctx remarkContext, escape bool) string {
@@ -114,5 +122,20 @@ func (s *SubService) subscriptionTemplateContextBySubID(subID string) (remarkCon
 	if err != nil {
 		return remarkContext{}, false, err
 	}
-	return remarkContext{client: *rec.ToClient()}, true, nil
+	client := *rec.ToClient()
+
+	inbounds, _ := s.getInboundsBySubId(subID)
+	var emails []string
+	var hasEnabledClient bool
+	for _, inbound := range inbounds {
+		for _, c := range s.matchingClients(inbound, subID) {
+			emails = append(emails, c.Email)
+			if c.Enable {
+				hasEnabledClient = true
+			}
+		}
+	}
+	traffic, _ := s.AggregateTrafficByEmails(emails)
+	traffic.Enable = hasEnabledClient
+	return remarkContext{client: client, stats: traffic}, true, nil
 }

@@ -363,8 +363,8 @@ func usagePercentage(st xray.ClientTraffic) string {
 	return fmt.Sprintf("%.1f％", pct)
 }
 
-// timeLeftLabel renders remaining time as "Xd Xh Xm" (or shorter when days/hours
-// are zero). Returns "∞" for unlimited and "0" when past expiry.
+// timeLeftLabel renders remaining time as "X روز" (or hours/mins when <1 day).
+// Returns "∞" for unlimited and "0 روز" when past expiry.
 func timeLeftLabel(expiryMs int64) string {
 	if expiryMs == 0 {
 		return unlimitedMark
@@ -377,18 +377,18 @@ func timeLeftLabel(expiryMs int64) string {
 		secs = -exp
 	}
 	if secs <= 0 {
-		return "0"
+		return "0 روز"
 	}
 	days := secs / 86400
 	hours := (secs % 86400) / 3600
-	mins := (secs % 3600) / 60
 	if days > 0 {
-		return fmt.Sprintf("%dd %dh %dm", days, hours, mins)
+		return fmt.Sprintf("%d روز", days)
 	}
 	if hours > 0 {
-		return fmt.Sprintf("%dh %dm", hours, mins)
+		return fmt.Sprintf("%d ساعت", hours)
 	}
-	return fmt.Sprintf("%dm", mins)
+	mins := (secs % 3600) / 60
+	return fmt.Sprintf("%d دقیقه", mins)
 }
 
 // jalaliExpireDateLabel converts a Gregorian expiry timestamp to Jalali

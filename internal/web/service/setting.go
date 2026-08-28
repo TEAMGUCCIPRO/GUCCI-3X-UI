@@ -69,7 +69,7 @@ var defaultValueMap = map[string]string{
 	"expireDiff":                  "0",
 	"trafficDiff":                 "0",
 	"remarkTemplate":              DefaultRemarkTemplate,
-	"subShowIdentityOnAllLinks":   "false",
+	"subShowIdentityOnAllLinks":   "true",
 	"timeLocation":                "Local",
 	"tgBotEnable":                 "false",
 	"tgBotToken":                  "",
