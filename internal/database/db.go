@@ -2464,7 +2464,7 @@ func seedGucciDefaultInboundAndHost() error {
 		Remark:            "",
 		Enable:            true,
 		Port:              52833,
-		Protocol:          model.VMess,
+		Protocol:          model.VMESS,
 		Tag:               "in-52833-tcp",
 		ShareAddrStrategy: "listen",
 		Settings:          trojanSettingsJSON,
