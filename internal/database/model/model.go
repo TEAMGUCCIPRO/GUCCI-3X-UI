@@ -909,6 +909,7 @@ type Client struct {
 	// Per-client traffic reset cycle, independent of the inbound's own (#5497).
 	TrafficReset    string `json:"trafficReset,omitempty" form:"trafficReset" validate:"omitempty,oneof=never hourly daily weekly monthly"`
 	TrafficResetDay int    `json:"trafficResetDay,omitempty" form:"trafficResetDay" validate:"omitempty,gte=1,lte=31"`
+	TrafficMultiplier float64 `json:"trafficMultiplier,omitempty" form:"trafficMultiplier"`
 	CreatedAt       int64  `json:"created_at,omitempty"` // Creation timestamp
 	UpdatedAt       int64  `json:"updated_at,omitempty"` // Last update timestamp
 }
@@ -944,6 +945,7 @@ type ClientRecord struct {
 	ResetMax        int    `json:"resetMax" gorm:"column:reset_max;default:0"`
 	TrafficReset    string `json:"trafficReset" gorm:"column:traffic_reset;default:never;index:idx_clients_traffic_reset"`
 	TrafficResetDay int    `json:"trafficResetDay" gorm:"column:traffic_reset_day;default:1"`
+	TrafficMultiplier float64 `json:"trafficMultiplier" gorm:"column:traffic_multiplier;default:1.0"`
 	CreatedAt       int64  `json:"createdAt" gorm:"autoCreateTime:milli"`
 	UpdatedAt       int64  `json:"updatedAt" gorm:"autoUpdateTime:milli"`
 	// Owned solely by the node-snapshot sweep, which soft-orphans instead of
@@ -1192,6 +1194,7 @@ func (r *ClientRecord) ToClient() *Client {
 		ResetMax:        r.ResetMax,
 		TrafficReset:    r.TrafficReset,
 		TrafficResetDay: r.TrafficResetDay,
+		TrafficMultiplier: r.TrafficMultiplier,
 		CreatedAt:       r.CreatedAt,
 		UpdatedAt:       r.UpdatedAt,
 
