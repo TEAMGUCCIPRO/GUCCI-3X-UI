@@ -15,7 +15,7 @@ jobs:
     if: ${{ github.repository != 'TEAMGUCCIPRO/GUCCI-3X-UI' }}
     steps:
       - name: Checkout target repo
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
 
       - name: Sync Upstream
         uses: a22441133/fork-sync-action@v3.4.1
