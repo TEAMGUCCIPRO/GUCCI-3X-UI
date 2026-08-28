@@ -83,7 +83,7 @@ func (a *SUBController) metadataForSubRequest(getSubReq func() *SubService, subI
 	if len(emails) > 0 {
 		clientEmail = emails[0]
 	}
-	dynamicTitle := FormatGucciDynamicRemark(clientEmail, traffic)
+	dynamicTitle := FormatGucciDynamicRemark(clientEmail, traffic, false)
 
 	var context remarkContext
 	var hasContext bool
