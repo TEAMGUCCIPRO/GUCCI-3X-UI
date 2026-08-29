@@ -20,15 +20,9 @@ import {
   Tooltip,
 } from 'antd';
 import {
-  AndroidOutlined,
-  AppleOutlined,
   CopyOutlined,
-  DownOutlined,
   DownloadOutlined,
-  MoonFilled,
-  MoonOutlined,
   QrcodeOutlined,
-  SunOutlined,
   TranslationOutlined,
 } from '@ant-design/icons';
 
@@ -64,6 +58,7 @@ const promoItems = [
   { label: 'پشتیبانی تلگرام', url: 'https://t.me/MR_GUCCI_YT', icon: TELEGRAM_ICON, kind: 'telegram', theme: 'red' },
   { label: 'کانال اول تلگرام', url: 'https://t.me/VPN_GUCCI_CHANEL', icon: TELEGRAM_ICON, kind: 'telegram', theme: 'blue' },
   { label: 'کانال دوم تلگرام', url: 'https://t.me/VPN_GUCCI_IR', icon: TELEGRAM_ICON, kind: 'telegram', theme: 'yellow' },
+  { label: 'کانال سوم تلگرام', url: 'https://t.me/GUCCI_CHANEL_IR', icon: TELEGRAM_ICON, kind: 'telegram', theme: 'purple' },
   { label: 'گروه چت تلگرام', url: 'https://t.me/GUCCI_CHAT_IR', icon: TELEGRAM_ICON, kind: 'telegram', theme: 'silver' },
   { label: 'اینستاگرام', url: 'https://www.instagram.com/vpn_gucci_ir?igsi=MXRsdmhid3pxZmZqMQ%3D%3D&utm_source=qr', icon: INSTAGRAM_ICON, kind: 'instagram', theme: 'insta' },
   { label: 'یوتیوب', url: 'https://youtube.com/@vpn_gucci?si=HOdcsuj20CH3aAv5', icon: YOUTUBE_ICON, kind: 'youtube', theme: 'yt', wide: true },
@@ -271,8 +266,6 @@ export default function SubPage() {
     [],
   );
 
-  const themeIcon = !isDark ? <SunOutlined /> : !isUltra ? <MoonOutlined /> : <MoonFilled />;
-
   const userDisplayName = subEmail || sId || 'کاربر گرامی';
 
   const cardTitle = (
@@ -286,19 +279,10 @@ export default function SubPage() {
   );
 
   const cardExtra = (
-    <Space size={8} align="center">
-      <Button
-        shape="circle"
-        size="large"
-        className="toolbar-btn"
-        aria-label={t('menu.theme')}
-        title={t('menu.theme')}
-        icon={themeIcon}
-        onClick={cycleTheme}
-      />
+    <div className="subpage-header-extra">
       <Popover
-        rootClassName={isDark ? 'dark' : 'light'}
-        placement="bottomRight"
+        rootClassName="dark"
+        placement="bottomLeft"
         trigger="click"
         styles={{ content: { padding: 4 } }}
         content={
@@ -320,7 +304,7 @@ export default function SubPage() {
           icon={<TranslationOutlined />}
         />
       </Popover>
-    </Space>
+    </div>
   );
 
   const subAntdTheme = useMemo(() => {

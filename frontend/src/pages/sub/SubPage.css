@@ -84,8 +84,16 @@
   100% { filter: hue-rotate(360deg); }
 }
 
+@keyframes gucciLightSweep {
+  0% { transform: translateX(-150%) skewX(-25deg); opacity: 0; }
+  20% { opacity: 0.8; }
+  50% { opacity: 1; }
+  80% { opacity: 0.8; }
+  100% { transform: translateX(250%) skewX(-25deg); opacity: 0; }
+}
+
 .gucci-promo-banner {
-  background: linear-gradient(-45deg, #1e0a3c, #3b0764, #581c87, #7e22ce, #2e1065);
+  background: linear-gradient(-45deg, #180633, #3b0764, #581c87, #7e22ce, #1c063b);
   background-size: 350% 350%;
   animation: gucciGradientShift 7s ease infinite, gucciPulseGlow 3.5s ease-in-out infinite;
   border-radius: 20px;
@@ -94,7 +102,21 @@
   text-align: center;
   position: relative;
   overflow: hidden;
-  border: 2px solid rgba(168, 85, 247, 0.9);
+  border: 2px solid rgba(192, 132, 252, 0.95);
+  box-shadow: 0 0 35px rgba(168, 85, 247, 0.6), inset 0 0 25px rgba(126, 34, 206, 0.4);
+}
+
+/* Light sweep beam overlay (نور بیاد و بره) */
+.gucci-promo-banner::after {
+  content: '';
+  position: absolute;
+  top: -20%;
+  bottom: -20%;
+  width: 50%;
+  background: linear-gradient(90deg, transparent 0%, rgba(255, 255, 255, 0.3) 30%, rgba(254, 240, 138, 0.6) 50%, rgba(192, 132, 252, 0.4) 70%, transparent 100%);
+  animation: gucciLightSweep 4s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+  pointer-events: none;
+  z-index: 2;
 }
 
 /* lightning bolt overlay */
@@ -102,18 +124,22 @@
   content: '';
   position: absolute;
   inset: 0;
-  background: linear-gradient(115deg, transparent 30%, rgba(233, 213, 255, 0.28) 46%, rgba(168, 85, 247, 0.12) 50%, transparent 62%);
+  background: linear-gradient(115deg, transparent 30%, rgba(233, 213, 255, 0.35) 46%, rgba(168, 85, 247, 0.18) 50%, transparent 62%);
   animation: gucciLightning 4s ease-in-out infinite;
   pointer-events: none;
+  z-index: 1;
 }
 
 .promo-title {
-  font-size: 26px;
-  font-weight: 900;
-  color: #faf5ff;
+  font-size: 30px !important;
+  font-weight: 950 !important;
+  color: #ffffff !important;
   margin-bottom: 8px;
-  letter-spacing: 2px;
+  letter-spacing: 3px !important;
   animation: gucciTitleNeon 2.2s ease-in-out infinite;
+  text-transform: uppercase;
+  position: relative;
+  z-index: 3;
 }
 
 .promo-title-inner {
@@ -121,15 +147,28 @@
   align-items: center;
   justify-content: center;
   flex-wrap: wrap;
-  gap: 4px;
+  gap: 6px;
 }
 
 .gucci-animated-bolt {
   display: inline-block;
-  font-size: 28px;
+  font-size: 32px !important;
   animation: gucciBoltEnergy 1.6s ease-in-out infinite alternate;
-  filter: drop-shadow(0 0 10px #facc15) drop-shadow(0 0 20px #eab308) drop-shadow(0 0 35px #ca8a04);
+  filter: drop-shadow(0 0 12px #facc15) drop-shadow(0 0 24px #eab308) drop-shadow(0 0 40px #ca8a04);
   transform-origin: center center;
+}
+
+.gucci-animated-wordmark {
+  display: inline-block;
+  background: linear-gradient(135deg, #ffffff 0%, #fef08a 20%, #e9d5ff 40%, #c084fc 60%, #f472b6 80%, #38bdf8 100%);
+  background-size: 300% 300%;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  animation: gucciTextGradient 3.5s ease-in-out infinite, gucciTextPulse 1.8s ease-in-out infinite;
+  font-weight: 950 !important;
+  font-size: 30px !important;
+  letter-spacing: 4px !important;
+  filter: drop-shadow(0 0 18px rgba(254, 240, 138, 0.9)) drop-shadow(0 0 35px rgba(168, 85, 247, 0.85));
 }
 
 @keyframes gucciBoltEnergy {
@@ -359,9 +398,48 @@
   background: linear-gradient(165deg, #170b2e 0%, #0f0820 100%) !important;
 }
 
+/* Card Header RTL Align: Dashboard Title & Avatar on Right, Language on Left */
 .subscription-card .ant-card-head {
+  direction: rtl;
   border-bottom: 1px solid rgba(168, 85, 247, 0.35) !important;
   color: #e9d5ff !important;
+  padding: 14px 20px !important;
+}
+
+.subscription-card .ant-card-head-wrapper {
+  display: flex;
+  flex-direction: row-reverse;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+}
+
+.subscription-card .ant-card-head-title {
+  padding: 0 !important;
+  display: flex;
+  justify-content: flex-start;
+  align-items: center;
+}
+
+.subscription-card .ant-card-extra {
+  padding: 0 !important;
+  margin-inline-start: 0 !important;
+  display: flex;
+  align-items: center;
+}
+
+.subpage-header-user {
+  display: inline-flex;
+  align-items: center;
+  gap: 14px;
+  text-align: right;
+  direction: rtl;
+}
+
+.subpage-header-extra {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
 }
 
 .qr-tag {
@@ -653,19 +731,21 @@
   margin-bottom: 12px;
 }
 
-.client-app-icon {
-  width: 44px;
-  height: 44px;
+.client-app-icon-wrapper {
+  width: 46px;
+  height: 46px;
   border-radius: 12px;
   display: flex;
   align-items: center;
   justify-content: center;
-  font-weight: 900;
-  font-size: 16px;
-  color: #ffffff;
   flex-shrink: 0;
-  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.4);
-  letter-spacing: 0.5px;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.45);
+  overflow: hidden;
+}
+
+.client-app-icon-wrapper svg {
+  width: 100%;
+  height: 100%;
 }
 
 .client-app-info {
