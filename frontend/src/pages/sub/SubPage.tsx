@@ -44,6 +44,8 @@ import { setMessageInstance } from '@/utils/messageBus';
 import { pauseAnimationsUntilLeave, useTheme } from '@/hooks/useTheme';
 import { useMediaQuery } from '@/hooks/useMediaQuery';
 import SubUsageSummary from './SubUsageSummary';
+import UserAvatar from './UserAvatar';
+import AppsDownloadSection from './AppsDownloadSection';
 import './SubPage.css';
 
 const QR_SIZE = 240;
@@ -270,11 +272,16 @@ export default function SubPage() {
 
   const themeIcon = !isDark ? <SunOutlined /> : !isUltra ? <MoonOutlined /> : <MoonFilled />;
 
+  const userDisplayName = emailsString || sId || 'کاربر گرامی';
+
   const cardTitle = (
-    <Space>
-      <span>{t('subscription.title')}</span>
-      <Tag>{sId}</Tag>
-    </Space>
+    <div className="subpage-header-user">
+      <UserAvatar seed={userDisplayName} size={50} isActive={isActive} />
+      <div className="subpage-header-text">
+        <span className="subpage-header-title">داشبورد کاربری</span>
+        <span className="subpage-header-subtitle">{userDisplayName}</span>
+      </div>
+    </div>
   );
 
   const cardExtra = (
@@ -686,22 +693,8 @@ export default function SubPage() {
                   </>
                 )}
 
-                <Row gutter={[8, 8]} justify="center" className="apps-row">
-                  <Col xs={24} sm={12} className="app-col">
-                    <Dropdown trigger={['click']} menu={{ items: androidMenuItems }}>
-                      <Button block={isMobile} size="large" type="primary">
-                        <AndroidOutlined /> Android <DownOutlined />
-                      </Button>
-                    </Dropdown>
-                  </Col>
-                  <Col xs={24} sm={12} className="app-col">
-                    <Dropdown trigger={['click']} menu={{ items: iosMenuItems }}>
-                      <Button block={isMobile} size="large" type="primary">
-                        <AppleOutlined /> iOS <DownOutlined />
-                      </Button>
-                    </Dropdown>
-                  </Col>
-                </Row>
+                <Divider />
+                <AppsDownloadSection subUrl={subUrl} subId={sId} />
               </Card>
             </Col>
           </Row>

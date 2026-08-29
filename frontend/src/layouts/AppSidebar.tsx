@@ -366,6 +366,25 @@ export default function AppSidebar() {
       >
         <div className="sider-brand">
           <div className="brand-block">
+            <span className="brand-avatar-circle">
+              <svg className="brand-avatar-svg" viewBox="0 0 36 36" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <circle cx="18" cy="18" r="17" fill="url(#gucciAvatarGrad)" stroke="url(#gucciAvatarStroke)" strokeWidth="2" />
+                <path d="M18 7L21 14L28 13L24 19L27 26L18 22L9 26L12 19L8 13L15 14L18 7Z" fill="#FDE047" stroke="#CA8A04" strokeWidth="1" />
+                <path d="M17 13L13 21H18L17 27L23 18H18L20 13H17Z" fill="#A855F7" />
+                <defs>
+                  <linearGradient id="gucciAvatarGrad" x1="0" y1="0" x2="36" y2="36" gradientUnits="userSpaceOnUse">
+                    <stop stopColor="#2E1065" />
+                    <stop offset="0.5" stopColor="#581C87" />
+                    <stop offset="1" stopColor="#0F0728" />
+                  </linearGradient>
+                  <linearGradient id="gucciAvatarStroke" x1="0" y1="0" x2="36" y2="36" gradientUnits="userSpaceOnUse">
+                    <stop stopColor="#C084FC" />
+                    <stop offset="0.5" stopColor="#FACC15" />
+                    <stop offset="1" stopColor="#A855F7" />
+                  </linearGradient>
+                </defs>
+              </svg>
+            </span>
             <span className="brand-text">{railCollapsed ? 'G' : 'GUCCI'}</span>
           </div>
           {!railCollapsed && (
@@ -430,6 +449,13 @@ export default function AppSidebar() {
       >
         <div className="drawer-header">
           <div className="brand-block">
+            <span className="brand-avatar-circle">
+              <svg className="brand-avatar-svg" viewBox="0 0 36 36" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <circle cx="18" cy="18" r="17" fill="url(#gucciAvatarGrad)" stroke="url(#gucciAvatarStroke)" strokeWidth="2" />
+                <path d="M18 7L21 14L28 13L24 19L27 26L18 22L9 26L12 19L8 13L15 14L18 7Z" fill="#FDE047" stroke="#CA8A04" strokeWidth="1" />
+                <path d="M17 13L13 21H18L17 27L23 18H18L20 13H17Z" fill="#A855F7" />
+              </svg>
+            </span>
             <span className="drawer-brand">GUCCI</span>
           </div>
           <div className="drawer-header-actions">

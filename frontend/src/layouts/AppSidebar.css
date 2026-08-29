@@ -46,8 +46,56 @@
 .brand-block {
   display: inline-flex;
   align-items: center;
+  gap: 10px;
   min-width: 0;
   line-height: 1.1;
+}
+
+.brand-avatar-circle {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  flex-shrink: 0;
+  overflow: hidden;
+  box-shadow: 0 0 10px rgba(168, 85, 247, 0.75), 0 0 20px rgba(126, 34, 206, 0.4);
+  animation: gucciAvatarPulse 3s ease-in-out infinite alternate;
+}
+
+.brand-avatar-svg {
+  width: 100%;
+  height: 100%;
+}
+
+@keyframes gucciAvatarPulse {
+  0% { transform: scale(0.96); filter: drop-shadow(0 0 4px #a855f7); }
+  100% { transform: scale(1.04); filter: drop-shadow(0 0 12px #c084fc); }
+}
+
+@keyframes gucciLightningGlow {
+  0% {
+    text-shadow: 0 0 8px #c084fc, 0 0 16px #a855f7, 0 0 32px #7e22ce;
+  }
+  50% {
+    text-shadow: 0 0 14px #e9d5ff, 0 0 28px #c084fc, 0 0 52px #9333ea, 0 0 70px #a855f7;
+  }
+  100% {
+    text-shadow: 0 0 10px #c084fc, 0 0 20px #a855f7, 0 0 38px #7e22ce;
+  }
+}
+
+.brand-text,
+.drawer-brand {
+  font-weight: 900 !important;
+  font-size: 20px !important;
+  letter-spacing: 2.5px !important;
+  background: linear-gradient(135deg, #faf5ff 0%, #e9d5ff 25%, #c084fc 50%, #a855f7 75%, #7e22ce 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  animation: gucciLightningGlow 2.5s ease-in-out infinite alternate;
+  display: inline-block;
 }
 
 .brand-actions {
