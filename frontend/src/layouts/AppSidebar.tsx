@@ -81,6 +81,57 @@ const iconByName: Record<IconName, ComponentType> = {
   routing: SwapOutlined,
 };
 
+function BrandAvatarSvg() {
+  return (
+    <svg className="brand-avatar-svg" viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <defs>
+        <linearGradient id="gucciAvatarBg" x1="0" y1="0" x2="40" y2="40" gradientUnits="userSpaceOnUse">
+          <stop stopColor="#1e0a3c" />
+          <stop offset="0.5" stopColor="#4c1d95" />
+          <stop offset="1" stopColor="#0f0728" />
+        </linearGradient>
+        <linearGradient id="gucciAvatarRing" x1="0" y1="0" x2="40" y2="40" gradientUnits="userSpaceOnUse">
+          <stop stopColor="#f472b6" />
+          <stop offset="0.3" stopColor="#c084fc" />
+          <stop offset="0.7" stopColor="#facc15" />
+          <stop offset="1" stopColor="#38bdf8" />
+        </linearGradient>
+        <linearGradient id="crownGrad" x1="10" y1="6" x2="30" y2="18" gradientUnits="userSpaceOnUse">
+          <stop stopColor="#fef08a" />
+          <stop offset="0.5" stopColor="#facc15" />
+          <stop offset="1" stopColor="#eab308" />
+        </linearGradient>
+        <linearGradient id="boltGrad" x1="16" y1="18" x2="24" y2="34" gradientUnits="userSpaceOnUse">
+          <stop stopColor="#ffffff" />
+          <stop offset="0.4" stopColor="#fde047" />
+          <stop offset="1" stopColor="#eab308" />
+        </linearGradient>
+      </defs>
+
+      {/* Outer Neon Glow Circle */}
+      <circle cx="20" cy="20" r="18.5" fill="url(#gucciAvatarBg)" stroke="url(#gucciAvatarRing)" strokeWidth="2" />
+
+      {/* Cyber Gamer Headset Ring */}
+      <path d="M9 22C9 14 14 9 20 9C26 9 31 14 31 22" stroke="#a855f7" strokeWidth="2.5" strokeLinecap="round" fill="none" />
+      <rect x="7" y="19" width="4" height="8" rx="2" fill="#ec4899" />
+      <rect x="29" y="19" width="4" height="8" rx="2" fill="#ec4899" />
+
+      {/* Golden Royal Crown */}
+      <path d="M12 18L15 11L20 15L25 11L28 18H12Z" fill="url(#crownGrad)" stroke="#ca8a04" strokeWidth="0.8" />
+      <circle cx="15" cy="11" r="1.2" fill="#ef4444" />
+      <circle cx="20" cy="15" r="1.2" fill="#38bdf8" />
+      <circle cx="25" cy="11" r="1.2" fill="#ef4444" />
+
+      {/* Glowing Neon Cyber Visor */}
+      <path d="M13 22H27L25 27H15L13 22Z" fill="#38bdf8" opacity="0.9" stroke="#ffffff" strokeWidth="0.8" />
+      <line x1="15" y1="24.5" x2="25" y2="24.5" stroke="#ffffff" strokeWidth="1" strokeLinecap="round" />
+
+      {/* Electric Lightning Bolt */}
+      <path d="M21 21L16 29H20L19 35L25 27H21L23 21H21Z" fill="url(#boltGrad)" stroke="#ca8a04" strokeWidth="0.5" filter="drop-shadow(0 0 3px #facc15)" />
+    </svg>
+  );
+}
+
 function DonateButton({ ariaLabel }: { ariaLabel: string }) {
   return (
     <a
@@ -367,23 +418,7 @@ export default function AppSidebar() {
         <div className="sider-brand">
           <div className="brand-block">
             <span className="brand-avatar-circle">
-              <svg className="brand-avatar-svg" viewBox="0 0 36 36" fill="none" xmlns="http://www.w3.org/2000/svg">
-                <circle cx="18" cy="18" r="17" fill="url(#gucciAvatarGrad)" stroke="url(#gucciAvatarStroke)" strokeWidth="2" />
-                <path d="M18 7L21 14L28 13L24 19L27 26L18 22L9 26L12 19L8 13L15 14L18 7Z" fill="#FDE047" stroke="#CA8A04" strokeWidth="1" />
-                <path d="M17 13L13 21H18L17 27L23 18H18L20 13H17Z" fill="#A855F7" />
-                <defs>
-                  <linearGradient id="gucciAvatarGrad" x1="0" y1="0" x2="36" y2="36" gradientUnits="userSpaceOnUse">
-                    <stop stopColor="#2E1065" />
-                    <stop offset="0.5" stopColor="#581C87" />
-                    <stop offset="1" stopColor="#0F0728" />
-                  </linearGradient>
-                  <linearGradient id="gucciAvatarStroke" x1="0" y1="0" x2="36" y2="36" gradientUnits="userSpaceOnUse">
-                    <stop stopColor="#C084FC" />
-                    <stop offset="0.5" stopColor="#FACC15" />
-                    <stop offset="1" stopColor="#A855F7" />
-                  </linearGradient>
-                </defs>
-              </svg>
+              <BrandAvatarSvg />
             </span>
             <span className="brand-text">{railCollapsed ? 'G' : 'GUCCI'}</span>
           </div>
@@ -450,11 +485,7 @@ export default function AppSidebar() {
         <div className="drawer-header">
           <div className="brand-block">
             <span className="brand-avatar-circle">
-              <svg className="brand-avatar-svg" viewBox="0 0 36 36" fill="none" xmlns="http://www.w3.org/2000/svg">
-                <circle cx="18" cy="18" r="17" fill="url(#gucciAvatarGrad)" stroke="url(#gucciAvatarStroke)" strokeWidth="2" />
-                <path d="M18 7L21 14L28 13L24 19L27 26L18 22L9 26L12 19L8 13L15 14L18 7Z" fill="#FDE047" stroke="#CA8A04" strokeWidth="1" />
-                <path d="M17 13L13 21H18L17 27L23 18H18L20 13H17Z" fill="#A855F7" />
-              </svg>
+              <BrandAvatarSvg />
             </span>
             <span className="drawer-brand">GUCCI</span>
           </div>

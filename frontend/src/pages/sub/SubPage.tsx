@@ -43,6 +43,7 @@ import ConfigBlock from '@/components/clients/ConfigBlock';
 import { setMessageInstance } from '@/utils/messageBus';
 import { pauseAnimationsUntilLeave, useTheme } from '@/hooks/useTheme';
 import { useMediaQuery } from '@/hooks/useMediaQuery';
+import { theme as antdTheme } from 'antd';
 import SubUsageSummary from './SubUsageSummary';
 import UserAvatar from './UserAvatar';
 import AppsDownloadSection from './AppsDownloadSection';
@@ -272,7 +273,7 @@ export default function SubPage() {
 
   const themeIcon = !isDark ? <SunOutlined /> : !isUltra ? <MoonOutlined /> : <MoonFilled />;
 
-  const userDisplayName = emailsString || sId || 'کاربر گرامی';
+  const userDisplayName = subEmail || sId || 'کاربر گرامی';
 
   const cardTitle = (
     <div className="subpage-header-user">
@@ -322,8 +323,47 @@ export default function SubPage() {
     </Space>
   );
 
+  const subAntdTheme = useMemo(() => {
+    return {
+      hashed: false,
+      algorithm: antdTheme.darkAlgorithm,
+      token: {
+        colorBgBase: isUltra ? '#070312' : '#0e061e',
+        colorBgLayout: isUltra ? '#070312' : '#0e061e',
+        colorBgContainer: isUltra ? '#0f0724' : '#170b33',
+        colorBgElevated: isUltra ? '#160a36' : '#23104c',
+        colorPrimary: '#a855f7',
+        colorText: '#faf5ff',
+        colorTextSecondary: '#d8b4fe',
+        colorTextTertiary: '#c084fc',
+        colorBorder: 'rgba(168, 85, 247, 0.4)',
+        colorBorderSecondary: 'rgba(168, 85, 247, 0.25)',
+      },
+      components: {
+        Card: {
+          colorBgContainer: isUltra ? '#0f0724' : '#150a2e',
+          colorBorderSecondary: 'rgba(168, 85, 247, 0.5)',
+        },
+        Descriptions: {
+          colorText: '#faf5ff',
+          colorTextLabel: '#e9d5ff',
+          colorSplit: 'rgba(168, 85, 247, 0.4)',
+        },
+        Tabs: {
+          colorPrimary: '#c084fc',
+          colorText: '#d8b4fe',
+        },
+        Button: {
+          colorPrimary: '#9333ea',
+          colorPrimaryHover: '#a855f7',
+          colorPrimaryActive: '#7e22ce',
+        },
+      },
+    };
+  }, [isUltra]);
+
   return (
-    <ConfigProvider theme={antdThemeConfig}>
+    <ConfigProvider theme={subAntdTheme}>
       {messageContextHolder}
       <Layout className={pageClass}>
         <Layout.Content className="content">
