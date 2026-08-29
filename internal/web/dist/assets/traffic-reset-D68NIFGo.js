@@ -1,0 +1,1 @@
+var e=[`never`,`hourly`,`daily`,`weekly`,`monthly`];export{e as t};

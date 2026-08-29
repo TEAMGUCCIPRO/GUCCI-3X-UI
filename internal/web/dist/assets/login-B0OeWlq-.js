@@ -1,0 +1,1 @@
+import{$n as e,Xn as t}from"./vendor-DwOBYtCs.js";var n=t({username:e().min(1,`username`),password:e().min(1,`password`),twoFactorCode:e().optional()}),r=e().min(1,`twoFactorCode`),i=e().regex(/^\d{6}$/,`pages.settings.security.twoFactorModalError`);export{i as n,r,n as t};

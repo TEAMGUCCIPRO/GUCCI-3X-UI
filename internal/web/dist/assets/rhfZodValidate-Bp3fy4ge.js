@@ -1,0 +1,1 @@
+function e(e){return t=>{let n=e.safeParse(t);return n.success?!0:n.error.issues[0]?.message??`validation.invalid`}}export{e as t};

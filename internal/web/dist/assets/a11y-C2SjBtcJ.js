@@ -1,0 +1,1 @@
+function e(e){return t=>{(t.key===`Enter`||t.key===` `)&&(t.preventDefault(),e())}}export{e as t};

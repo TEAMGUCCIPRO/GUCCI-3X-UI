@@ -1,0 +1,1 @@
+.version-list{border:1px solid var(--ant-color-border-secondary);border-radius:8px;width:100%;overflow:hidden}.version-list-item{border-bottom:1px solid var(--ant-color-border-secondary);justify-content:space-between;align-items:center;padding:12px 24px;display:flex}.version-list-item:last-child{border-bottom:0}.actions-row{justify-content:flex-end;margin-top:12px;display:flex}

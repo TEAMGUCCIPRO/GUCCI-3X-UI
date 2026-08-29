@@ -18,9 +18,10 @@ tmp/
 backup/
 bin/
 x-ui/
-dist/
+/dist/
 release/
 node_modules/
+!internal/web/dist/**
 
 # Ignore compiled binaries
 main
