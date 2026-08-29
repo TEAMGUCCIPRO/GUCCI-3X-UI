@@ -606,21 +606,11 @@ func templateInfoKey(client model.Client) string {
 	return "email:" + client.Email
 }
 
+// effectiveTemplate returns the full per-client template on every body link:
+// each config of a subscription carries the whole status/email/traffic/time
+// block, never a stripped name-only variant.
 func (s *SubService) effectiveTemplate(client model.Client) string {
-	translated := translateUISingleBrackets(s.remarkTemplate)
-	if s.usageShown == nil {
-		s.usageShown = map[string]bool{}
-	}
-	key := templateInfoKey(client)
-	if s.usageShown[key] {
-		remove := firstLinkOnlyBodyTokens
-		if s.showIdentityOnAllLinks {
-			remove = usageInfoTokens
-		}
-		return filterRemarkTemplate(translated, remove)
-	}
-	s.usageShown[key] = true
-	return translated
+	return translateUISingleBrackets(s.remarkTemplate)
 }
 
 func inboundSecurity(inbound *model.Inbound) string {

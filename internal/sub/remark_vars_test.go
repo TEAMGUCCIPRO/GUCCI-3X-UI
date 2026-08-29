@@ -124,8 +124,8 @@ func TestExpandRemarkVars_DropsHyphenBetweenEmptyTokens(t *testing.T) {
 		{name: "emoji decoration before an empty token", tmpl: "🌐{{INBOUND}}-{{EMAIL}}", email: "john", want: "🌐john"},
 		{name: "literal word before an empty token", tmpl: "Sub {{INBOUND}}-{{EMAIL}}", email: "john", want: "Sub john"},
 		{name: "decoration kept when both tokens resolve", tmpl: "🌐{{INBOUND}}-{{EMAIL}}", inbound: "Germany", email: "john", want: "🌐Germany-john"},
-		{name: "default template, empty inbound", tmpl: defaultRemarkTemplate, email: "john", want: "john"},
-		{name: "default template, empty email", tmpl: defaultRemarkTemplate, inbound: "Germany", want: "Germany"},
+		{name: "default template, empty inbound", tmpl: defaultRemarkTemplate, email: "john", want: "john|📊∞|⏳∞D"},
+		{name: "default template, empty email", tmpl: defaultRemarkTemplate, inbound: "Germany", want: "Germany|📊∞|⏳∞D"},
 	}
 
 	for _, tt := range cases {
@@ -138,22 +138,22 @@ func TestExpandRemarkVars_DropsHyphenBetweenEmptyTokens(t *testing.T) {
 	}
 }
 
-// An unlimited client drops the quota/expiry segments whole — decoration and the
-// "|" separator included — instead of printing "📊∞|⏳∞D".
-func TestExpandRemarkVars_DropUnlimitedSegments(t *testing.T) {
+// The quota/expiry segments stay visible even for unlimited values, so a
+// client always sees the full "📊…|⏳…" block on every config.
+func TestExpandRemarkVars_KeepUnlimitedSegments(t *testing.T) {
 	const tmpl = "{{INBOUND}}|📊{{TRAFFIC_LEFT}}|⏳{{DAYS_LEFT}}D"
 	inbound := &model.Inbound{Remark: "host"}
 
-	// No limit at all → only the name segment survives.
+	// No limit at all → all segments survive with ∞.
 	unlimited := expandCtx(model.Client{}, xray.ClientTraffic{Enable: true}, inbound)
-	if got := expandRemarkVars(tmpl, unlimited); got != "host" {
-		t.Errorf("fully unlimited = %q, want %q", got, "host")
+	if got := expandRemarkVars(tmpl, unlimited); got != "host|📊∞|⏳∞D" {
+		t.Errorf("fully unlimited = %q, want %q", got, "host|📊∞|⏳∞D")
 	}
 
-	// Limited traffic but no expiry → traffic stays, the expiry segment drops.
+	// Limited traffic but no expiry → traffic stays, the expiry segment shows ∞.
 	noExpiry := expandCtx(model.Client{}, xray.ClientTraffic{Enable: true, Total: 50 * gb, Up: 8 * gb}, inbound)
-	if got := expandRemarkVars(tmpl, noExpiry); got != "host|📊42.00GB" {
-		t.Errorf("no-expiry = %q, want %q", got, "host|📊42.00GB")
+	if got := expandRemarkVars(tmpl, noExpiry); got != "host|📊42.00GB|⏳∞D" {
+		t.Errorf("no-expiry = %q, want %q", got, "host|📊42.00GB|⏳∞D")
 	}
 
 	// A segment mixing an unlimited token with another value is kept whole,
@@ -263,20 +263,19 @@ func TestGenRemark_NoTemplate_AppendsEmail(t *testing.T) {
 	}
 }
 
-// The per-client info part of the template renders only on a client's first
-// link of the request; later links show the name-only template.
-func TestUsageOnFirstLinkOnly(t *testing.T) {
+// Every body link of a client carries the full template: status, usage and
+// identity are shown on every config, not only on the client's first link.
+func TestUsageOnAllLinks(t *testing.T) {
 	s, inbound, client := hostRemarkService("{{INBOUND}}|📊{{TRAFFIC_LEFT}}|⏳{{DAYS_LEFT}}D")
 	first := s.genHostRemark(inbound, client, "", "")
 	second := s.genHostRemark(inbound, client, "", "")
-	if !strings.Contains(first, "📊") || !strings.Contains(first, "80.00GB") {
-		t.Fatalf("first link should carry usage: %q", first)
-	}
-	if strings.ContainsAny(second, "📊⏳") {
-		t.Fatalf("second link must not carry usage: %q", second)
-	}
-	if second != "DE" {
-		t.Fatalf("second link = %q, want name-only %q", second, "DE")
+	for _, link := range []string{first, second} {
+		if !strings.Contains(link, "📊") || !strings.Contains(link, "80.00GB") {
+			t.Fatalf("link should carry usage on every config: %q", link)
+		}
+		if link != "DE|📊80.00GB|⏳10D" {
+			t.Fatalf("link = %q, want full template %q", link, "DE|📊80.00GB|⏳10D")
+		}
 	}
 }
 
@@ -345,7 +344,6 @@ func TestConnectionTokensOnEveryBodyLink(t *testing.T) {
 	s := &SubService{
 		remarkTemplate:   "{{INBOUND}}|📊{{TRAFFIC_LEFT}}|{{PROTOCOL}} {{TRANSPORT}} {{SECURITY}}",
 		subscriptionBody: true,
-		usageShown:       map[string]bool{},
 	}
 	inbound := &model.Inbound{
 		Remark:         "DE",
@@ -356,16 +354,13 @@ func TestConnectionTokensOnEveryBodyLink(t *testing.T) {
 	client := model.Client{Email: "john@x"}
 	first := s.genTemplatedRemark(inbound, client, "", "ws")
 	second := s.genTemplatedRemark(inbound, client, "", "ws")
-	for _, want := range []string{"VLESS", "ws", "TLS"} {
+	for _, want := range []string{"VLESS", "ws", "TLS", "📊", "GB"} {
 		if !strings.Contains(first, want) {
 			t.Fatalf("first body link %q missing %q", first, want)
 		}
 		if !strings.Contains(second, want) {
-			t.Fatalf("repeat body link %q missing connection token %q", second, want)
+			t.Fatalf("repeat body link %q missing %q (usage stays on every config)", second, want)
 		}
-	}
-	if strings.ContainsAny(second, "📊") || strings.Contains(second, "GB") {
-		t.Fatalf("repeat body link must drop the usage block: %q", second)
 	}
 }
 
@@ -373,7 +368,6 @@ func TestConnectionTokensMixedIntoUsageSegment(t *testing.T) {
 	s := &SubService{
 		remarkTemplate:   "{{INBOUND}}-{{EMAIL}}|📊{{TRAFFIC_LEFT}}|⏳{{DAYS_LEFT}}D {{PROTOCOL}} {{TRANSPORT}} {{SECURITY}}",
 		subscriptionBody: true,
-		usageShown:       map[string]bool{},
 	}
 	inbound := &model.Inbound{
 		Remark:         "DE",
@@ -384,13 +378,10 @@ func TestConnectionTokensMixedIntoUsageSegment(t *testing.T) {
 	client := model.Client{Email: "john@x"}
 	_ = s.genTemplatedRemark(inbound, client, "", "grpc")
 	second := s.genTemplatedRemark(inbound, client, "", "grpc")
-	for _, want := range []string{"VLESS", "grpc", "REALITY"} {
+	for _, want := range []string{"VLESS", "grpc", "REALITY", "GB", "⏳"} {
 		if !strings.Contains(second, want) {
-			t.Fatalf("repeat body link %q missing connection token %q", second, want)
+			t.Fatalf("repeat body link %q missing %q (usage stays on every config)", second, want)
 		}
-	}
-	if strings.Contains(second, "GB") || strings.ContainsRune(second, '⏳') {
-		t.Fatalf("repeat body link must drop the usage block: %q", second)
 	}
 }
 
@@ -420,10 +411,9 @@ func TestIdentityTokenBodyVsDisplay(t *testing.T) {
 	}
 	client := model.Client{Email: "john@x"}
 
-	body := &SubService{remarkTemplate: tmpl, subscriptionBody: true, usageShown: map[string]bool{}}
-	_ = body.genTemplatedRemark(inbound, client, "", "ws") // first link consumes the usage block
-	if second := body.genTemplatedRemark(inbound, client, "", "ws"); strings.Contains(second, "john@x") {
-		t.Fatalf("repeat body link %q must drop the identity token", second)
+	body := &SubService{remarkTemplate: tmpl, subscriptionBody: true}
+	if got := body.genTemplatedRemark(inbound, client, "", "ws"); !strings.Contains(got, "john@x") {
+		t.Fatalf("body link %q must keep the identity token on every config", got)
 	}
 
 	display := &SubService{remarkTemplate: tmpl, subscriptionBody: false}
@@ -469,9 +459,9 @@ func TestStatusEmoji(t *testing.T) {
 		want  string
 	}{
 		{xray.ClientTraffic{Enable: true, Total: 10 * gb, Up: gb}, "✅"},
-		{xray.ClientTraffic{Enable: true, Total: 10 * gb, Up: 10 * gb, Down: 1}, "🚫"},
-		{xray.ClientTraffic{Enable: false}, "🚫"},
-		{xray.ClientTraffic{Enable: true, ExpiryTime: 1000}, "⏳"},
+		{xray.ClientTraffic{Enable: true, Total: 10 * gb, Up: 10 * gb, Down: 1}, "❌"},
+		{xray.ClientTraffic{Enable: false}, "❌"},
+		{xray.ClientTraffic{Enable: true, ExpiryTime: 1000}, "❌"},
 	}
 	for _, c := range cases {
 		if got := statusEmoji(c.stats); got != c.want {
@@ -515,9 +505,10 @@ func TestTimeLeftLabel(t *testing.T) {
 	if got := timeLeftLabel(0); got != "∞" {
 		t.Errorf("timeLeftLabel(0) = %q, want ∞", got)
 	}
-	// Delayed-start: negative expiry = duration in ms. 1000ms = 1 second = "0m".
-	if got := timeLeftLabel(-1000); got != "0m" {
-		t.Errorf("timeLeftLabel(-1000) = %q, want 0m", got)
+	// Delayed-start: negative expiry = duration in ms. 1000ms = 1 second,
+	// rendered as Persian "0 دقیقه" (the GUCCI label style).
+	if got := timeLeftLabel(-1000); got != "0 دقیقه" {
+		t.Errorf("timeLeftLabel(-1000) = %q, want 0 دقیقه", got)
 	}
 }
 
@@ -647,11 +638,10 @@ func TestExpandRemarkVars_SingleBracketUI(t *testing.T) {
 	}
 }
 
-func TestUsageOnFirstLinkOnly_SingleBracket(t *testing.T) {
+func TestUsageOnAllLinks_SingleBracket(t *testing.T) {
 	s := &SubService{
 		remarkTemplate:   "{STATUS_EMOJI} {{INBOUND}}|📊{{TRAFFIC_LEFT}}",
 		subscriptionBody: true,
-		usageShown:       map[string]bool{},
 	}
 	inbound := &model.Inbound{
 		Remark: "DE",
@@ -666,19 +656,17 @@ func TestUsageOnFirstLinkOnly_SingleBracket(t *testing.T) {
 	client := model.Client{Email: "alice@x"}
 	first := s.genTemplatedRemark(inbound, client, "", "ws")
 	second := s.genTemplatedRemark(inbound, client, "", "ws")
-	if !strings.Contains(first, "📊") {
-		t.Fatalf("first link should carry usage: %q", first)
-	}
-	if strings.Contains(second, "📊") {
-		t.Fatalf("second link must not carry usage: %q", second)
+	for _, link := range []string{first, second} {
+		if !strings.Contains(link, "📊") {
+			t.Fatalf("every link should carry usage: %q", link)
+		}
 	}
 }
 
-func TestEmailOnFirstLinkOnly(t *testing.T) {
+func TestEmailOnAllLinks(t *testing.T) {
 	s := &SubService{
 		remarkTemplate:   "{{INBOUND}} {{EMAIL}}|📊{{TRAFFIC_LEFT}}",
 		subscriptionBody: true,
-		usageShown:       map[string]bool{},
 	}
 	inbound := &model.Inbound{
 		Remark: "DE",
@@ -691,14 +679,13 @@ func TestEmailOnFirstLinkOnly(t *testing.T) {
 	client := model.Client{Email: "alice@x"}
 	first := s.genTemplatedRemark(inbound, client, "", "ws")
 	second := s.genTemplatedRemark(inbound, client, "", "ws")
-	if !strings.Contains(first, "alice@x") {
-		t.Fatalf("first link should carry email: %q", first)
-	}
-	if strings.Contains(second, "alice@x") {
-		t.Fatalf("second link must not carry email: %q", second)
-	}
-	if !strings.Contains(second, "DE") {
-		t.Fatalf("second link should still carry the inbound name: %q", second)
+	for _, link := range []string{first, second} {
+		if !strings.Contains(link, "alice@x") {
+			t.Fatalf("every link should carry the email: %q", link)
+		}
+		if !strings.Contains(link, "DE") {
+			t.Fatalf("every link should carry the inbound name: %q", link)
+		}
 	}
 }
 
@@ -713,46 +700,32 @@ func TestIdentityOnAllLinks(t *testing.T) {
 			Up:     20 * gb,
 		}},
 	}
-	tests := []struct {
-		name       string
-		enabled    bool
-		wantSecond string
-	}{
-		{name: "disabled", wantSecond: "DE"},
-		{name: "enabled", enabled: true, wantSecond: "DE-alice@x|alice@x"},
+	s := &SubService{
+		remarkTemplate:   template,
+		subscriptionBody: true,
 	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			s := &SubService{
-				remarkTemplate:         template,
-				subscriptionBody:       true,
-				showIdentityOnAllLinks: tt.enabled,
-			}
-			client := model.Client{Email: "alice@x"}
-			if got := s.genTemplatedRemark(inbound, client, "", "ws"); got != "DE-alice@x|alice@x|📊80.00GB|✅" {
-				t.Fatalf("first link = %q", got)
-			}
-			if got := s.genTemplatedRemark(inbound, client, "", "ws"); got != tt.wantSecond {
-				t.Fatalf("second link = %q, want %q", got, tt.wantSecond)
-			}
-		})
+	client := model.Client{Email: "alice@x"}
+	const want = "DE-alice@x|alice@x|📊80.00GB|✅"
+	for i := 0; i < 2; i++ {
+		if got := s.genTemplatedRemark(inbound, client, "", "ws"); got != want {
+			t.Fatalf("link %d = %q, want full template %q", i+1, got, want)
+		}
 	}
 }
 
-func TestSharedSubIDRemark_FullInfoOncePerSubscription(t *testing.T) {
+func TestSharedSubIDRemark_FullInfoOnEveryCredential(t *testing.T) {
 	const tmpl = "{{INBOUND}}-{{EMAIL}}"
 	s := &SubService{
 		remarkTemplate:   tmpl,
 		subscriptionBody: true,
-		usageShown:       map[string]bool{},
 	}
 	first := model.Client{Email: "first@example", SubID: "shared-sub"}
 	second := model.Client{Email: "second@example", SubID: "shared-sub"}
 	if got := s.genTemplatedRemark(&model.Inbound{Remark: "DE"}, first, "", "tcp"); got != "DE-first@example" {
 		t.Fatalf("first credential remark = %q", got)
 	}
-	if got := s.genTemplatedRemark(&model.Inbound{Remark: "FI"}, second, "", "tcp"); got != "FI" {
-		t.Fatalf("second credential with shared subId remark = %q, want identity suppressed", got)
+	if got := s.genTemplatedRemark(&model.Inbound{Remark: "FI"}, second, "", "tcp"); got != "FI-second@example" {
+		t.Fatalf("second credential remark = %q, want full identity on every credential", got)
 	}
 }
 

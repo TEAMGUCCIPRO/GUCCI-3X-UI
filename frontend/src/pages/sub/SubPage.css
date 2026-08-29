@@ -1,22 +1,50 @@
+/* GUCCI neon-purple gaming theme for the subscription page. */
 .subscription-page {
-  --bg-page: #e6e8ec;
-  --bg-card: #ffffff;
+  --bg-page: #0b0616;
+  --bg-card: #140b26;
+  --neon: #a855f7;
+  --neon-bright: #d8b4fe;
+  --neon-pink: #ec4899;
+  --neon-deep: #4c1d95;
   min-height: 100vh;
-  background: var(--bg-page);
+  background:
+    radial-gradient(1200px 600px at 15% -10%, rgba(124, 58, 237, 0.28), transparent 60%),
+    radial-gradient(1000px 700px at 110% 20%, rgba(168, 85, 247, 0.22), transparent 55%),
+    radial-gradient(900px 800px at 50% 120%, rgba(236, 72, 153, 0.16), transparent 60%),
+    linear-gradient(160deg, #0b0616 0%, #150a2a 45%, #0d0620 100%);
+  background-attachment: fixed;
+}
+
+@keyframes gucciGridMove {
+  0% { background-position: 0 0; }
+  100% { background-position: 60px 60px; }
+}
+
+.subscription-page::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  background-image:
+    linear-gradient(rgba(168, 85, 247, 0.07) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(168, 85, 247, 0.07) 1px, transparent 1px);
+  background-size: 60px 60px;
+  animation: gucciGridMove 6s linear infinite;
+  z-index: 0;
 }
 
 @keyframes gucciPulseGlow {
   0% {
     border-color: #a855f7;
-    box-shadow: 0 0 15px rgba(168, 85, 247, 0.4), inset 0 0 15px rgba(168, 85, 247, 0.2);
+    box-shadow: 0 0 18px rgba(168, 85, 247, 0.5), inset 0 0 22px rgba(168, 85, 247, 0.25);
   }
   50% {
     border-color: #ec4899;
-    box-shadow: 0 0 30px rgba(236, 72, 153, 0.6), inset 0 0 20px rgba(236, 72, 153, 0.3);
+    box-shadow: 0 0 38px rgba(236, 72, 153, 0.75), inset 0 0 30px rgba(236, 72, 153, 0.4);
   }
   100% {
     border-color: #a855f7;
-    box-shadow: 0 0 15px rgba(168, 85, 247, 0.4), inset 0 0 15px rgba(168, 85, 247, 0.2);
+    box-shadow: 0 0 18px rgba(168, 85, 247, 0.5), inset 0 0 22px rgba(168, 85, 247, 0.25);
   }
 }
 
@@ -26,44 +54,93 @@
   100% { background-position: 0% 50%; }
 }
 
+@keyframes gucciLightning {
+  0%, 86%, 100% { opacity: 0; }
+  87% { opacity: 0.55; }
+  88% { opacity: 0.1; }
+  89% { opacity: 0.7; }
+  90% { opacity: 0.05; }
+  91% { opacity: 0.85; }
+  92% { opacity: 0.1; }
+}
+
+@keyframes gucciBoltSpin {
+  0% { transform: rotate(0deg) scale(1); filter: drop-shadow(0 0 6px #e9d5ff); }
+  50% { transform: rotate(180deg) scale(1.15); filter: drop-shadow(0 0 14px #a855f7); }
+  100% { transform: rotate(360deg) scale(1); filter: drop-shadow(0 0 6px #e9d5ff); }
+}
+
+@keyframes gucciTitleNeon {
+  0%, 100% { text-shadow: 0 0 8px #c084fc, 0 0 22px #a855f7, 0 0 46px #7e22ce; }
+  50% { text-shadow: 0 0 14px #e9d5ff, 0 0 34px #c084fc, 0 0 70px #a855f7; }
+}
+
 .gucci-promo-banner {
-  background: linear-gradient(-45deg, #2e1065, #581c87, #7e22ce, #3b0764);
-  background-size: 300% 300%;
-  animation: gucciGradientShift 8s ease infinite, gucciPulseGlow 4s ease-in-out infinite;
+  background: linear-gradient(-45deg, #1e0a3c, #3b0764, #581c87, #7e22ce, #2e1065);
+  background-size: 350% 350%;
+  animation: gucciGradientShift 7s ease infinite, gucciPulseGlow 3.5s ease-in-out infinite;
   border-radius: 20px;
-  padding: 24px 16px;
+  padding: 28px 16px;
   margin-bottom: 24px;
   text-align: center;
   position: relative;
   overflow: hidden;
+  border: 2px solid rgba(168, 85, 247, 0.9);
+}
+
+/* lightning bolt overlay */
+.gucci-promo-banner::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(115deg, transparent 30%, rgba(233, 213, 255, 0.28) 46%, rgba(168, 85, 247, 0.12) 50%, transparent 62%);
+  animation: gucciLightning 4s ease-in-out infinite;
+  pointer-events: none;
+}
+
+.promo-title {
+  font-size: 24px;
+  font-weight: 900;
+  color: #faf5ff;
+  margin-bottom: 8px;
+  letter-spacing: 2px;
+  animation: gucciTitleNeon 2.2s ease-in-out infinite;
+}
+
+.promo-bolt {
+  display: inline-block;
+  font-size: 26px;
+  animation: gucciBoltSpin 3s linear infinite;
+  margin: 0 4px;
 }
 
 .gucci-promo-banner .promo-btn {
-  background: linear-gradient(135deg, #7e22ce 0%, #a855f7 100%) !important;
-  border: 1px solid #c084fc !important;
+  background: linear-gradient(135deg, #7e22ce 0%, #a855f7 55%, #c084fc 100%) !important;
+  border: 1px solid #d8b4fe !important;
   border-radius: 12px !important;
-  height: 44px !important;
+  height: 46px !important;
   font-size: 14px !important;
-  font-weight: 700 !important;
+  font-weight: 800 !important;
   color: #ffffff !important;
-  transition: all 0.3s ease !important;
-  box-shadow: 0 4px 15px rgba(126, 34, 206, 0.4) !important;
+  transition: all 0.25s ease !important;
+  box-shadow: 0 4px 18px rgba(168, 85, 247, 0.55) !important;
+  text-shadow: 0 0 6px rgba(76, 29, 149, 0.9);
 }
 
 .gucci-promo-banner .promo-btn:hover {
-  transform: translateY(-2px) scale(1.02);
-  box-shadow: 0 6px 20px rgba(168, 85, 247, 0.7) !important;
-  background: linear-gradient(135deg, #9333ea 0%, #c084fc 100%) !important;
+  transform: translateY(-3px) scale(1.04);
+  box-shadow: 0 8px 28px rgba(196, 132, 252, 0.9) !important;
+  background: linear-gradient(135deg, #9333ea 0%, #c084fc 60%, #e9d5ff 100%) !important;
 }
 
 .subscription-page.is-dark {
-  --bg-page: #1a1b1f;
-  --bg-card: #23252b;
+  --bg-page: #0b0616;
+  --bg-card: #140b26;
 }
 
 .subscription-page.is-dark.is-ultra {
-  --bg-page: #000;
-  --bg-card: #101013;
+  --bg-page: #05030b;
+  --bg-card: #0d0719;
 }
 
 .subscription-page .ant-layout,
@@ -73,10 +150,21 @@
 
 .subscription-page .content {
   padding: 24px 12px;
+  position: relative;
+  z-index: 1;
 }
 
 .subscription-card {
   margin-top: 8px;
+  border: 1px solid rgba(168, 85, 247, 0.6) !important;
+  border-radius: 18px !important;
+  box-shadow: 0 0 30px rgba(126, 34, 206, 0.45), 0 0 90px rgba(168, 85, 247, 0.2) !important;
+  background: linear-gradient(165deg, #170b2e 0%, #0f0820 100%) !important;
+}
+
+.subscription-card .ant-card-head {
+  border-bottom: 1px solid rgba(168, 85, 247, 0.35) !important;
+  color: #e9d5ff !important;
 }
 
 .qr-tag {
@@ -89,31 +177,31 @@
   margin-top: 12px;
   border-radius: 16px;
   overflow: hidden;
-  border: 1px solid rgba(168, 85, 247, 0.4);
-  box-shadow: 0 0 20px rgba(126, 34, 206, 0.25);
-  background: rgba(20, 10, 35, 0.6);
+  border: 1px solid rgba(168, 85, 247, 0.55);
+  box-shadow: 0 0 24px rgba(126, 34, 206, 0.35);
+  background: rgba(20, 10, 35, 0.7);
 }
 
 .info-table .ant-descriptions-view {
-  border-color: rgba(168, 85, 247, 0.3) !important;
+  border-color: rgba(168, 85, 247, 0.4) !important;
 }
 
 .info-table .ant-descriptions-row {
-  border-bottom: 1px solid rgba(168, 85, 247, 0.2) !important;
+  border-bottom: 1px solid rgba(168, 85, 247, 0.3) !important;
 }
 
 .info-table .ant-descriptions-item-label {
-  background: linear-gradient(90deg, rgba(88, 28, 135, 0.5) 0%, rgba(126, 34, 206, 0.25) 100%) !important;
-  color: #d8b4fe !important;
-  font-weight: 700 !important;
+  background: linear-gradient(90deg, rgba(88, 28, 135, 0.7) 0%, rgba(126, 34, 206, 0.35) 100%) !important;
+  color: #e9d5ff !important;
+  font-weight: 800 !important;
   font-size: 13px !important;
-  border-inline-end: 1px solid rgba(168, 85, 247, 0.3) !important;
+  border-inline-end: 1px solid rgba(168, 85, 247, 0.4) !important;
   padding: 12px 16px !important;
 }
 
 .info-table .ant-descriptions-item-content {
-  background: rgba(15, 10, 25, 0.7) !important;
-  color: #f3e8ff !important;
+  background: rgba(15, 10, 25, 0.8) !important;
+  color: #faf5ff !important;
   font-size: 13px !important;
   font-weight: 600 !important;
   padding: 12px 16px !important;
@@ -132,6 +220,7 @@
 
 .sub-link-anchor:hover {
   text-decoration: underline;
+  text-shadow: 0 0 8px rgba(196, 132, 252, 0.8);
 }
 
 .sub-link-row {
@@ -140,26 +229,26 @@
   gap: 8px;
   padding: 10px 14px;
   border-radius: 12px;
-  background: linear-gradient(135deg, rgba(46, 16, 101, 0.6) 0%, rgba(88, 28, 135, 0.4) 100%);
-  border: 1px solid rgba(192, 132, 252, 0.4);
-  box-shadow: 0 0 10px rgba(168, 85, 247, 0.2);
+  background: linear-gradient(135deg, rgba(46, 16, 101, 0.7) 0%, rgba(88, 28, 135, 0.45) 100%);
+  border: 1px solid rgba(192, 132, 252, 0.5);
+  box-shadow: 0 0 12px rgba(168, 85, 247, 0.25);
   transition: all 0.3s ease;
 }
 
 .sub-link-row:hover {
   border-color: #ec4899;
-  box-shadow: 0 0 15px rgba(236, 72, 153, 0.5);
+  box-shadow: 0 0 20px rgba(236, 72, 153, 0.6);
   transform: translateY(-1px);
 }
 
 .is-dark .sub-link-row {
-  background: linear-gradient(135deg, rgba(20, 10, 35, 0.8) 0%, rgba(46, 16, 101, 0.6) 100%);
-  border-color: rgba(168, 85, 247, 0.4);
+  background: linear-gradient(135deg, rgba(20, 10, 35, 0.9) 0%, rgba(46, 16, 101, 0.7) 100%);
+  border-color: rgba(168, 85, 247, 0.5);
 }
 
 .is-dark .sub-link-row:hover {
   border-color: #ec4899;
-  box-shadow: 0 0 20px rgba(236, 72, 153, 0.6);
+  box-shadow: 0 0 24px rgba(236, 72, 153, 0.7);
 }
 
 .sub-link-tag {

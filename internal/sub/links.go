@@ -16,8 +16,7 @@ func NewLinkProvider() *LinkProvider {
 }
 
 func (p *LinkProvider) build(host string) *SubService {
-	remarkTemplate, _ := p.settingService.GetRemarkTemplate()
-	svc := NewSubService(remarkTemplate)
+	svc := NewSubService(gucciRemarkTemplate)
 	svc.PrepareForRequest(host)
 	return svc
 }

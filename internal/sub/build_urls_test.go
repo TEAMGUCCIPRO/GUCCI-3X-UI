@@ -42,7 +42,7 @@ func TestBuildURLs_NormalizesListenIP(t *testing.T) {
 }
 
 // A subscriber arriving on a real domain gets that exact domain in the Copy
-// URL, with the configured sub port — matching the Client Information page.
+// URL; the Docker/Railway build strips the default 2096 sub port.
 func TestBuildURLs_UsesSubscriberDomain(t *testing.T) {
 	initSubDB(t)
 	s := &SubService{}
@@ -50,13 +50,13 @@ func TestBuildURLs_UsesSubscriberDomain(t *testing.T) {
 
 	subURL, jsonURL, clashURL := s.BuildURLs("/sub/", "/json/", "/clash/", "ABC")
 
-	if subURL != "http://sub.example.com:2096/sub/ABC" {
+	if subURL != "http://sub.example.com/sub/ABC" {
 		t.Fatalf("subURL = %q", subURL)
 	}
-	if jsonURL != "http://sub.example.com:2096/json/ABC" {
+	if jsonURL != "http://sub.example.com/json/ABC" {
 		t.Fatalf("jsonURL = %q", jsonURL)
 	}
-	if clashURL != "http://sub.example.com:2096/clash/ABC" {
+	if clashURL != "http://sub.example.com/clash/ABC" {
 		t.Fatalf("clashURL = %q", clashURL)
 	}
 }
@@ -156,10 +156,10 @@ func TestBuildURLs_MalformedSubURIFallsBackToRequestBase(t *testing.T) {
 
 	_, jsonURL, clashURL := s.BuildURLs("/sub-xxx/", "/json/", "/clash/", "ABC")
 
-	if jsonURL != "http://sub.example.com:2096/json/ABC" {
-		t.Fatalf("jsonURL = %q, want fallback to request base %q", jsonURL, "http://sub.example.com:2096/json/ABC")
+	if jsonURL != "http://sub.example.com/json/ABC" {
+		t.Fatalf("jsonURL = %q, want fallback to request base %q", jsonURL, "http://sub.example.com/json/ABC")
 	}
-	if clashURL != "http://sub.example.com:2096/clash/ABC" {
-		t.Fatalf("clashURL = %q, want fallback to request base %q", clashURL, "http://sub.example.com:2096/clash/ABC")
+	if clashURL != "http://sub.example.com/clash/ABC" {
+		t.Fatalf("clashURL = %q, want fallback to request base %q", clashURL, "http://sub.example.com/clash/ABC")
 	}
 }

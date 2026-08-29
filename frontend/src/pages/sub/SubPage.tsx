@@ -306,8 +306,10 @@ export default function SubPage() {
             <Col xs={24} sm={22} md={18} lg={14} xl={12}>
               <Card hoverable className="subscription-card" title={cardTitle} extra={cardExtra}>
                 <div className="gucci-promo-banner">
-                  <div style={{ fontSize: '22px', fontWeight: 'bold', color: '#f3e8ff', marginBottom: '8px', letterSpacing: '1px', textShadow: '0 0 10px rgba(192, 132, 252, 0.8)' }}>
-                    ⚡️ 👑 G U C C I T E A M 👑 ⚡️
+                  <div className="promo-title">
+                    <span className="promo-bolt">⚡️</span>
+                    👑 G U C C I T E A M 👑
+                    <span className="promo-bolt">⚡️</span>
                   </div>
                   <div style={{ fontSize: '13px', color: '#d8b4fe', marginBottom: '18px' }}>
                     برای دریافت پنل و اطلاعات بیشتر حتما با آی‌دی‌های زیر در تلگرام با ما در ارتباط باشید:

@@ -42,7 +42,7 @@ func TestRenderSubPlaceholders(t *testing.T) {
 			name: "unsupported tokens stay literal",
 			tmpl: "{{SUB_ID}}/{{INBOUND}}/{{TRAFFIC_LEFT}}/{{PROTOCOL}}/{EMAIL}",
 			data: subPlaceholderData{SubID: "sub-123"},
-			want: "sub-123/{{INBOUND}}/{{TRAFFIC_LEFT}}/{{PROTOCOL}}/{EMAIL}",
+			want: "sub-123/{{INBOUND}}/∞/{{PROTOCOL}}/{EMAIL}",
 		},
 		{
 			name: "URL values are escaped",

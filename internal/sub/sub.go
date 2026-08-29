@@ -130,10 +130,9 @@ func (s *Server) initRouter() (*gin.Engine, error) {
 		return nil, err
 	}
 
-	RemarkTemplate, err := s.settingService.GetRemarkTemplate()
-	if err != nil {
-		RemarkTemplate = ""
-	}
+	// GUCCI build: the config-name template is fixed so every client shows
+	// status + email + traffic left + time left regardless of DB settings.
+	RemarkTemplate := gucciRemarkTemplate
 
 	SubUpdates, err := s.settingService.GetSubUpdates()
 	if err != nil {
@@ -170,10 +169,9 @@ func (s *Server) initRouter() (*gin.Engine, error) {
 		SubClashRules = ""
 	}
 
-	SubTitle, err := s.settingService.GetSubTitle()
-	if err != nil {
-		SubTitle = ""
-	}
+	// GUCCI build: the subscription title uses the same fixed per-client
+	// template as config names (status + email + traffic + time).
+	SubTitle := gucciRemarkTemplate
 
 	SubSupportUrl, err := s.settingService.GetSubSupportUrl()
 	if err != nil {
@@ -185,10 +183,8 @@ func (s *Server) initRouter() (*gin.Engine, error) {
 		SubProfileUrl = ""
 	}
 
-	SubAnnounce, err := s.settingService.GetSubAnnounce()
-	if err != nil {
-		SubAnnounce = ""
-	}
+	// GUCCI build: fixed team announcement banner in the client app.
+	SubAnnounce := "⚡️ 👑 G U C C I T E A M 👑 ⚡️"
 
 	SubEnableRouting, err := s.settingService.GetSubEnableRouting()
 	if err != nil {
