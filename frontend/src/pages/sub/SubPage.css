@@ -116,6 +116,96 @@
   animation: gucciTitleNeon 2.2s ease-in-out infinite;
 }
 
+.promo-title-inner {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 4px;
+}
+
+.gucci-animated-bolt {
+  display: inline-block;
+  font-size: 28px;
+  animation: gucciBoltEnergy 1.6s ease-in-out infinite alternate;
+  filter: drop-shadow(0 0 10px #facc15) drop-shadow(0 0 20px #eab308) drop-shadow(0 0 35px #ca8a04);
+  transform-origin: center center;
+}
+
+@keyframes gucciBoltEnergy {
+  0% {
+    transform: scale(0.95) rotate(-10deg);
+    filter: drop-shadow(0 0 8px #facc15) drop-shadow(0 0 16px #eab308);
+  }
+  50% {
+    transform: scale(1.22) rotate(12deg);
+    filter: drop-shadow(0 0 18px #fef08a) drop-shadow(0 0 32px #f59e0b) drop-shadow(0 0 45px #a855f7);
+  }
+  100% {
+    transform: scale(1.05) rotate(-5deg);
+    filter: drop-shadow(0 0 12px #facc15) drop-shadow(0 0 24px #eab308);
+  }
+}
+
+.gucci-animated-crown {
+  display: inline-block;
+  font-size: 30px;
+  margin: 0 4px;
+  animation: gucciCrownFloat 2.4s ease-in-out infinite;
+  filter: drop-shadow(0 0 12px #fbbf24) drop-shadow(0 0 25px #d97706);
+  transform-origin: bottom center;
+}
+
+@keyframes gucciCrownFloat {
+  0%, 100% {
+    transform: translateY(0) rotate(0deg) scale(1);
+    filter: drop-shadow(0 0 10px #fbbf24) drop-shadow(0 0 20px #d97706);
+  }
+  25% {
+    transform: translateY(-6px) rotate(-8deg) scale(1.12);
+    filter: drop-shadow(0 0 18px #fef3c7) drop-shadow(0 0 32px #f59e0b) drop-shadow(0 0 42px #ec4899);
+  }
+  75% {
+    transform: translateY(-4px) rotate(8deg) scale(1.1);
+    filter: drop-shadow(0 0 18px #fef3c7) drop-shadow(0 0 32px #f59e0b) drop-shadow(0 0 42px #8b5cf6);
+  }
+}
+
+.gucci-animated-spin {
+  display: inline-block;
+  font-size: 26px;
+  margin: 0 4px;
+  animation: gucciSpinCircle 3s linear infinite;
+  filter: drop-shadow(0 0 8px #38bdf8);
+}
+
+@keyframes gucciSpinCircle {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+.gucci-animated-wordmark {
+  display: inline-block;
+  background: linear-gradient(135deg, #ffffff 0%, #fef08a 25%, #c084fc 50%, #f472b6 75%, #38bdf8 100%);
+  background-size: 300% 300%;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  animation: gucciTextGradient 4s ease-in-out infinite, gucciTextPulse 2s ease-in-out infinite;
+  font-weight: 900;
+  letter-spacing: 3px;
+  filter: drop-shadow(0 0 14px rgba(192, 132, 252, 0.65));
+}
+
+@keyframes gucciTextGradient {
+  0%, 100% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+}
+
+@keyframes gucciTextPulse {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.02); }
+}
+
 .promo-subtitle {
   font-size: 13px;
   color: #d8b4fe;

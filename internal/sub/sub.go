@@ -130,9 +130,9 @@ func (s *Server) initRouter() (*gin.Engine, error) {
 		return nil, err
 	}
 
-	// GUCCI build: the config-name template is fixed so every client shows
-	// status + email + traffic left + time left regardless of DB settings.
-	RemarkTemplate := gucciRemarkTemplate
+	// GUCCI build: the config-name template for real configs is fixed to status + email
+	// (e.g. ✅ 👤 Qm5V4Pp5 or ❌ 👤 Qm5V4Pp5).
+	RemarkTemplate := gucciConfigRemarkTemplate
 
 	SubUpdates, err := s.settingService.GetSubUpdates()
 	if err != nil {
@@ -169,9 +169,8 @@ func (s *Server) initRouter() (*gin.Engine, error) {
 		SubClashRules = ""
 	}
 
-	// GUCCI build: the subscription title uses the same fixed per-client
-	// template as config names (status + email + traffic + time).
-	SubTitle := gucciRemarkTemplate
+	// GUCCI build: the subscription title uses the full format (status + email + traffic + time).
+	SubTitle := gucciInfoRemarkTemplate
 
 	SubSupportUrl, err := s.settingService.GetSubSupportUrl()
 	if err != nil {

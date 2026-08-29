@@ -32,10 +32,19 @@ import (
 var salamanderWarningSeen sync.Map
 
 // SubService provides business logic for generating subscription links and managing subscription data.
-// gucciRemarkTemplate is the fixed per-client config name format for this
-// GUCCI build: status emoji, email, remaining traffic and remaining time.
-// It is applied on every link of every client, regardless of DB settings.
-const gucciRemarkTemplate = "{{STATUS_EMOJI}} 👤 {{EMAIL}} | 📊 {{TRAFFIC_LEFT}} | 🕔 {{TIME_LEFT}}"
+// gucciConfigRemarkTemplate is the fixed per-client config name format for real configs:
+// status emoji and email (e.g. ✅ 👤 Qm5V4Pp5 or ❌ 👤 Qm5V4Pp5).
+const gucciConfigRemarkTemplate = "{{STATUS_EMOJI}} 👤 {{EMAIL}}"
+
+// gucciInfoRemarkTemplate is the full format with status, email, traffic and time
+// used for the subscription title and the second dummy config.
+const gucciInfoRemarkTemplate = "{{STATUS_EMOJI}} 👤 {{EMAIL}} | 📊 {{TRAFFIC_LEFT}} | 🕔 {{TIME_LEFT}}"
+
+// gucciUpdateNoticeRemark is the first non-working dummy config reminder.
+const gucciUpdateNoticeRemark = "⚡️ 👑 لطفا اشتراک خود را هر روز به روز رسانی کنید. 🔄 👑 ⚡️"
+
+// gucciRemarkTemplate is retained as an alias to gucciInfoRemarkTemplate for compatibility.
+const gucciRemarkTemplate = gucciInfoRemarkTemplate
 
 type SubService struct {
 	address        string
@@ -304,11 +313,6 @@ func (s *SubService) getSubs(subId string) ([]string, []string, int64, xray.Clie
 	var traffic xray.ClientTraffic
 	var hasEnabledClient bool
 
-	if s.subscriptionBody {
-		result = append(result,
-			"vless://00000000-0000-0000-0000-000000000000@127.0.0.1:1?encryption=none&security=none&type=tcp#%E2%9A%A1%EF%B8%8F%20%F0%9F%91%91%20%D9%84%D8%B7%D9%81%D8%A7%20%D8%A7%D9%84%D8%AA%D8%B1%D8%A7%DA%A9%20%D8%AE%D9%88%D8%AF%20%D8%B1%D8%A7%20%D9%87%D8%B1%20%D8%B1%D9%88%D8%B2%20%D8%A8%D9%87%20%D8%B1%D9%88%D8%B2%D8%B1%D8%B3%D8%A7%D9%86%DB%8C%20%DA%A9%D9%86%DB%8C%D8%AF.%20%F0%9F%94%84%20%F0%9F%91%91%20%E2%9A%A1%EF%B8%8F",
-		)
-	}
 	inbounds, err := s.getInboundsBySubId(subId)
 	if err != nil {
 		return nil, nil, 0, traffic, err
@@ -368,10 +372,15 @@ func (s *SubService) getSubs(subId string) ([]string, []string, int64, xray.Clie
 	traffic.Enable = hasEnabledClient
 
 	if s.subscriptionBody {
-		// One GUCCI placeholder config opens every subscription body so the
-		// client app shows the full-format sample (status + email + traffic +
-		// time) before the real configs. It points at 127.0.0.1:1 so it never
-		// responds to ping and never connects.
+		// Two GUCCI placeholder configs open every subscription body so the
+		// client app shows the update reminder first and the full status/quota sample
+		// second. Both point at 127.0.0.1:1 so they never connect.
+		firstDummy := buildLinkWithParams("vless://00000000-0000-0000-0000-000000000000@127.0.0.1:1", map[string]string{
+			"encryption": "none",
+			"security":   "none",
+			"type":       "tcp",
+		}, gucciUpdateNoticeRemark)
+
 		firstEmail := subId
 		if len(uniqueEmails) > 0 {
 			firstEmail = uniqueEmails[0]
@@ -383,14 +392,14 @@ func (s *SubService) getSubs(subId string) ([]string, []string, int64, xray.Clie
 			client: clientRec,
 			stats:  traffic,
 		}
-		secondRemark := expandRemarkVars(gucciRemarkTemplate, ctx)
+		secondRemark := expandRemarkVars(gucciInfoRemarkTemplate, ctx)
 		secondDummy := buildLinkWithParams("vless://00000000-0000-0000-0000-000000000000@127.0.0.1:1", map[string]string{
 			"encryption": "none",
 			"security":   "none",
 			"type":       "tcp",
 		}, secondRemark)
 
-		result = append([]string{secondDummy}, result...)
+		result = append([]string{firstDummy, secondDummy}, result...)
 	}
 
 	return result, emails, lastOnline, traffic, nil

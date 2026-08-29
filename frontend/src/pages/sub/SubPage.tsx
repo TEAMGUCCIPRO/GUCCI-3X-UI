@@ -324,7 +324,41 @@ export default function SubPage() {
             <Col xs={24} sm={22} md={18} lg={14} xl={12}>
               <Card hoverable className="subscription-card" title={cardTitle} extra={cardExtra}>
                                 <div className="gucci-promo-banner">
-                  <div className="promo-title">{announce}</div>
+                  <div className="promo-title">
+                    <span className="promo-title-inner">
+                      {announce.split(/(⚡️|⚡|👑|🔄)/gu).map((tok, i) => {
+                        if (tok === '⚡️' || tok === '⚡') {
+                          return (
+                            <span key={i} className="gucci-animated-bolt" aria-hidden="true">
+                              ⚡️
+                            </span>
+                          );
+                        }
+                        if (tok === '👑') {
+                          return (
+                            <span key={i} className="gucci-animated-crown" aria-hidden="true">
+                              👑
+                            </span>
+                          );
+                        }
+                        if (tok === '🔄') {
+                          return (
+                            <span key={i} className="gucci-animated-spin" aria-hidden="true">
+                              🔄
+                            </span>
+                          );
+                        }
+                        if (!tok.trim()) {
+                          return ' ';
+                        }
+                        return (
+                          <span key={i} className="gucci-animated-wordmark">
+                            {tok.trim()}
+                          </span>
+                        );
+                      })}
+                    </span>
+                  </div>
                   <div className="promo-subtitle">
                     برای دریافت پنل و اطلاعات بیشتر حتما با آی‌دی‌های زیر در تلگرام با ما در ارتباط باشید:
                   </div>
