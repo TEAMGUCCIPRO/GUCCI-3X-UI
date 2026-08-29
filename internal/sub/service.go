@@ -368,16 +368,10 @@ func (s *SubService) getSubs(subId string) ([]string, []string, int64, xray.Clie
 	traffic.Enable = hasEnabledClient
 
 	if s.subscriptionBody {
-		// Two GUCCI placeholder configs open every subscription body so the
-		// client app shows the refresh reminder and a full-format sample
-		// before the real configs. Both point at 127.0.0.1:1 so they never
-		// respond to ping and never connect.
-		firstDummy := buildLinkWithParams("vless://00000000-0000-0000-0000-000000000000@127.0.0.1:1", map[string]string{
-			"encryption": "none",
-			"security":   "none",
-			"type":       "tcp",
-		}, "⚡️ 👑 لطفا اشتراک خود را هر روز به روز رسانی کنید. 🔄 👑 ⚡️")
-
+		// One GUCCI placeholder config opens every subscription body so the
+		// client app shows the full-format sample (status + email + traffic +
+		// time) before the real configs. It points at 127.0.0.1:1 so it never
+		// responds to ping and never connects.
 		firstEmail := subId
 		if len(uniqueEmails) > 0 {
 			firstEmail = uniqueEmails[0]
@@ -396,7 +390,7 @@ func (s *SubService) getSubs(subId string) ([]string, []string, int64, xray.Clie
 			"type":       "tcp",
 		}, secondRemark)
 
-		result = append([]string{firstDummy, secondDummy}, result...)
+		result = append([]string{secondDummy}, result...)
 	}
 
 	return result, emails, lastOnline, traffic, nil

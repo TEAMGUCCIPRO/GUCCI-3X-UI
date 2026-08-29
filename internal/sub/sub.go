@@ -183,8 +183,9 @@ func (s *Server) initRouter() (*gin.Engine, error) {
 		SubProfileUrl = ""
 	}
 
-	// GUCCI build: fixed team announcement banner in the client app.
-	SubAnnounce := "⚡️ 👑 G U C C I T E A M 👑 ⚡️"
+	// GUCCI build: fixed team announcement banner in the client app, with the
+	// squared-letter GUCCI TEAM wordmark.
+	SubAnnounce := "⚡️ 👑 🅖🅤🅒🅒🅘 🅣🅔🅐🅜 👑 ⚡️"
 
 	SubEnableRouting, err := s.settingService.GetSubEnableRouting()
 	if err != nil {

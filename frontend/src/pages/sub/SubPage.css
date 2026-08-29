@@ -1,4 +1,4 @@
-/* GUCCI neon-purple gaming theme for the subscription page. */
+/* GUCCI neon gaming theme for the subscription page. */
 .subscription-page {
   --bg-page: #0b0616;
   --bg-card: #140b26;
@@ -64,15 +64,24 @@
   92% { opacity: 0.1; }
 }
 
-@keyframes gucciBoltSpin {
-  0% { transform: rotate(0deg) scale(1); filter: drop-shadow(0 0 6px #e9d5ff); }
-  50% { transform: rotate(180deg) scale(1.15); filter: drop-shadow(0 0 14px #a855f7); }
-  100% { transform: rotate(360deg) scale(1); filter: drop-shadow(0 0 6px #e9d5ff); }
-}
-
 @keyframes gucciTitleNeon {
   0%, 100% { text-shadow: 0 0 8px #c084fc, 0 0 22px #a855f7, 0 0 46px #7e22ce; }
   50% { text-shadow: 0 0 14px #e9d5ff, 0 0 34px #c084fc, 0 0 70px #a855f7; }
+}
+
+@keyframes gucciBounce {
+  0%, 100% { transform: translateY(0) scale(1); }
+  50% { transform: translateY(-3px) scale(1.03); }
+}
+
+@keyframes gucciShimmer {
+  0% { transform: translateX(-130%) skewX(-20deg); }
+  100% { transform: translateX(230%) skewX(-20deg); }
+}
+
+@keyframes gucciRainbow {
+  0% { filter: hue-rotate(0deg); }
+  100% { filter: hue-rotate(360deg); }
 }
 
 .gucci-promo-banner {
@@ -99,7 +108,7 @@
 }
 
 .promo-title {
-  font-size: 24px;
+  font-size: 26px;
   font-weight: 900;
   color: #faf5ff;
   margin-bottom: 8px;
@@ -107,30 +116,127 @@
   animation: gucciTitleNeon 2.2s ease-in-out infinite;
 }
 
-.promo-bolt {
-  display: inline-block;
-  font-size: 26px;
-  animation: gucciBoltSpin 3s linear infinite;
-  margin: 0 4px;
+.promo-subtitle {
+  font-size: 13px;
+  color: #d8b4fe;
+  margin-bottom: 18px;
+  text-shadow: 0 0 8px rgba(168, 85, 247, 0.6);
 }
 
-.gucci-promo-banner .promo-btn {
-  background: linear-gradient(135deg, #7e22ce 0%, #a855f7 55%, #c084fc 100%) !important;
-  border: 1px solid #d8b4fe !important;
+/* ---- gaming promo buttons: purple / red / blue / yellow / silver / insta / yt ---- */
+.promo-grid .ant-col {
+  animation: gucciBounce 2.6s ease-in-out infinite;
+}
+.promo-grid .ant-col:nth-child(2n) { animation-delay: 0.4s; }
+.promo-grid .ant-col:nth-child(3n) { animation-delay: 0.8s; }
+.promo-grid .ant-col:nth-child(5n) { animation-delay: 1.2s; }
+
+.promo-btn {
+  position: relative;
+  overflow: hidden;
   border-radius: 12px !important;
-  height: 46px !important;
+  height: 48px !important;
   font-size: 14px !important;
   font-weight: 800 !important;
   color: #ffffff !important;
+  border: 1px solid rgba(255, 255, 255, 0.45) !important;
   transition: all 0.25s ease !important;
+}
+
+.promo-btn::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: 40%;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.55), transparent);
+  animation: gucciShimmer 2.8s ease-in-out infinite;
+  pointer-events: none;
+}
+
+.promo-btn:hover {
+  transform: translateY(-3px) scale(1.04) !important;
+  filter: brightness(1.15);
+  box-shadow: 0 8px 28px rgba(255, 255, 255, 0.25), 0 0 24px currentColor !important;
+}
+
+.promo-btn--purple {
+  background: linear-gradient(135deg, #7e22ce 0%, #a855f7 55%, #c084fc 100%) !important;
   box-shadow: 0 4px 18px rgba(168, 85, 247, 0.55) !important;
   text-shadow: 0 0 6px rgba(76, 29, 149, 0.9);
 }
 
-.gucci-promo-banner .promo-btn:hover {
-  transform: translateY(-3px) scale(1.04);
-  box-shadow: 0 8px 28px rgba(196, 132, 252, 0.9) !important;
-  background: linear-gradient(135deg, #9333ea 0%, #c084fc 60%, #e9d5ff 100%) !important;
+.promo-btn--red {
+  background: linear-gradient(135deg, #991b1b 0%, #dc2626 50%, #f87171 100%) !important;
+  box-shadow: 0 4px 18px rgba(220, 38, 38, 0.55) !important;
+  text-shadow: 0 0 6px rgba(127, 29, 29, 0.9);
+}
+
+.promo-btn--blue {
+  background: linear-gradient(135deg, #1e3a8a 0%, #2563eb 50%, #60a5fa 100%) !important;
+  box-shadow: 0 4px 18px rgba(37, 99, 235, 0.55) !important;
+  text-shadow: 0 0 6px rgba(30, 58, 138, 0.9);
+}
+
+.promo-btn--yellow {
+  background: linear-gradient(135deg, #b45309 0%, #f59e0b 55%, #fde047 100%) !important;
+  box-shadow: 0 4px 18px rgba(245, 158, 11, 0.55) !important;
+  text-shadow: 0 0 6px rgba(120, 53, 15, 0.9);
+}
+
+.promo-btn--silver {
+  background: linear-gradient(135deg, #94a3b8 0%, #e2e8f0 45%, #f8fafc 55%, #cbd5e1 100%) !important;
+  color: #1e293b !important;
+  box-shadow: 0 4px 18px rgba(203, 213, 225, 0.5) !important;
+  text-shadow: 0 1px 0 rgba(255, 255, 255, 0.6);
+  border-color: rgba(255, 255, 255, 0.9) !important;
+}
+
+.promo-btn--insta {
+  background: linear-gradient(45deg, #f09433 0%, #e6683c 25%, #dc2743 50%, #cc2366 75%, #bc1888 100%) !important;
+  box-shadow: 0 4px 18px rgba(220, 39, 67, 0.55) !important;
+  text-shadow: 0 0 6px rgba(130, 0, 80, 0.9);
+}
+
+.promo-btn--yt {
+  background: linear-gradient(135deg, #b30000 0%, #ff0000 50%, #ff4d4d 100%) !important;
+  box-shadow: 0 4px 18px rgba(255, 0, 0, 0.55) !important;
+  text-shadow: 0 0 6px rgba(90, 0, 0, 0.9);
+}
+
+/* ---- official app icon badges ---- */
+.app-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 30px;
+  height: 30px;
+  border-radius: 8px;
+  flex-shrink: 0;
+  color: #ffffff;
+}
+
+.app-icon svg {
+  filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.35));
+}
+
+.app-icon--telegram {
+  background: linear-gradient(135deg, #37aee2 0%, #1e96c8 100%);
+  box-shadow: 0 0 10px rgba(55, 174, 226, 0.8);
+}
+
+.app-icon--instagram {
+  background: linear-gradient(45deg, #f09433 0%, #e6683c 25%, #dc2743 50%, #cc2366 75%, #bc1888 100%);
+  box-shadow: 0 0 10px rgba(220, 39, 67, 0.8);
+}
+
+.app-icon--youtube {
+  background: #ff0000;
+  box-shadow: 0 0 10px rgba(255, 0, 0, 0.8);
+}
+
+.promo-label {
+  white-space: nowrap;
 }
 
 .subscription-page.is-dark {
