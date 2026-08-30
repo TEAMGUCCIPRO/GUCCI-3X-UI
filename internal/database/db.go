@@ -2546,9 +2546,9 @@ func seed3InboundsAnd3HostsMigration() error {
 }
 
 func normalizeGucciSubscriptionSettings() error {
-	const defaultSubURI = "https://gucci.teamgucci.workers.dev/sub/"
-	const defaultJsonURI = "https://gucci.teamgucci.workers.dev/json/"
-	const defaultClashURI = "https://gucci.teamgucci.workers.dev/clash/"
+	const defaultSubURI = "https://gucci.teamgucci.workers.dev:2096/sub/"
+	const defaultJsonURI = "https://gucci.teamgucci.workers.dev:2096/json/"
+	const defaultClashURI = "https://gucci.teamgucci.workers.dev:2096/clash/"
 
 	// 1. subURI
 	var subSetting model.Setting

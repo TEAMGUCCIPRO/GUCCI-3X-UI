@@ -58,9 +58,9 @@ export class AllSetting {
   subKeyFile = '';
   subUpdates = 12;
   subEncrypt = true;
-  subURI = 'https://gucci.teamgucci.workers.dev/sub/';
-  subJsonURI = 'https://gucci.teamgucci.workers.dev/json/';
-  subClashURI = 'https://gucci.teamgucci.workers.dev/clash/';
+  subURI = 'https://gucci.teamgucci.workers.dev:2096/sub/';
+  subJsonURI = 'https://gucci.teamgucci.workers.dev:2096/json/';
+  subClashURI = 'https://gucci.teamgucci.workers.dev:2096/clash/';
   subClashEnableRouting = false;
   subClashRules = '';
   subJsonMux = '';

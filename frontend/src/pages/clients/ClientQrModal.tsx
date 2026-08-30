@@ -41,8 +41,8 @@ interface ApiMsg<T = unknown> {
 
 const DEFAULT_SUB: SubSettings = {
   enable: false,
-  subURI: 'https://gucci.teamgucci.workers.dev/sub/',
-  subJsonURI: 'https://gucci.teamgucci.workers.dev/json/',
+  subURI: 'https://gucci.teamgucci.workers.dev:2096/sub/',
+  subJsonURI: 'https://gucci.teamgucci.workers.dev:2096/json/',
   subJsonEnable: false,
   publicHost: '',
 };
@@ -63,10 +63,10 @@ export default function ClientQrModal({
   const subEnabled = !!subSettings?.enable;
   const baseSubURI = subSettings?.subURI && !subSettings.subURI.includes('railway.app')
     ? subSettings.subURI
-    : 'https://gucci.teamgucci.workers.dev/sub/';
+    : 'https://gucci.teamgucci.workers.dev:2096/sub/';
   const baseJsonURI = subSettings?.subJsonURI && !subSettings.subJsonURI.includes('railway.app')
     ? subSettings.subJsonURI
-    : 'https://gucci.teamgucci.workers.dev/json/';
+    : 'https://gucci.teamgucci.workers.dev:2096/json/';
   const subLink = subId && subEnabled ? baseSubURI + subId : '';
   const subJsonLink =
     subId && subEnabled && subSettings?.subJsonEnable

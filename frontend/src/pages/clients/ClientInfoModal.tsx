@@ -75,10 +75,10 @@ interface ApiMsg<T = unknown> {
 
 const DEFAULT_SUB: SubSettings = {
   enable: false,
-  subURI: 'https://gucci.teamgucci.workers.dev/sub/',
-  subJsonURI: 'https://gucci.teamgucci.workers.dev/json/',
+  subURI: 'https://gucci.teamgucci.workers.dev:2096/sub/',
+  subJsonURI: 'https://gucci.teamgucci.workers.dev:2096/json/',
   subJsonEnable: false,
-  subClashURI: 'https://gucci.teamgucci.workers.dev/clash/',
+  subClashURI: 'https://gucci.teamgucci.workers.dev:2096/clash/',
   subClashEnable: false,
   publicHost: '',
 };
@@ -171,13 +171,13 @@ export default function ClientInfoModal({
   const subId = client?.subId;
   const baseSubURI = subSettings?.subURI && !subSettings.subURI.includes('railway.app')
     ? subSettings.subURI
-    : 'https://gucci.teamgucci.workers.dev/sub/';
+    : 'https://gucci.teamgucci.workers.dev:2096/sub/';
   const baseJsonURI = subSettings?.subJsonURI && !subSettings.subJsonURI.includes('railway.app')
     ? subSettings.subJsonURI
-    : 'https://gucci.teamgucci.workers.dev/json/';
+    : 'https://gucci.teamgucci.workers.dev:2096/json/';
   const baseClashURI = subSettings?.subClashURI && !subSettings.subClashURI.includes('railway.app')
     ? subSettings.subClashURI
-    : 'https://gucci.teamgucci.workers.dev/clash/';
+    : 'https://gucci.teamgucci.workers.dev:2096/clash/';
   const subLink = subId ? baseSubURI + subId : '';
   const subJsonLink =
     subId && subSettings?.subJsonEnable
