@@ -380,7 +380,7 @@ export default function InboundsPage() {
       const clients = settings.clients || [];
       const baseSubURI = subSettings.subURI && !subSettings.subURI.includes('railway.app')
         ? subSettings.subURI
-        : 'https://gucci.teamgucci-d7a.workers.dev:2096/sub/';
+        : 'https://gucci.teamgucci.workers.dev/sub/';
       const subLinks: string[] = [];
       for (const c of clients) {
         if (c.subId) {
@@ -413,7 +413,7 @@ export default function InboundsPage() {
     const out: string[] = [];
     const baseSubURI = subSettings.subURI && !subSettings.subURI.includes('railway.app')
       ? subSettings.subURI
-      : 'https://gucci.teamgucci-d7a.workers.dev:2096/sub/';
+      : 'https://gucci.teamgucci.workers.dev/sub/';
     for (const ib of hydrated) {
       const settings = coerceInboundJsonField(ib.settings) as { clients?: { subId?: string }[] };
       const clients = settings.clients || [];

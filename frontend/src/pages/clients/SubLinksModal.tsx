@@ -46,10 +46,10 @@ export default function SubLinksModal({
     if (!enabled) return [];
     const baseSubURI = subSettings?.subURI && !subSettings.subURI.includes('railway.app')
       ? subSettings.subURI
-      : 'https://gucci.teamgucci-d7a.workers.dev:2096/sub/';
+      : 'https://gucci.teamgucci.workers.dev/sub/';
     const baseJsonURI = subSettings?.subJsonURI && !subSettings.subJsonURI.includes('railway.app')
       ? subSettings.subJsonURI
-      : 'https://gucci.teamgucci-d7a.workers.dev:2096/json/';
+      : 'https://gucci.teamgucci.workers.dev/json/';
     const byEmail = new Map(clients.map((c) => [c.email, c]));
     const out: Row[] = [];
     for (const email of emails) {
