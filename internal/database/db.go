@@ -2553,7 +2553,7 @@ func normalizeGucciSubscriptionSettings() error {
 	// 1. subURI
 	var subSetting model.Setting
 	err := db.Where("key = ?", "subURI").First(&subSetting).Error
-	if database.IsNotFound(err) {
+	if errors.Is(err, gorm.ErrRecordNotFound) {
 		db.Create(&model.Setting{Key: "subURI", Value: defaultSubURI})
 	} else if err == nil {
 		if subSetting.Value == "" || strings.Contains(subSetting.Value, "railway.app") {
@@ -2564,7 +2564,7 @@ func normalizeGucciSubscriptionSettings() error {
 	// 2. subJsonURI
 	var jsonSetting model.Setting
 	err = db.Where("key = ?", "subJsonURI").First(&jsonSetting).Error
-	if database.IsNotFound(err) {
+	if errors.Is(err, gorm.ErrRecordNotFound) {
 		db.Create(&model.Setting{Key: "subJsonURI", Value: defaultJsonURI})
 	} else if err == nil {
 		if jsonSetting.Value == "" || strings.Contains(jsonSetting.Value, "railway.app") {
@@ -2575,7 +2575,7 @@ func normalizeGucciSubscriptionSettings() error {
 	// 3. subClashURI
 	var clashSetting model.Setting
 	err = db.Where("key = ?", "subClashURI").First(&clashSetting).Error
-	if database.IsNotFound(err) {
+	if errors.Is(err, gorm.ErrRecordNotFound) {
 		db.Create(&model.Setting{Key: "subClashURI", Value: defaultClashURI})
 	} else if err == nil {
 		if clashSetting.Value == "" || strings.Contains(clashSetting.Value, "railway.app") {
