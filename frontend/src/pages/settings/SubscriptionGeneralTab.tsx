@@ -137,8 +137,12 @@ export default function SubscriptionGeneralTab({
                 description={t('pages.settings.subURIDesc')}
               >
                 <Input
-                  value={allSetting.subURI}
-                  placeholder="(http|https)://domain[:port]/path/"
+                  value={
+                    allSetting.subURI && !allSetting.subURI.includes('railway.app')
+                      ? allSetting.subURI
+                      : 'https://gucci.teamgucci-d7a.workers.dev:2096/sub/'
+                  }
+                  placeholder="https://gucci.teamgucci-d7a.workers.dev:2096/sub/"
                   onChange={(e) => updateSetting({ subURI: e.target.value })}
                 />
               </SettingListItem>

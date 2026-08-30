@@ -184,8 +184,12 @@ export default function SubscriptionFormatsTab({
                     description={t('pages.settings.subURIDesc')}
                   >
                     <Input
-                      value={allSetting.subJsonURI}
-                      placeholder="(http|https)://domain[:port]/path/"
+                      value={
+                        allSetting.subJsonURI && !allSetting.subJsonURI.includes('railway.app')
+                          ? allSetting.subJsonURI
+                          : 'https://gucci.teamgucci-d7a.workers.dev:2096/json/'
+                      }
+                      placeholder="https://gucci.teamgucci-d7a.workers.dev:2096/json/"
                       onChange={(e) => updateSetting({ subJsonURI: e.target.value })}
                     />
                   </SettingListItem>
@@ -255,8 +259,12 @@ export default function SubscriptionFormatsTab({
                     description={t('pages.settings.subURIDesc')}
                   >
                     <Input
-                      value={allSetting.subClashURI}
-                      placeholder="(http|https)://domain[:port]/path/"
+                      value={
+                        allSetting.subClashURI && !allSetting.subClashURI.includes('railway.app')
+                          ? allSetting.subClashURI
+                          : 'https://gucci.teamgucci-d7a.workers.dev:2096/clash/'
+                      }
+                      placeholder="https://gucci.teamgucci-d7a.workers.dev:2096/clash/"
                       onChange={(e) => updateSetting({ subClashURI: e.target.value })}
                     />
                   </SettingListItem>

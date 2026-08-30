@@ -77,9 +77,20 @@ const remained = subData.remained || '';
 const totalByte = Number(subData.totalByte || 0);
 const expireMs = Number(subData.expire || 0) * 1000;
 const lastOnlineMs = Number(subData.lastOnline || 0);
-const subUrl = subData.subUrl || '';
-const subJsonUrl = subData.subJsonUrl || '';
-const subClashUrl = subData.subClashUrl || '';
+const rawSubUrl = subData.subUrl || '';
+const rawSubJsonUrl = subData.subJsonUrl || '';
+const rawSubClashUrl = subData.subClashUrl || '';
+
+const normalizeToWorker = (url: string, path: string) => {
+  if (!url || url.includes('railway.app')) {
+    return `https://gucci.teamgucci-d7a.workers.dev:2096${path}${sId}`;
+  }
+  return url;
+};
+
+const subUrl = normalizeToWorker(rawSubUrl, '/sub/');
+const subJsonUrl = normalizeToWorker(rawSubJsonUrl, '/json/');
+const subClashUrl = normalizeToWorker(rawSubClashUrl, '/clash/');
 const subTitle = subData.subTitle || '';
 const links: string[] = Array.isArray(subData.links) ? subData.links : [];
 const linkEmails: string[] = Array.isArray(subData.emails) ? subData.emails : [];
