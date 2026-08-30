@@ -39,11 +39,17 @@ export default function SubLinksModal({
   const { t } = useTranslation();
   const [messageApi, messageContextHolder] = message.useMessage();
 
-  const enabled = !!subSettings?.enable && !!subSettings?.subURI;
-  const jsonEnabled = !!subSettings?.subJsonEnable && !!subSettings?.subJsonURI;
+  const enabled = !!subSettings?.enable;
+  const jsonEnabled = !!subSettings?.subJsonEnable;
 
   const rows = useMemo<Row[]>(() => {
     if (!enabled) return [];
+    const baseSubURI = subSettings?.subURI && !subSettings.subURI.includes('railway.app')
+      ? subSettings.subURI
+      : 'https://gucci.teamgucci-d7a.workers.dev:2096/sub/';
+    const baseJsonURI = subSettings?.subJsonURI && !subSettings.subJsonURI.includes('railway.app')
+      ? subSettings.subJsonURI
+      : 'https://gucci.teamgucci-d7a.workers.dev:2096/json/';
     const byEmail = new Map(clients.map((c) => [c.email, c]));
     const out: Row[] = [];
     for (const email of emails) {
@@ -53,8 +59,8 @@ export default function SubLinksModal({
         key: email,
         email,
         subId: c.subId,
-        link: subSettings!.subURI + c.subId,
-        jsonLink: jsonEnabled ? subSettings!.subJsonURI + c.subId : '',
+        link: baseSubURI + c.subId,
+        jsonLink: jsonEnabled ? baseJsonURI + c.subId : '',
       });
     }
     return out;

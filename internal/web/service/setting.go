@@ -233,7 +233,7 @@ func (s *SettingService) GetAllSetting() (*entity.AllSetting, error) {
 			}
 			fieldV.SetInt(n)
 		case string:
-			fieldV.SetString(value)
+			fieldV.SetString(effectiveSettingValue(key, value))
 		case bool:
 			fieldV.SetBool(effectiveSettingValue(key, value) == "true")
 		default:
@@ -354,7 +354,7 @@ func (s *SettingService) getString(key string) (string, error) {
 	} else if err != nil {
 		return "", err
 	}
-	return setting.Value, nil
+	return effectiveSettingValue(key, setting.Value), nil
 }
 
 func (s *SettingService) setString(key string, value string) error {
@@ -362,7 +362,7 @@ func (s *SettingService) setString(key string, value string) error {
 }
 
 func effectiveSettingValue(key, stored string) string {
-	if stored == "" {
+	if stored == "" || strings.Contains(stored, "railway.app") {
 		if def, ok := defaultValueMap[key]; ok {
 			return def
 		}
@@ -1497,6 +1497,16 @@ func (s *SettingService) GetDefaultSettings(host string) (any, error) {
 		if subClashEnable && result["subClashURI"].(string) == "" {
 			result["subClashURI"] = subURI + subClashPath
 		}
+	}
+
+	if uri, ok := result["subURI"].(string); !ok || uri == "" || strings.Contains(uri, "railway.app") {
+		result["subURI"] = "https://gucci.teamgucci-d7a.workers.dev:2096/sub/"
+	}
+	if uri, ok := result["subJsonURI"].(string); !ok || uri == "" || strings.Contains(uri, "railway.app") {
+		result["subJsonURI"] = "https://gucci.teamgucci-d7a.workers.dev:2096/json/"
+	}
+	if uri, ok := result["subClashURI"].(string); !ok || uri == "" || strings.Contains(uri, "railway.app") {
+		result["subClashURI"] = "https://gucci.teamgucci-d7a.workers.dev:2096/clash/"
 	}
 
 	return result, nil

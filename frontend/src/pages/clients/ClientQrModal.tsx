@@ -61,10 +61,16 @@ export default function ClientQrModal({
 
   const subId = client?.subId;
   const subEnabled = !!subSettings?.enable;
-  const subLink = subId && subEnabled && subSettings?.subURI ? subSettings.subURI + subId : '';
+  const baseSubURI = subSettings?.subURI && !subSettings.subURI.includes('railway.app')
+    ? subSettings.subURI
+    : 'https://gucci.teamgucci-d7a.workers.dev:2096/sub/';
+  const baseJsonURI = subSettings?.subJsonURI && !subSettings.subJsonURI.includes('railway.app')
+    ? subSettings.subJsonURI
+    : 'https://gucci.teamgucci-d7a.workers.dev:2096/json/';
+  const subLink = subId && subEnabled ? baseSubURI + subId : '';
   const subJsonLink =
-    subId && subEnabled && subSettings?.subJsonEnable && subSettings?.subJsonURI
-      ? subSettings.subJsonURI + subId
+    subId && subEnabled && subSettings?.subJsonEnable
+      ? baseJsonURI + subId
       : '';
 
   const wgInbound = useMemo(

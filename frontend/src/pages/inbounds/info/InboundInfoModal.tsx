@@ -197,9 +197,15 @@ export default function InboundInfoModal({
     }
 
     if (clientSet?.subId) {
-      setSubLink((subSettings?.subURI || '') + clientSet.subId);
+      const baseSubURI = subSettings?.subURI && !subSettings.subURI.includes('railway.app')
+        ? subSettings.subURI
+        : 'https://gucci.teamgucci-d7a.workers.dev:2096/sub/';
+      const baseJsonURI = subSettings?.subJsonURI && !subSettings.subJsonURI.includes('railway.app')
+        ? subSettings.subJsonURI
+        : 'https://gucci.teamgucci-d7a.workers.dev:2096/json/';
+      setSubLink(baseSubURI + clientSet.subId);
       setSubJsonLink(
-        subSettings?.subJsonEnable ? (subSettings?.subJsonURI || '') + clientSet.subId : '',
+        subSettings?.subJsonEnable ? baseJsonURI + clientSet.subId : '',
       );
     } else {
       setSubLink('');

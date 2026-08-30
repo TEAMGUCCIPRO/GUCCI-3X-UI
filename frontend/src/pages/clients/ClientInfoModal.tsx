@@ -169,14 +169,23 @@ export default function ClientInfoModal({
   }, [totalBytes, used]);
 
   const subId = client?.subId;
-  const subLink = subId && subSettings?.subURI ? subSettings.subURI + subId : '';
+  const baseSubURI = subSettings?.subURI && !subSettings.subURI.includes('railway.app')
+    ? subSettings.subURI
+    : 'https://gucci.teamgucci-d7a.workers.dev:2096/sub/';
+  const baseJsonURI = subSettings?.subJsonURI && !subSettings.subJsonURI.includes('railway.app')
+    ? subSettings.subJsonURI
+    : 'https://gucci.teamgucci-d7a.workers.dev:2096/json/';
+  const baseClashURI = subSettings?.subClashURI && !subSettings.subClashURI.includes('railway.app')
+    ? subSettings.subClashURI
+    : 'https://gucci.teamgucci-d7a.workers.dev:2096/clash/';
+  const subLink = subId ? baseSubURI + subId : '';
   const subJsonLink =
-    subId && subSettings?.subJsonEnable && subSettings?.subJsonURI
-      ? subSettings.subJsonURI + subId
+    subId && subSettings?.subJsonEnable
+      ? baseJsonURI + subId
       : '';
   const subClashLink =
-    subId && subSettings?.subClashEnable && subSettings?.subClashURI
-      ? subSettings.subClashURI + subId
+    subId && subSettings?.subClashEnable
+      ? baseClashURI + subId
       : '';
 
   const showSubscription = !!(subSettings?.enable && client?.subId);

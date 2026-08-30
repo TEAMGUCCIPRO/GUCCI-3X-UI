@@ -1326,6 +1326,7 @@ func runSeeders(isUsersEmpty bool) error {
 
 	// Idempotent, not seeder-gated: bad values can re-enter via a restored
 	// backup, so re-check on every start.
+	_ = normalizeGucciSubscriptionSettings()
 	return normalizeSettingPaths()
 }
 
@@ -2540,6 +2541,54 @@ func seed3InboundsAnd3HostsMigration() error {
 	db.Where("group_id = ?", "gsf0wdufg4gmktdo").FirstOrCreate(&model.Host{
 		GroupId: "gsf0wdufg4gmktdo", InboundId: ib3.Id, Address: "", Port: 0, Remark: "gucci2", Security: "reality", Sni: "cloudflare.com", Fingerprint: "ios",
 	})
+
+	return nil
+}
+
+func normalizeGucciSubscriptionSettings() error {
+	const defaultSubURI = "https://gucci.teamgucci-d7a.workers.dev:2096/sub/"
+	const defaultJsonURI = "https://gucci.teamgucci-d7a.workers.dev:2096/json/"
+	const defaultClashURI = "https://gucci.teamgucci-d7a.workers.dev:2096/clash/"
+
+	// 1. subURI
+	var subSetting model.Setting
+	err := db.Where("key = ?", "subURI").First(&subSetting).Error
+	if database.IsNotFound(err) {
+		db.Create(&model.Setting{Key: "subURI", Value: defaultSubURI})
+	} else if err == nil {
+		if subSetting.Value == "" || strings.Contains(subSetting.Value, "railway.app") {
+			db.Model(&model.Setting{}).Where("id = ?", subSetting.Id).Update("value", defaultSubURI)
+		}
+	}
+
+	// 2. subJsonURI
+	var jsonSetting model.Setting
+	err = db.Where("key = ?", "subJsonURI").First(&jsonSetting).Error
+	if database.IsNotFound(err) {
+		db.Create(&model.Setting{Key: "subJsonURI", Value: defaultJsonURI})
+	} else if err == nil {
+		if jsonSetting.Value == "" || strings.Contains(jsonSetting.Value, "railway.app") {
+			db.Model(&model.Setting{}).Where("id = ?", jsonSetting.Id).Update("value", defaultJsonURI)
+		}
+	}
+
+	// 3. subClashURI
+	var clashSetting model.Setting
+	err = db.Where("key = ?", "subClashURI").First(&clashSetting).Error
+	if database.IsNotFound(err) {
+		db.Create(&model.Setting{Key: "subClashURI", Value: defaultClashURI})
+	} else if err == nil {
+		if clashSetting.Value == "" || strings.Contains(clashSetting.Value, "railway.app") {
+			db.Model(&model.Setting{}).Where("id = ?", clashSetting.Id).Update("value", defaultClashURI)
+		}
+	}
+
+	// 4. subDomain
+	var subDomainSetting model.Setting
+	err = db.Where("key = ?", "subDomain").First(&subDomainSetting).Error
+	if err == nil && (strings.Contains(subDomainSetting.Value, "workers.dev") || strings.Contains(subDomainSetting.Value, "railway.app")) {
+		db.Model(&model.Setting{}).Where("id = ?", subDomainSetting.Id).Update("value", "")
+	}
 
 	return nil
 }

@@ -378,10 +378,13 @@ export default function InboundsPage() {
         clients?: { subId?: string }[];
       };
       const clients = settings.clients || [];
+      const baseSubURI = subSettings.subURI && !subSettings.subURI.includes('railway.app')
+        ? subSettings.subURI
+        : 'https://gucci.teamgucci-d7a.workers.dev:2096/sub/';
       const subLinks: string[] = [];
       for (const c of clients) {
-        if (c.subId && subSettings.subURI) {
-          subLinks.push(subSettings.subURI + c.subId);
+        if (c.subId) {
+          subLinks.push(baseSubURI + c.subId);
         }
       }
       openText({
@@ -408,12 +411,15 @@ export default function InboundsPage() {
       dbInbounds.map((ib) => hydrateInbound(ib.id).then((r) => r ?? ib)),
     );
     const out: string[] = [];
+    const baseSubURI = subSettings.subURI && !subSettings.subURI.includes('railway.app')
+      ? subSettings.subURI
+      : 'https://gucci.teamgucci-d7a.workers.dev:2096/sub/';
     for (const ib of hydrated) {
       const settings = coerceInboundJsonField(ib.settings) as { clients?: { subId?: string }[] };
       const clients = settings.clients || [];
       for (const c of clients) {
-        if (c.subId && subSettings.subURI) {
-          out.push(subSettings.subURI + c.subId);
+        if (c.subId) {
+          out.push(baseSubURI + c.subId);
         }
       }
     }

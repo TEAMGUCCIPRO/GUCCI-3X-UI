@@ -147,8 +147,14 @@ export default function QrCodeModal({
     let nextSub = '';
     let nextSubJson = '';
     if (subSettings?.enable && subId) {
-      nextSub = (subSettings.subURI || '') + subId;
-      nextSubJson = subSettings.subJsonEnable ? (subSettings.subJsonURI || '') + subId : '';
+      const baseSubURI = subSettings.subURI && !subSettings.subURI.includes('railway.app') 
+        ? subSettings.subURI 
+        : 'https://gucci.teamgucci-d7a.workers.dev:2096/sub/';
+      nextSub = baseSubURI + subId;
+      const baseJsonURI = subSettings.subJsonURI && !subSettings.subJsonURI.includes('railway.app')
+        ? subSettings.subJsonURI
+        : 'https://gucci.teamgucci-d7a.workers.dev:2096/json/';
+      nextSubJson = subSettings.subJsonEnable ? baseJsonURI + subId : '';
     }
     setSubLink(nextSub);
     setSubJsonLink(nextSubJson);
