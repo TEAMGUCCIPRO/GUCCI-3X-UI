@@ -7,7 +7,7 @@ interface UserAvatarProps {
 }
 
 // 12 unique, deterministic cyberpunk/gamer SVG avatars (6 masculine, 6 feminine)
-export const UserAvatar: React.FC<UserAvatarProps> = ({ seed, size = 64, isActive = true }) => {
+export const UserAvatar: React.FC<UserAvatarProps> = ({ seed, size = 52, isActive = true }) => {
   const avatarIndex = useMemo(() => {
     let hash = 0;
     for (let i = 0; i < seed.length; i++) {
@@ -46,10 +46,16 @@ export const UserAvatar: React.FC<UserAvatarProps> = ({ seed, size = 64, isActiv
             <stop stopColor={palette.hair} />
             <stop offset="1" stopColor={palette.acc} />
           </linearGradient>
+          <linearGradient id={`ringGrad-${avatarIndex}`} x1="0" y1="0" x2="100" y2="100" gradientUnits="userSpaceOnUse">
+            <stop stopColor="#fef08a" />
+            <stop offset="0.5" stopColor="#c084fc" />
+            <stop offset="1" stopColor="#38bdf8" />
+          </linearGradient>
         </defs>
 
-        {/* Circular Background */}
-        <circle cx="50" cy="50" r="48" fill={`url(#bgGrad-${avatarIndex})`} stroke="#a855f7" strokeWidth="2.5" />
+        {/* Circular Background with Dual Neon Ring */}
+        <circle cx="50" cy="50" r="48" fill={`url(#bgGrad-${avatarIndex})`} />
+        <circle cx="50" cy="50" r="47" stroke={`url(#ringGrad-${avatarIndex})`} strokeWidth="3" opacity="0.9" />
 
         {/* Neck and Shoulders */}
         <path d="M30 88C30 75 40 70 50 70C60 70 70 75 70 88" fill={palette.acc} opacity="0.85" />
@@ -113,8 +119,8 @@ export const UserAvatar: React.FC<UserAvatarProps> = ({ seed, size = 64, isActiv
         {/* Smile */}
         <path d="M45 62Q50 66 55 62" stroke="#475569" strokeWidth="2" strokeLinecap="round" fill="none" />
 
-        {/* Cyber Head Tattoo / Accent */}
-        <circle cx="50" cy="30" r="2" fill={palette.visor} filter="drop-shadow(0 0 2px #fff)" />
+        {/* Cyber Head Tattoo / Lightning Accent */}
+        <circle cx="50" cy="30" r="2.5" fill={palette.visor} filter="drop-shadow(0 0 3px #fff)" />
       </svg>
     );
   }, [avatarIndex, size]);

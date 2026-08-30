@@ -258,9 +258,12 @@ export default function SubPage() {
 
   const cardTitle = (
     <div className="subpage-header-user">
-      <UserAvatar seed={userDisplayName} size={50} isActive={isActive} />
+      <UserAvatar seed={userDisplayName} size={52} isActive={isActive} />
       <div className="subpage-header-text">
-        <span className="subpage-header-title">داشبورد کاربری</span>
+        <span className="subpage-header-title">
+          <span className="subpage-header-spark" aria-hidden="true">⚡</span>
+          <span>داشبورد کاربری</span>
+        </span>
         <span className="subpage-header-subtitle">{userDisplayName}</span>
       </div>
     </div>
@@ -287,7 +290,7 @@ export default function SubPage() {
         <Button
           shape="circle"
           size="large"
-          className="toolbar-btn"
+          className="toolbar-btn lang-switcher-btn"
           aria-label={t('pages.settings.language')}
           icon={<TranslationOutlined />}
         />
@@ -371,7 +374,7 @@ export default function SubPage() {
                           return ' ';
                         }
                         return (
-                          <span key={i} className="gucci-animated-wordmark">
+                          <span key={i} className="gucci-brand-wordmark">
                             {tok.trim()}
                           </span>
                         );
