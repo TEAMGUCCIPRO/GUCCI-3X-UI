@@ -463,14 +463,6 @@
   line-height: 1.2;
 }
 
-.subpage-header-spark {
-  display: inline-block;
-  font-size: 18px;
-  animation: gucciBoltEnergy 1.6s ease-in-out infinite alternate;
-  filter: drop-shadow(0 0 8px #facc15);
-  -webkit-text-fill-color: initial;
-}
-
 .subpage-header-subtitle {
   font-size: 13px;
   font-weight: 700;

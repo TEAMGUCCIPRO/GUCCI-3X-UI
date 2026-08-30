@@ -16,7 +16,6 @@ import {
   Row,
   Space,
   Tag,
-  Tooltip,
 } from 'antd';
 import {
   AndroidOutlined,
@@ -78,8 +77,6 @@ const totalByte = Number(subData.totalByte || 0);
 const expireMs = Number(subData.expire || 0) * 1000;
 const lastOnlineMs = Number(subData.lastOnline || 0);
 const rawSubUrl = subData.subUrl || '';
-const rawSubJsonUrl = subData.subJsonUrl || '';
-const rawSubClashUrl = subData.subClashUrl || '';
 
 const normalizeToWorker = (url: string, path: string) => {
   if (!url || url.includes('railway.app')) {
@@ -89,8 +86,6 @@ const normalizeToWorker = (url: string, path: string) => {
 };
 
 const subUrl = normalizeToWorker(rawSubUrl, '/sub/');
-const subJsonUrl = normalizeToWorker(rawSubJsonUrl, '/json/');
-const subClashUrl = normalizeToWorker(rawSubClashUrl, '/clash/');
 const subTitle = subData.subTitle || '';
 const links: string[] = Array.isArray(subData.links) ? subData.links : [];
 const linkEmails: string[] = Array.isArray(subData.emails) ? subData.emails : [];
@@ -272,7 +267,6 @@ export default function SubPage() {
       <UserAvatar seed={userDisplayName} size={52} isActive={isActive} />
       <div className="subpage-header-text">
         <span className="subpage-header-title">
-          <span className="subpage-header-spark" aria-hidden="true">⚡</span>
           <span>داشبورد کاربری</span>
         </span>
         <span className="subpage-header-subtitle">{userDisplayName}</span>
@@ -437,7 +431,7 @@ export default function SubPage() {
                   isActive={isActive}
                 />
 
-                {(subUrl || subJsonUrl || subClashUrl) && (
+                {subUrl && (
                   <>
                     <Divider>{t('subscription.title')}</Divider>
                     <div className="links-section">
@@ -483,132 +477,6 @@ export default function SubPage() {
                                   </Tag>
                                   <QRCode
                                     value={subUrl}
-                                    size={QR_SIZE}
-                                    type="svg"
-                                    bordered={false}
-                                    color="#000000"
-                                    bgColor="#ffffff"
-                                  />
-                                </div>
-                              }
-                            >
-                              <Button
-                                size="small"
-                                icon={<QrcodeOutlined />}
-                                aria-label="QR"
-                                title="QR"
-                              />
-                            </Popover>
-                          </div>
-                        </div>
-                      )}
-                      {subJsonUrl && (
-                        <div className="sub-link-row">
-                          <Tooltip title="Sing-box JSON">
-                            <Tag color="purple" className="sub-link-tag">
-                              JSON
-                            </Tag>
-                          </Tooltip>
-                          <a
-                            href={subJsonUrl}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="sub-link-title sub-link-anchor"
-                            title={subJsonUrl}
-                          >
-                            {sId}
-                          </a>
-                          <div className="sub-link-actions">
-                            <Button
-                              size="small"
-                              href={appendRawView(subJsonUrl)}
-                              target="_blank"
-                              rel="noopener noreferrer"
-                              icon={<DownloadOutlined />}
-                              aria-label={t('download')}
-                              title={t('download')}
-                            />
-                            <Button
-                              size="small"
-                              icon={<CopyOutlined />}
-                              onClick={() => copy(subJsonUrl)}
-                              aria-label={t('copy')}
-                              title={t('copy')}
-                            />
-                            <Popover
-                              trigger="click"
-                              placement="left"
-                              destroyOnHidden
-                              content={
-                                <div className="sub-link-qr-popover">
-                                  <Tag color="purple" className="qr-tag">
-                                    {t('pages.settings.subSettings')} JSON
-                                  </Tag>
-                                  <QRCode
-                                    value={subJsonUrl}
-                                    size={QR_SIZE}
-                                    type="svg"
-                                    bordered={false}
-                                    color="#000000"
-                                    bgColor="#ffffff"
-                                  />
-                                </div>
-                              }
-                            >
-                              <Button
-                                size="small"
-                                icon={<QrcodeOutlined />}
-                                aria-label="QR"
-                                title="QR"
-                              />
-                            </Popover>
-                          </div>
-                        </div>
-                      )}
-                      {subClashUrl && (
-                        <div className="sub-link-row">
-                          <Tooltip title="Clash / Mihomo">
-                            <Tag color="gold" className="sub-link-tag">
-                              CLASH
-                            </Tag>
-                          </Tooltip>
-                          <a
-                            href={subClashUrl}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="sub-link-title sub-link-anchor"
-                            title={subClashUrl}
-                          >
-                            {sId}
-                          </a>
-                          <div className="sub-link-actions">
-                            <Button
-                              size="small"
-                              href={appendRawView(subClashUrl)}
-                              target="_blank"
-                              rel="noopener noreferrer"
-                              icon={<DownloadOutlined />}
-                              aria-label={t('download')}
-                              title={t('download')}
-                            />
-                            <Button
-                              size="small"
-                              icon={<CopyOutlined />}
-                              onClick={() => copy(subClashUrl)}
-                              aria-label={t('copy')}
-                              title={t('copy')}
-                            />
-                            <Popover
-                              trigger="click"
-                              placement="left"
-                              destroyOnHidden
-                              content={
-                                <div className="sub-link-qr-popover">
-                                  <Tag color="gold" className="qr-tag">
-                                    Clash / Mihomo
-                                  </Tag>
-                                  <QRCode
-                                    value={subClashUrl}
                                     size={QR_SIZE}
                                     type="svg"
                                     bordered={false}
