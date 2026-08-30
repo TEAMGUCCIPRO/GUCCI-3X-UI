@@ -106,7 +106,7 @@ const NpvSvg = () => (
   </svg>
 );
 
-const V2rayTunSvg = () => (
+const V2RayTunSvg = () => (
   <svg width="44" height="44" viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
     <rect width="48" height="48" rx="12" fill="url(#tunBg)" />
     <path d="M15 15H33V19H26V33H22V19H15V15Z" fill="#818CF8" />
@@ -229,8 +229,6 @@ const HiddifySvg = () => (
 export const AppsDownloadSection: React.FC<AppsDownloadSectionProps> = ({ subUrl, subId }) => {
   const [activeTab, setActiveTab] = useState<string>('android');
 
-  const base64Sub = typeof window !== 'undefined' ? btoa(subUrl) : '';
-
   const androidApps: AppItem[] = [
     {
       id: 'v2box-android',
@@ -330,7 +328,7 @@ export const AppsDownloadSection: React.FC<AppsDownloadSectionProps> = ({ subUrl
       badgeColor: '#38bdf8',
       svgIcon: <ShadowrocketSvg />,
       downloadUrl: 'https://apps.apple.com/us/app/shadowrocket/id932747118',
-      importScheme: (url) => `shadowrocket://add/sub://${base64Sub}`,
+      importScheme: (url) => `shadowrocket://add/sub://${btoa(url)}`,
     },
     {
       id: 'singbox-ios',

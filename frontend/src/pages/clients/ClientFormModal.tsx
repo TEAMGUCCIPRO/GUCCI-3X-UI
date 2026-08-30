@@ -134,6 +134,7 @@ type Values = ClientFormValues & {
   awgForwardedPorts: string;
   secret: string;
   adTag: string;
+  trafficMultiplier?: number;
 };
 
 const EMPTY: Values = {

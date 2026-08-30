@@ -1,14 +1,12 @@
 import { Fragment, useCallback, useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import {
-  Alert,
   Button,
   Card,
   Col,
   ConfigProvider,
   Descriptions,
   Divider,
-  Dropdown,
   Layout,
   Menu,
   message,
@@ -35,8 +33,7 @@ import {
 import { LinkTags, parseLinkParts } from '@/lib/xray/link-label';
 import ConfigBlock from '@/components/clients/ConfigBlock';
 import { setMessageInstance } from '@/utils/messageBus';
-import { pauseAnimationsUntilLeave, useTheme } from '@/hooks/useTheme';
-import { useMediaQuery } from '@/hooks/useMediaQuery';
+import { useTheme } from '@/hooks/useTheme';
 import { theme as antdTheme } from 'antd';
 import SubUsageSummary from './SubUsageSummary';
 import UserAvatar from './UserAvatar';
@@ -79,7 +76,6 @@ const lastOnlineMs = Number(subData.lastOnline || 0);
 const subUrl = subData.subUrl || '';
 const subJsonUrl = subData.subJsonUrl || '';
 const subClashUrl = subData.subClashUrl || '';
-const subTitle = subData.subTitle || '';
 const links: string[] = Array.isArray(subData.links) ? subData.links : [];
 const linkEmails: string[] = Array.isArray(subData.emails) ? subData.emails : [];
 const subEmail = [...new Set(linkEmails.filter(Boolean))].join(', ');
@@ -103,31 +99,17 @@ const isActive = (() => {
 
 export default function SubPage() {
   const { t } = useTranslation();
-  const { isDark, isUltra, toggleTheme, toggleUltra, antdThemeConfig } = useTheme();
+  const { isDark, isUltra } = useTheme();
   const [messageApi, messageContextHolder] = message.useMessage();
   useEffect(() => {
     setMessageInstance(messageApi);
   }, [messageApi]);
-  const { isMobile } = useMediaQuery(576);
   const [lang, setLang] = useState<string>(() => LanguageManager.getLanguage());
 
   const onLangChange = useCallback((next: string) => {
     setLang(next);
     LanguageManager.setLanguage(next);
   }, []);
-
-  const cycleTheme = useCallback(() => {
-    pauseAnimationsUntilLeave('sub-theme-cycle');
-    if (!isDark) {
-      toggleTheme();
-      if (isUltra) toggleUltra();
-    } else if (!isUltra) {
-      toggleUltra();
-    } else {
-      toggleUltra();
-      toggleTheme();
-    }
-  }, [isDark, isUltra, toggleTheme, toggleUltra]);
 
   const copy = useCallback(
     async (value: string) => {
@@ -144,28 +126,6 @@ export default function SubPage() {
     const ok = await ClipboardManager.copyText(allLinks);
     if (ok) messageApi.success(t('subscription.copyAllConfigsCopied'));
   }, [t, messageApi]);
-
-  const open = useCallback((url: string) => {
-    if (!url) return;
-    window.open(url, '_blank');
-  }, []);
-
-  const shadowrocketUrl = useMemo(() => {
-    if (!subUrl) return '';
-    const separator = subUrl.includes('?') ? '&' : '?';
-    const rawUrl = subUrl + separator + 'flag=shadowrocket';
-    const base64Url = btoa(rawUrl);
-    const remark = encodeURIComponent(subTitle || sId || 'Subscription');
-    return `shadowrocket://add/sub://${base64Url}?remark=${remark}`;
-  }, []);
-
-  const v2boxUrl = useMemo(
-    () => `v2box://install-sub?url=${encodeURIComponent(subUrl)}&name=${encodeURIComponent(sId)}`,
-    [],
-  );
-  const streisandUrl = useMemo(() => `streisand://import/${encodeURIComponent(subUrl)}`, []);
-  const happUrl = useMemo(() => `happ://add/${subUrl}`, []);
-  const incyUrl = useMemo(() => `incy://add/${subUrl}`, []);
 
   const pageClass = useMemo(() => {
     const classes = ['subscription-page'];
@@ -212,43 +172,6 @@ export default function SubPage() {
     });
     return items;
   }, [t]);
-
-  const androidMenuItems = useMemo(
-    () => [
-      {
-        key: 'android-v2box',
-        label: 'V2Box',
-        onClick: () =>
-          open(
-            `v2box://install-sub?url=${encodeURIComponent(subUrl)}&name=${encodeURIComponent(sId)}`,
-          ),
-      },
-      {
-        key: 'android-v2rayng',
-        label: 'V2RayNG',
-        onClick: () => open(`v2rayng://install-config?url=${encodeURIComponent(subUrl)}`),
-      },
-      { key: 'android-singbox', label: 'Sing-box', onClick: () => copy(subUrl) },
-      { key: 'android-v2raytun', label: 'V2RayTun', onClick: () => copy(subUrl) },
-      { key: 'android-npvtunnel', label: 'NPV Tunnel', onClick: () => copy(subUrl) },
-      { key: 'android-happ', label: 'Happ', onClick: () => open(`happ://add/${subUrl}`) },
-      { key: 'android-incy', label: 'Incy', onClick: () => open(`incy://add/${subUrl}`) },
-    ],
-    [copy, open],
-  );
-
-  const iosMenuItems = useMemo(
-    () => [
-      { key: 'ios-shadowrocket', label: 'Shadowrocket', onClick: () => open(shadowrocketUrl) },
-      { key: 'ios-v2box', label: 'V2Box', onClick: () => open(v2boxUrl) },
-      { key: 'ios-streisand', label: 'Streisand', onClick: () => open(streisandUrl) },
-      { key: 'ios-v2raytun', label: 'V2RayTun', onClick: () => copy(subUrl) },
-      { key: 'ios-npvtunnel', label: 'NPV Tunnel', onClick: () => copy(subUrl) },
-      { key: 'ios-happ', label: 'Happ', onClick: () => open(happUrl) },
-      { key: 'ios-incy', label: 'Incy', onClick: () => open(incyUrl) },
-    ],
-    [copy, open, shadowrocketUrl, v2boxUrl, streisandUrl, happUrl, incyUrl],
-  );
 
   const langMenuItems = useMemo(
     () =>
