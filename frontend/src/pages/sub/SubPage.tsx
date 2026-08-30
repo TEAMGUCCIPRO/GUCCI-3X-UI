@@ -7,6 +7,7 @@ import {
   ConfigProvider,
   Descriptions,
   Divider,
+  Dropdown,
   Layout,
   Menu,
   message,
@@ -18,7 +19,10 @@ import {
   Tooltip,
 } from 'antd';
 import {
+  AndroidOutlined,
+  AppleOutlined,
   CopyOutlined,
+  DownOutlined,
   DownloadOutlined,
   QrcodeOutlined,
   TranslationOutlined,
@@ -34,10 +38,10 @@ import { LinkTags, parseLinkParts } from '@/lib/xray/link-label';
 import ConfigBlock from '@/components/clients/ConfigBlock';
 import { setMessageInstance } from '@/utils/messageBus';
 import { useTheme } from '@/hooks/useTheme';
+import { useMediaQuery } from '@/hooks/useMediaQuery';
 import { theme as antdTheme } from 'antd';
 import SubUsageSummary from './SubUsageSummary';
 import UserAvatar from './UserAvatar';
-import AppsDownloadSection from './AppsDownloadSection';
 import './SubPage.css';
 
 const QR_SIZE = 240;
@@ -58,7 +62,7 @@ const promoItems = [
   { label: 'کانال سوم تلگرام', url: 'https://t.me/GUCCI_CHANEL_IR', icon: TELEGRAM_ICON, kind: 'telegram', theme: 'purple' },
   { label: 'گروه چت تلگرام', url: 'https://t.me/GUCCI_CHAT_IR', icon: TELEGRAM_ICON, kind: 'telegram', theme: 'silver' },
   { label: 'اینستاگرام', url: 'https://www.instagram.com/vpn_gucci_ir?igsi=MXRsdmhid3pxZmZqMQ%3D%3D&utm_source=qr', icon: INSTAGRAM_ICON, kind: 'instagram', theme: 'insta' },
-  { label: 'یوتیوب', url: 'https://youtube.com/@vpn_gucci?si=HOdcsuj20CH3aAv5', icon: YOUTUBE_ICON, kind: 'youtube', theme: 'yt', wide: true },
+  { label: 'یوتیوب', url: 'https://youtube.com/@vpn_gucci?si=HOdcsuj20CH3aAv5', icon: YOUTUBE_ICON, kind: 'youtube', theme: 'yt' },
 ];
 
 const subData = window.__SUB_PAGE_DATA__ || {};
@@ -76,6 +80,7 @@ const lastOnlineMs = Number(subData.lastOnline || 0);
 const subUrl = subData.subUrl || '';
 const subJsonUrl = subData.subJsonUrl || '';
 const subClashUrl = subData.subClashUrl || '';
+const subTitle = subData.subTitle || '';
 const links: string[] = Array.isArray(subData.links) ? subData.links : [];
 const linkEmails: string[] = Array.isArray(subData.emails) ? subData.emails : [];
 const subEmail = [...new Set(linkEmails.filter(Boolean))].join(', ');
@@ -104,6 +109,7 @@ export default function SubPage() {
   useEffect(() => {
     setMessageInstance(messageApi);
   }, [messageApi]);
+  const { isMobile } = useMediaQuery(576);
   const [lang, setLang] = useState<string>(() => LanguageManager.getLanguage());
 
   const onLangChange = useCallback((next: string) => {
@@ -126,6 +132,28 @@ export default function SubPage() {
     const ok = await ClipboardManager.copyText(allLinks);
     if (ok) messageApi.success(t('subscription.copyAllConfigsCopied'));
   }, [t, messageApi]);
+
+  const open = useCallback((url: string) => {
+    if (!url) return;
+    window.open(url, '_blank');
+  }, []);
+
+  const shadowrocketUrl = useMemo(() => {
+    if (!subUrl) return '';
+    const separator = subUrl.includes('?') ? '&' : '?';
+    const rawUrl = subUrl + separator + 'flag=shadowrocket';
+    const base64Url = btoa(rawUrl);
+    const remark = encodeURIComponent(subTitle || sId || 'Subscription');
+    return `shadowrocket://add/sub://${base64Url}?remark=${remark}`;
+  }, []);
+
+  const v2boxUrl = useMemo(
+    () => `v2box://install-sub?url=${encodeURIComponent(subUrl)}&name=${encodeURIComponent(sId)}`,
+    [],
+  );
+  const streisandUrl = useMemo(() => `streisand://import/${encodeURIComponent(subUrl)}`, []);
+  const happUrl = useMemo(() => `happ://add/${subUrl}`, []);
+  const incyUrl = useMemo(() => `incy://add/${subUrl}`, []);
 
   const pageClass = useMemo(() => {
     const classes = ['subscription-page'];
@@ -172,6 +200,43 @@ export default function SubPage() {
     });
     return items;
   }, [t]);
+
+  const androidMenuItems = useMemo(
+    () => [
+      {
+        key: 'android-v2box',
+        label: 'V2Box',
+        onClick: () =>
+          open(
+            `v2box://install-sub?url=${encodeURIComponent(subUrl)}&name=${encodeURIComponent(sId)}`,
+          ),
+      },
+      {
+        key: 'android-v2rayng',
+        label: 'V2RayNG',
+        onClick: () => open(`v2rayng://install-config?url=${encodeURIComponent(subUrl)}`),
+      },
+      { key: 'android-singbox', label: 'Sing-box', onClick: () => copy(subUrl) },
+      { key: 'android-v2raytun', label: 'V2RayTun', onClick: () => copy(subUrl) },
+      { key: 'android-npvtunnel', label: 'NPV Tunnel', onClick: () => copy(subUrl) },
+      { key: 'android-happ', label: 'Happ', onClick: () => open(`happ://add/${subUrl}`) },
+      { key: 'android-incy', label: 'Incy', onClick: () => open(`incy://add/${subUrl}`) },
+    ],
+    [copy, open],
+  );
+
+  const iosMenuItems = useMemo(
+    () => [
+      { key: 'ios-shadowrocket', label: 'Shadowrocket', onClick: () => open(shadowrocketUrl) },
+      { key: 'ios-v2box', label: 'V2Box', onClick: () => open(v2boxUrl) },
+      { key: 'ios-streisand', label: 'Streisand', onClick: () => open(streisandUrl) },
+      { key: 'ios-v2raytun', label: 'V2RayTun', onClick: () => copy(subUrl) },
+      { key: 'ios-npvtunnel', label: 'NPV Tunnel', onClick: () => copy(subUrl) },
+      { key: 'ios-happ', label: 'Happ', onClick: () => open(happUrl) },
+      { key: 'ios-incy', label: 'Incy', onClick: () => open(incyUrl) },
+    ],
+    [copy, open, shadowrocketUrl, v2boxUrl, streisandUrl, happUrl, incyUrl],
+  );
 
   const langMenuItems = useMemo(
     () =>
@@ -277,7 +342,7 @@ export default function SubPage() {
           <Row justify="center">
             <Col xs={24} sm={22} md={18} lg={14} xl={12}>
               <Card hoverable className="subscription-card" title={cardTitle} extra={cardExtra}>
-                                <div className="gucci-promo-banner">
+                <div className="gucci-promo-banner">
                   <div className="promo-title">
                     <span className="promo-title-inner">
                       {announce.split(/(⚡️|⚡|👑|🔄)/gu).map((tok, i) => {
@@ -319,7 +384,7 @@ export default function SubPage() {
 
                   <Row gutter={[12, 12]} className="promo-grid">
                     {promoItems.map((item) => (
-                      <Col key={item.label} xs={24} sm={item.wide ? 24 : 12}>
+                      <Col key={item.label} xs={24} sm={12}>
                         <Button
                           block
                           className={`promo-btn promo-btn--${item.theme}`}
@@ -379,6 +444,15 @@ export default function SubPage() {
                           <div className="sub-link-actions">
                             <Button
                               size="small"
+                              href={appendRawView(subUrl)}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              icon={<DownloadOutlined />}
+                              aria-label={t('download')}
+                              title={t('download')}
+                            />
+                            <Button
+                              size="small"
                               icon={<CopyOutlined />}
                               onClick={() => copy(subUrl)}
                               aria-label={t('copy')}
@@ -391,7 +465,7 @@ export default function SubPage() {
                               content={
                                 <div className="sub-link-qr-popover">
                                   <Tag color="green" className="qr-tag">
-                                    {t('pages.settings.subSettings')}
+                                    {t('subscription.title')}
                                   </Tag>
                                   <QRCode
                                     value={subUrl}
@@ -416,9 +490,11 @@ export default function SubPage() {
                       )}
                       {subJsonUrl && (
                         <div className="sub-link-row">
-                          <Tag color="purple" className="sub-link-tag">
-                            JSON
-                          </Tag>
+                          <Tooltip title="Sing-box JSON">
+                            <Tag color="purple" className="sub-link-tag">
+                              JSON
+                            </Tag>
+                          </Tooltip>
                           <a
                             href={subJsonUrl}
                             target="_blank"
@@ -640,8 +716,22 @@ export default function SubPage() {
                   </>
                 )}
 
-                <Divider />
-                <AppsDownloadSection subUrl={subUrl} subId={sId} />
+                <Row gutter={[8, 8]} justify="center" className="apps-row">
+                  <Col xs={24} sm={12} className="app-col">
+                    <Dropdown trigger={['click']} menu={{ items: androidMenuItems }}>
+                      <Button block={isMobile} size="large" type="primary">
+                        <AndroidOutlined /> Android <DownOutlined />
+                      </Button>
+                    </Dropdown>
+                  </Col>
+                  <Col xs={24} sm={12} className="app-col">
+                    <Dropdown trigger={['click']} menu={{ items: iosMenuItems }}>
+                      <Button block={isMobile} size="large" type="primary">
+                        <AppleOutlined /> iOS <DownOutlined />
+                      </Button>
+                    </Dropdown>
+                  </Col>
+                </Row>
               </Card>
             </Col>
           </Row>
