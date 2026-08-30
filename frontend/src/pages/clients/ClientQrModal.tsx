@@ -41,8 +41,8 @@ interface ApiMsg<T = unknown> {
 
 const DEFAULT_SUB: SubSettings = {
   enable: false,
-  subURI: '',
-  subJsonURI: '',
+  subURI: 'https://gucci.teamgucci-d7a.workers.dev:2096/sub/',
+  subJsonURI: 'https://gucci.teamgucci-d7a.workers.dev:2096/json/',
   subJsonEnable: false,
   publicHost: '',
 };

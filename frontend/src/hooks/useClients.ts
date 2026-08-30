@@ -266,10 +266,10 @@ export function useClients(options: UseClientsOptions = {}) {
   const subSettings: SubSettings = useMemo(
     () => ({
       enable: !!defaults.subEnable,
-      subURI: (defaults.subURI as string) || '',
-      subJsonURI: (defaults.subJsonURI as string) || '',
+      subURI: (defaults.subURI as string) || 'https://gucci.teamgucci-d7a.workers.dev:2096/sub/',
+      subJsonURI: (defaults.subJsonURI as string) || 'https://gucci.teamgucci-d7a.workers.dev:2096/json/',
       subJsonEnable: !!defaults.subJsonEnable,
-      subClashURI: (defaults.subClashURI as string) || '',
+      subClashURI: (defaults.subClashURI as string) || 'https://gucci.teamgucci-d7a.workers.dev:2096/clash/',
       subClashEnable: !!defaults.subClashEnable,
       publicHost: (defaults.subDomain as string) || (defaults.webDomain as string) || '',
     }),

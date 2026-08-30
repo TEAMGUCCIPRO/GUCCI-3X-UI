@@ -185,8 +185,8 @@ export function useInbounds() {
     () => ({
       enable: !!defaults.subEnable,
       subTitle: defaults.subTitle || '',
-      subURI: defaults.subURI || '',
-      subJsonURI: defaults.subJsonURI || '',
+      subURI: defaults.subURI || 'https://gucci.teamgucci-d7a.workers.dev:2096/sub/',
+      subJsonURI: defaults.subJsonURI || 'https://gucci.teamgucci-d7a.workers.dev:2096/json/',
       subJsonEnable: !!defaults.subJsonEnable,
       publicHost: defaults.subDomain || defaults.webDomain || '',
     }),

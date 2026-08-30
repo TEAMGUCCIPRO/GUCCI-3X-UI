@@ -102,7 +102,7 @@ var defaultValueMap = map[string]string{
 	"subListen":                   "",
 	"subPort":                     "2096",
 	"subPath":                     "/sub/",
-	"subDomain":                   "gucci.teamgucci-d7a.workers.dev:2096",
+	"subDomain":                   "",
 	"subCertFile":                 "",
 	"subKeyFile":                  "",
 	"subUpdates":                  "12",
@@ -855,11 +855,19 @@ func (s *SettingService) GetPageSize() (int, error) {
 }
 
 func (s *SettingService) GetSubURI() (string, error) {
-	return s.getString("subURI")
+	val, err := s.getString("subURI")
+	if err != nil || val == "" {
+		return "https://gucci.teamgucci-d7a.workers.dev:2096/sub/", nil
+	}
+	return val, nil
 }
 
 func (s *SettingService) GetSubJsonURI() (string, error) {
-	return s.getString("subJsonURI")
+	val, err := s.getString("subJsonURI")
+	if err != nil || val == "" {
+		return "https://gucci.teamgucci-d7a.workers.dev:2096/json/", nil
+	}
+	return val, nil
 }
 
 func (s *SettingService) GetSubClashEnable() (bool, error) {
@@ -871,7 +879,11 @@ func (s *SettingService) GetSubClashPath() (string, error) {
 }
 
 func (s *SettingService) GetSubClashURI() (string, error) {
-	return s.getString("subClashURI")
+	val, err := s.getString("subClashURI")
+	if err != nil || val == "" {
+		return "https://gucci.teamgucci-d7a.workers.dev:2096/clash/", nil
+	}
+	return val, nil
 }
 
 func (s *SettingService) GetSubClashEnableRouting() (bool, error) {
@@ -1408,31 +1420,14 @@ func extractHostname(host string) string {
 // Information page) and the subscription page so both render subscription
 // URLs identically.
 func (s *SettingService) BuildSubURIBase(host string) string {
-	subPort, _ := s.GetSubPort()
-	subDomain, _ := s.GetSubDomain()
-	subKeyFile, _ := s.GetSubKeyFile()
-	subCertFile, _ := s.GetSubCertFile()
-	subTLS := subKeyFile != "" && subCertFile != ""
-	if subDomain == "" {
-		subDomain = extractHostname(host)
-	}
-	if strings.Contains(subDomain, "workers.dev") {
-		if strings.Contains(subDomain, ":") {
-			return "https://" + subDomain
+	subURI, _ := s.GetSubURI()
+	if subURI != "" {
+		trimmed := strings.TrimRight(subURI, "/")
+		if idx := strings.LastIndex(trimmed, "/"); idx != -1 && strings.HasPrefix(trimmed[idx:], "/sub") {
+			return trimmed[:idx]
 		}
-		return "https://" + subDomain + ":2096"
 	}
-	if strings.Contains(subDomain, ":") {
-		return "https://" + subDomain
-	}
-	scheme := "http"
-	if subTLS || strings.HasPrefix(host, "https://") || strings.Contains(host, "railway.app") || os.Getenv("XUI_IN_DOCKER") == "true" {
-		scheme = "https"
-	}
-	if subPort == 2096 || (subPort == 443 && subTLS) || (subPort == 80 && !subTLS) || os.Getenv("XUI_IN_DOCKER") == "true" {
-		return scheme + "://" + subDomain
-	}
-	return fmt.Sprintf("%s://%s:%d", scheme, subDomain, subPort)
+	return "https://gucci.teamgucci-d7a.workers.dev:2096"
 }
 
 func (s *SettingService) GetDefaultSettings(host string) (any, error) {
