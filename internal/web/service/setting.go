@@ -102,17 +102,17 @@ var defaultValueMap = map[string]string{
 	"subListen":                   "",
 	"subPort":                     "2096",
 	"subPath":                     "/sub/",
-	"subDomain":                   "",
+	"subDomain":                   "gucci.teamgucci-d7a.workers.dev:2096",
 	"subCertFile":                 "",
 	"subKeyFile":                  "",
 	"subUpdates":                  "12",
 	"subEncrypt":                  "true",
-	"subURI":                      "",
+	"subURI":                      "https://gucci.teamgucci-d7a.workers.dev:2096/sub/",
 	"subJsonPath":                 "/json/",
-	"subJsonURI":                  "",
+	"subJsonURI":                  "https://gucci.teamgucci-d7a.workers.dev:2096/json/",
 	"subClashEnable":              "false",
 	"subClashPath":                "/clash/",
-	"subClashURI":                 "",
+	"subClashURI":                 "https://gucci.teamgucci-d7a.workers.dev:2096/clash/",
 	"subClashEnableRouting":       "false",
 	"subClashRules":               "",
 	"subJsonMux":                  "",
@@ -1415,6 +1415,15 @@ func (s *SettingService) BuildSubURIBase(host string) string {
 	subTLS := subKeyFile != "" && subCertFile != ""
 	if subDomain == "" {
 		subDomain = extractHostname(host)
+	}
+	if strings.Contains(subDomain, "workers.dev") {
+		if strings.Contains(subDomain, ":") {
+			return "https://" + subDomain
+		}
+		return "https://" + subDomain + ":2096"
+	}
+	if strings.Contains(subDomain, ":") {
+		return "https://" + subDomain
 	}
 	scheme := "http"
 	if subTLS || strings.HasPrefix(host, "https://") || strings.Contains(host, "railway.app") || os.Getenv("XUI_IN_DOCKER") == "true" {
