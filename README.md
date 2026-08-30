@@ -16,6 +16,7 @@
 | **پشتیبانی (سازنده ی پروژه)** | `@MR_GUCCI_YT` | [![Support](https://img.shields.io/badge/CREATOR_SUPPORT-@MR__GUCCI__YT-0088cc?style=for-the-badge&logo=telegram&logoColor=white)](https://t.me/MR_GUCCI_YT) |
 | **کانال اول** | `VPN_GUCCI_CHANEL` | [![Channel 1](https://img.shields.io/badge/CHANNEL_1-VPN__GUCCI__CHANEL-229ED9?style=for-the-badge&logo=telegram&logoColor=white)](https://t.me/VPN_GUCCI_CHANEL) |
 | **کانال دوم** | `VPN_GUCCI_IR` | [![Channel 2](https://img.shields.io/badge/CHANNEL_2-VPN__GUCCI__IR-229ED9?style=for-the-badge&logo=telegram&logoColor=white)](https://t.me/VPN_GUCCI_IR) |
+| **کانال سوم** | `GUCCI_CHANEL_IR` | [![Channel 3](https://img.shields.io/badge/CHANNEL_3-GUCCI__CHANEL__IR-229ED9?style=for-the-badge&logo=telegram&logoColor=white)](https://t.me/GUCCI_CHANEL_IR) |
 | **گروه** | `GUCCI_CHAT_IR` | [![Group](https://img.shields.io/badge/GROUP-GUCCI__CHAT__IR-24A1DE?style=for-the-badge&logo=telegram&logoColor=white)](https://t.me/GUCCI_CHAT_IR) |
 | **اینستاگرام** | `vpn_gucci_ir` | [![Instagram](https://img.shields.io/badge/INSTAGRAM-@vpn__gucci__ir-E4405F?style=for-the-badge&logo=instagram&logoColor=white)](https://www.instagram.com/vpn_gucci_ir?igsi=MXRsdmhid3pxZmZqMQ%3D%3D&utm_source=qr) |
 | **یوتیوب** | `vpn_gucci` | [![YouTube](https://img.shields.io/badge/YOUTUBE-@vpn__gucci-FF0000?style=for-the-badge&logo=youtube&logoColor=white)](https://youtube.com/@vpn_gucci?si=HOdcsuj20CH3aAv5) |
