@@ -142,15 +142,18 @@ func TestSubsHTTP_ProfileTitleAndConfigRemarks(t *testing.T) {
 		t.Fatalf("status = %d body=%s", w.Code, w.Body.String())
 	}
 
-	title := decodeHappBase64Header(t, w.Header().Get("Profile-Title"))
+	title := parseHappMetaValue(t, w.Header().Get("Profile-Title"))
 	if title != "✅ 👤 Qm5V4Pp5@e | 📊 ∞ | 🕔 ∞" {
-		t.Fatalf("Profile-Title decoded = %q", title)
+		t.Fatalf("Profile-Title = %q", title)
 	}
-	if cd := w.Header().Get("Content-Disposition"); cd != "" {
-		t.Fatalf("raw Happ path must not set Content-Disposition (Happ uses it as the profile name); got %q", cd)
+	if got := w.Header().Get("subscription-name"); got != title {
+		t.Fatalf("subscription-name = %q, want %q", got, title)
 	}
-	if got := decodeHappBase64Header(t, w.Header().Get("Announce")); got != gucciAnnounceText {
-		t.Fatalf("Announce decoded = %q", got)
+	if cd := w.Header().Get("Content-Disposition"); cd != happContentDisposition(title) {
+		t.Fatalf("Content-Disposition = %q, want quoted title filename", cd)
+	}
+	if got := parseHappMetaValue(t, w.Header().Get("Announce")); got != gucciAnnounceText {
+		t.Fatalf("Announce = %q", got)
 	}
 
 	body := w.Body.String()
@@ -245,15 +248,12 @@ func TestSubsHTTP_EncryptedBodyStillCarriesHappDirectives(t *testing.T) {
 	if w.Code != http.StatusOK {
 		t.Fatalf("status = %d body=%s", w.Code, w.Body.String())
 	}
-	if cd := w.Header().Get("Content-Disposition"); cd != "" {
-		t.Fatalf("encrypted Happ path must not set Content-Disposition; got %q", cd)
-	}
-	title := decodeHappBase64Header(t, w.Header().Get("Profile-Title"))
+	title := parseHappMetaValue(t, w.Header().Get("Profile-Title"))
 	if !strings.HasPrefix(title, "✅ 👤 Qm5V4Pp5@e | 📊") {
-		t.Fatalf("Profile-Title decoded = %q", title)
+		t.Fatalf("Profile-Title = %q", title)
 	}
-	if got := decodeHappBase64Header(t, w.Header().Get("Announce")); got != gucciAnnounceText {
-		t.Fatalf("Announce decoded = %q", got)
+	if got := parseHappMetaValue(t, w.Header().Get("Announce")); got != gucciAnnounceText {
+		t.Fatalf("Announce = %q", got)
 	}
 	decoded, err := base64.StdEncoding.DecodeString(w.Body.String())
 	if err != nil {
@@ -262,16 +262,20 @@ func TestSubsHTTP_EncryptedBodyStillCarriesHappDirectives(t *testing.T) {
 	assertHappDirectives(t, string(decoded), title, gucciAnnounceText)
 }
 
-func decodeHappBase64Header(t *testing.T, value string) string {
+func parseHappMetaValue(t *testing.T, value string) string {
 	t.Helper()
-	if !strings.HasPrefix(value, "base64:") {
-		t.Fatalf("want base64: prefix, got %q", value)
+	value = strings.TrimSpace(value)
+	if value == "" {
+		t.Fatal("empty happ metadata value")
 	}
-	decoded, err := base64.StdEncoding.DecodeString(strings.TrimPrefix(value, "base64:"))
-	if err != nil {
-		t.Fatalf("decode: %v from %q", err, value)
+	if strings.HasPrefix(value, "base64:") {
+		decoded, err := base64.StdEncoding.DecodeString(strings.TrimPrefix(value, "base64:"))
+		if err != nil {
+			t.Fatalf("decode: %v from %q", err, value)
+		}
+		return string(decoded)
 	}
-	return string(decoded)
+	return value
 }
 
 func happShareLines(body string) []string {
@@ -289,12 +293,35 @@ func happShareLines(body string) []string {
 func assertHappDirectives(t *testing.T, body, wantTitle, wantAnnounce string) {
 	t.Helper()
 	var gotTitle, gotAnnounce string
+	var sawPlainTitle, sawB64Title, sawPlainAnnounce, sawB64Announce bool
 	for _, line := range strings.Split(body, "\n") {
 		switch {
 		case strings.HasPrefix(line, "#profile-title:"):
-			gotTitle = decodeHappBase64Header(t, strings.TrimSpace(strings.TrimPrefix(line, "#profile-title:")))
+			raw := strings.TrimSpace(strings.TrimPrefix(line, "#profile-title:"))
+			got := parseHappMetaValue(t, raw)
+			if gotTitle == "" {
+				gotTitle = got
+			} else if got != gotTitle {
+				t.Fatalf("conflicting #profile-title values %q vs %q", gotTitle, got)
+			}
+			if strings.HasPrefix(raw, "base64:") {
+				sawB64Title = true
+			} else {
+				sawPlainTitle = true
+			}
 		case strings.HasPrefix(line, "#announce:"):
-			gotAnnounce = decodeHappBase64Header(t, strings.TrimSpace(strings.TrimPrefix(line, "#announce:")))
+			raw := strings.TrimSpace(strings.TrimPrefix(line, "#announce:"))
+			got := parseHappMetaValue(t, raw)
+			if gotAnnounce == "" {
+				gotAnnounce = got
+			} else if got != gotAnnounce {
+				t.Fatalf("conflicting #announce values %q vs %q", gotAnnounce, got)
+			}
+			if strings.HasPrefix(raw, "base64:") {
+				sawB64Announce = true
+			} else {
+				sawPlainAnnounce = true
+			}
 		}
 	}
 	if gotTitle != wantTitle {
@@ -302,6 +329,9 @@ func assertHappDirectives(t *testing.T, body, wantTitle, wantAnnounce string) {
 	}
 	if gotAnnounce != wantAnnounce {
 		t.Fatalf("#announce = %q, want %q\nbody=%s", gotAnnounce, wantAnnounce, body)
+	}
+	if !sawPlainTitle || !sawB64Title || !sawPlainAnnounce || !sawB64Announce {
+		t.Fatalf("body must carry plain and base64 #profile-title/#announce; body=%s", body)
 	}
 }
 

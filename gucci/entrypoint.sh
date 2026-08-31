@@ -142,6 +142,7 @@ if [ -f "$DB" ]; then
   db_setting_force subTitle "{{STATUS_EMOJI}} 👤 {{EMAIL}} | 📊 {{TRAFFIC_LEFT}} | 🕔 {{TIME_LEFT}}"
   db_setting_force remarkTemplate "{{STATUS_EMOJI}} 👤 {{EMAIL}}"
   db_setting_force subAnnounce "⚡️ 👑 🅖🅤🅒🅒🅘 🅣🅔🅐🅜 👑 ⚡️"
+  db_setting_force subEncrypt false
   if [ -n "${RAILWAY_PUBLIC_DOMAIN:-}" ]; then
     db_setting_force subURI "https://${RAILWAY_PUBLIC_DOMAIN}/sub/"
     db_setting_force subJsonURI "https://${RAILWAY_PUBLIC_DOMAIN}/json/"

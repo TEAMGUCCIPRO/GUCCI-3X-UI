@@ -827,12 +827,14 @@ func (a *SUBController) ApplyCommonHeaders(
 	c.Writer.Header().Set("Subscription-Userinfo", header)
 	c.Writer.Header().Set("Profile-Update-Interval", updateInterval)
 
-	// Basics. Happ names the import from Profile-Title (or #profile-title in
-	// the body). Do not set Content-Disposition here: Happ treats filename /
-	// filename* as a fallback name and filename*=UTF-8''<emoji title> made it
-	// fall back to "Subscription-QMY". Clash / ?view=raw set CD themselves.
+	// Happ reads Profile-Title / Announce (base64:). v2box often names the
+	// import from Content-Disposition filename="..." (quoted UTF-8, not
+	// filename*). subscription-name is the Incy/Happ fallback. Clash / ?view=raw
+	// overwrite Content-Disposition afterwards.
 	if profileTitle != "" {
 		c.Writer.Header().Set("Profile-Title", happBase64Value(profileTitle))
+		c.Writer.Header().Set("subscription-name", profileTitle)
+		c.Writer.Header().Set("Content-Disposition", happContentDisposition(profileTitle))
 	}
 	if profileSupportUrl != "" {
 		c.Writer.Header().Set("Support-Url", profileSupportUrl)

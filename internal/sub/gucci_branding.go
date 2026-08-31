@@ -184,22 +184,44 @@ func happBase64Value(plain string) string {
 	return "base64:" + base64.StdEncoding.EncodeToString([]byte(plain))
 }
 
-// happBodyDirectives puts Happ profile-title / announce in the subscription
-// body so the app still names the import and shows the orange bar when a proxy
-// (nginx, Cloudflare) drops custom HTTP headers. Encrypted responses wrap this
-// plaintext before base64-encoding the whole payload.
+func happContentDisposition(title string) string {
+	title = strings.ReplaceAll(title, `\`, " ")
+	title = strings.ReplaceAll(title, `"`, "'")
+	title = strings.Map(func(r rune) rune {
+		if r == '\n' || r == '\r' {
+			return -1
+		}
+		return r
+	}, title)
+	return `attachment; filename="` + title + `"`
+}
+
+func writeHappMetaLine(b *strings.Builder, key, value string) {
+	value = strings.TrimSpace(value)
+	if value == "" {
+		return
+	}
+	// Plain first: v2box / v2RayTun / Happ all accept raw UTF-8 in the body.
+	b.WriteByte('#')
+	b.WriteString(key)
+	b.WriteString(": ")
+	b.WriteString(value)
+	b.WriteByte('\n')
+	// Then the base64: form for clients that refuse non-ASCII on a # line.
+	b.WriteByte('#')
+	b.WriteString(key)
+	b.WriteString(": ")
+	b.WriteString(happBase64Value(value))
+	b.WriteByte('\n')
+}
+
+// happBodyDirectives puts profile-title / announce in the subscription body so
+// Happ, v2box and v2RayTun still name the import and show the orange bar when
+// a proxy drops custom HTTP headers. Encrypted responses wrap this plaintext
+// before base64-encoding the whole payload.
 func happBodyDirectives(title, announce string) string {
 	var b strings.Builder
-	if strings.TrimSpace(title) != "" {
-		b.WriteString("#profile-title: ")
-		b.WriteString(happBase64Value(title))
-		b.WriteByte('\n')
-	}
-	announce = gucciAnnounce(announce)
-	if strings.TrimSpace(announce) != "" {
-		b.WriteString("#announce: ")
-		b.WriteString(happBase64Value(announce))
-		b.WriteByte('\n')
-	}
+	writeHappMetaLine(&b, "profile-title", title)
+	writeHappMetaLine(&b, "announce", gucciAnnounce(announce))
 	return b.String()
 }

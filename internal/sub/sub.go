@@ -125,10 +125,11 @@ func (s *Server) initRouter() (*gin.Engine, error) {
 		c.Set("base_path", basePath)
 	})
 
-	Encrypt, err := s.settingService.GetSubEncrypt()
-	if err != nil {
-		return nil, err
-	}
+	// GUCCI: never wrap the raw /sub/ body in a single base64 blob. Happ, v2box
+	// and v2RayTun must see the #profile-title / #announce lines (and the
+	// vless:// configs) as plaintext. Encryption hid those metadata lines from
+	// clients that do not unwrap the whole payload before parsing comments.
+	Encrypt := false
 
 	// GUCCI build: the config-name template for real configs is fixed to status + email
 	// (e.g. ✅ 👤 Qm5V4Pp5 or ❌ 👤 Qm5V4Pp5).
