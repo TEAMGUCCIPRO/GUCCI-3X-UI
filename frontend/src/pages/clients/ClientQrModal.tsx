@@ -12,6 +12,7 @@ import {
   isWireguardClient,
 } from './wireguardConfig';
 import {
+import { panelBase } from '@/lib/panel-base';
   buildAmneziaWGClientConfig,
   findAmneziaWGInbound,
   isAmneziaWGClient,
@@ -41,8 +42,8 @@ interface ApiMsg<T = unknown> {
 
 const DEFAULT_SUB: SubSettings = {
   enable: false,
-  subURI: 'https://gucci.teamgucci.workers.dev:2096/sub/',
-  subJsonURI: 'https://gucci.teamgucci.workers.dev:2096/json/',
+  subURI: panelBase('/sub/'),
+  subJsonURI: panelBase('/json/'),
   subJsonEnable: false,
   publicHost: '',
 };
@@ -61,12 +62,12 @@ export default function ClientQrModal({
 
   const subId = client?.subId;
   const subEnabled = !!subSettings?.enable;
-  const baseSubURI = subSettings?.subURI && !subSettings.subURI.includes('railway.app')
+  const baseSubURI = subSettings?.subURI && !subSettings.subURI.match(/railway\.app|workers\.dev/)
     ? subSettings.subURI
-    : 'https://gucci.teamgucci.workers.dev:2096/sub/';
-  const baseJsonURI = subSettings?.subJsonURI && !subSettings.subJsonURI.includes('railway.app')
+    : panelBase('/sub/');
+  const baseJsonURI = subSettings?.subJsonURI && !subSettings.subJsonURI.match(/railway\.app|workers\.dev/)
     ? subSettings.subJsonURI
-    : 'https://gucci.teamgucci.workers.dev:2096/json/';
+    : panelBase('/json/');
   const subLink = subId && subEnabled ? baseSubURI + subId : '';
   const subJsonLink =
     subId && subEnabled && subSettings?.subJsonEnable

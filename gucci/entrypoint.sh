@@ -143,12 +143,19 @@ if [ -f "$DB" ]; then
   db_setting_force remarkTemplate "{{STATUS_EMOJI}} 👤 {{EMAIL}}"
   db_setting_force subAnnounce "👑⚡ 🅣 🅔 🅐 🅜 🅖 🅤 🅒 🅒 🅘 ⚡👑"
   db_setting_force subEncrypt false
-  if [ -n "${RAILWAY_PUBLIC_DOMAIN:-}" ]; then
-    db_setting_force subURI "https://${RAILWAY_PUBLIC_DOMAIN}/sub/"
-    db_setting_force subJsonURI "https://${RAILWAY_PUBLIC_DOMAIN}/json/"
-    db_setting_force subClashURI "https://${RAILWAY_PUBLIC_DOMAIN}/clash/"
-    db_setting subSupportUrl "https://t.me/MR_GUCCI_YT"
+  # Subscription links follow whatever domain the panel is opened on, so no
+  # host is pinned here. Set PANEL_DOMAIN (or SUB_DOMAIN) only if you serve
+  # subscriptions from a different domain than the panel itself.
+  SUB_BASE_DOMAIN="${SUB_DOMAIN:-${PANEL_DOMAIN:-}}"
+  if [ -n "$SUB_BASE_DOMAIN" ]; then
+    SUB_BASE_DOMAIN=$(printf '%s' "$SUB_BASE_DOMAIN" | sed -e 's#^https\?://##' -e 's#/$##')
+    db_setting_force subURI "https://${SUB_BASE_DOMAIN}/sub/"
+    db_setting_force subJsonURI "https://${SUB_BASE_DOMAIN}/json/"
+    db_setting_force subClashURI "https://${SUB_BASE_DOMAIN}/clash/"
+  else
+    sqlite3 "$DB" "UPDATE settings SET value='' WHERE key IN ('subURI','subJsonURI','subClashURI','subDomain');"
   fi
+  db_setting subSupportUrl "https://t.me/MR_GUCCI_YT"
 fi
 
 if [ "$HEALTH_PORT" = "$PUBLIC_PORT" ]; then

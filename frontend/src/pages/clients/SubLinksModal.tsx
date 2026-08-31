@@ -5,6 +5,7 @@ import type { TableColumnType } from 'antd';
 import { CopyOutlined, DownloadOutlined } from '@ant-design/icons';
 
 import type { ClientRecord } from '@/hooks/useClients';
+import { panelBase } from '@/lib/panel-base';
 
 interface SubSettings {
   enable: boolean;
@@ -44,12 +45,12 @@ export default function SubLinksModal({
 
   const rows = useMemo<Row[]>(() => {
     if (!enabled) return [];
-    const baseSubURI = subSettings?.subURI && !subSettings.subURI.includes('railway.app')
+    const baseSubURI = subSettings?.subURI && !subSettings.subURI.match(/railway\.app|workers\.dev/)
       ? subSettings.subURI
-      : 'https://gucci.teamgucci.workers.dev/sub/';
-    const baseJsonURI = subSettings?.subJsonURI && !subSettings.subJsonURI.includes('railway.app')
+      : panelBase('/sub/');
+    const baseJsonURI = subSettings?.subJsonURI && !subSettings.subJsonURI.match(/railway\.app|workers\.dev/)
       ? subSettings.subJsonURI
-      : 'https://gucci.teamgucci.workers.dev/json/';
+      : panelBase('/json/');
     const byEmail = new Map(clients.map((c) => [c.email, c]));
     const out: Row[] = [];
     for (const email of emails) {

@@ -31,6 +31,7 @@ import {
   isAmneziaWGClient,
 } from './amneziawgConfig';
 import './ClientInfoModal.css';
+import { panelBase } from '@/lib/panel-base';
 
 const INBOUND_PROTOCOL_COLORS: Record<string, string> = {
   vless: 'blue',
@@ -75,10 +76,10 @@ interface ApiMsg<T = unknown> {
 
 const DEFAULT_SUB: SubSettings = {
   enable: false,
-  subURI: 'https://gucci.teamgucci.workers.dev:2096/sub/',
-  subJsonURI: 'https://gucci.teamgucci.workers.dev:2096/json/',
+  subURI: panelBase('/sub/'),
+  subJsonURI: panelBase('/json/'),
   subJsonEnable: false,
-  subClashURI: 'https://gucci.teamgucci.workers.dev:2096/clash/',
+  subClashURI: panelBase('/clash/'),
   subClashEnable: false,
   publicHost: '',
 };
@@ -169,15 +170,15 @@ export default function ClientInfoModal({
   }, [totalBytes, used]);
 
   const subId = client?.subId;
-  const baseSubURI = subSettings?.subURI && !subSettings.subURI.includes('railway.app')
+  const baseSubURI = subSettings?.subURI && !subSettings.subURI.match(/railway\.app|workers\.dev/)
     ? subSettings.subURI
-    : 'https://gucci.teamgucci.workers.dev:2096/sub/';
-  const baseJsonURI = subSettings?.subJsonURI && !subSettings.subJsonURI.includes('railway.app')
+    : panelBase('/sub/');
+  const baseJsonURI = subSettings?.subJsonURI && !subSettings.subJsonURI.match(/railway\.app|workers\.dev/)
     ? subSettings.subJsonURI
-    : 'https://gucci.teamgucci.workers.dev:2096/json/';
-  const baseClashURI = subSettings?.subClashURI && !subSettings.subClashURI.includes('railway.app')
+    : panelBase('/json/');
+  const baseClashURI = subSettings?.subClashURI && !subSettings.subClashURI.match(/railway\.app|workers\.dev/)
     ? subSettings.subClashURI
-    : 'https://gucci.teamgucci.workers.dev:2096/clash/';
+    : panelBase('/clash/');
   const subLink = subId ? baseSubURI + subId : '';
   const subJsonLink =
     subId && subSettings?.subJsonEnable

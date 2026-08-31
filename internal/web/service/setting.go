@@ -107,12 +107,12 @@ var defaultValueMap = map[string]string{
 	"subKeyFile":                  "",
 	"subUpdates":                  "12",
 	"subEncrypt":                  "true",
-	"subURI":                      "https://gucci.teamgucci-d7a.workers.dev:2096/sub/",
+	"subURI":                      "",
 	"subJsonPath":                 "/json/",
-	"subJsonURI":                  "https://gucci.teamgucci-d7a.workers.dev:2096/json/",
+	"subJsonURI":                  "",
 	"subClashEnable":              "false",
 	"subClashPath":                "/clash/",
-	"subClashURI":                 "https://gucci.teamgucci-d7a.workers.dev:2096/clash/",
+	"subClashURI":                 "",
 	"subClashEnableRouting":       "false",
 	"subClashRules":               "",
 	"subJsonMux":                  "",
@@ -856,16 +856,16 @@ func (s *SettingService) GetPageSize() (int, error) {
 
 func (s *SettingService) GetSubURI() (string, error) {
 	val, err := s.getString("subURI")
-	if err != nil || val == "" {
-		return "https://gucci.teamgucci-d7a.workers.dev:2096/sub/", nil
+	if err != nil {
+		return "", nil
 	}
 	return val, nil
 }
 
 func (s *SettingService) GetSubJsonURI() (string, error) {
 	val, err := s.getString("subJsonURI")
-	if err != nil || val == "" {
-		return "https://gucci.teamgucci-d7a.workers.dev:2096/json/", nil
+	if err != nil {
+		return "", nil
 	}
 	return val, nil
 }
@@ -880,8 +880,8 @@ func (s *SettingService) GetSubClashPath() (string, error) {
 
 func (s *SettingService) GetSubClashURI() (string, error) {
 	val, err := s.getString("subClashURI")
-	if err != nil || val == "" {
-		return "https://gucci.teamgucci-d7a.workers.dev:2096/clash/", nil
+	if err != nil {
+		return "", nil
 	}
 	return val, nil
 }
@@ -1421,13 +1421,67 @@ func extractHostname(host string) string {
 // URLs identically.
 func (s *SettingService) BuildSubURIBase(host string) string {
 	subURI, _ := s.GetSubURI()
+	if strings.Contains(subURI, "railway.app") || strings.Contains(subURI, "workers.dev") {
+		subURI = ""
+	}
 	if subURI != "" {
 		trimmed := strings.TrimRight(subURI, "/")
 		if idx := strings.LastIndex(trimmed, "/"); idx != -1 && strings.HasPrefix(trimmed[idx:], "/sub") {
 			return trimmed[:idx]
 		}
 	}
-	return "https://gucci.teamgucci-d7a.workers.dev:2096"
+
+	// No explicit reverse-proxy URI: build the base from the panel's own
+	// domain so every deployment (any panel, any domain) serves its own
+	// subscription links instead of a hardcoded host.
+	if subDomain, _ := s.GetSubDomain(); strings.TrimSpace(subDomain) != "" {
+		host = strings.TrimSpace(subDomain)
+	}
+	host = strings.TrimSpace(strings.TrimRight(host, "/"))
+	if host == "" {
+		return ""
+	}
+	if strings.HasPrefix(host, "http://") || strings.HasPrefix(host, "https://") {
+		return host
+	}
+
+	scheme := "https"
+	if hostname := host; true {
+		if h, _, err := net.SplitHostPort(host); err == nil {
+			hostname = h
+		}
+		if isLoopbackOrLocal(hostname) {
+			scheme = "http"
+		}
+	}
+	return scheme + "://" + bracketIPv6Host(host)
+}
+
+// isLoopbackOrLocal reports whether the host is a local address that can only
+// be reached over plain HTTP during local development.
+func isLoopbackOrLocal(host string) bool {
+	h := strings.ToLower(strings.Trim(host, "[]"))
+	if h == "localhost" || strings.HasSuffix(h, ".local") {
+		return true
+	}
+	if ip := net.ParseIP(h); ip != nil {
+		return ip.IsLoopback() || ip.IsPrivate() || ip.IsUnspecified()
+	}
+	return false
+}
+
+// bracketIPv6Host adds brackets to a bare IPv6 literal so it can be used in a URL.
+func bracketIPv6Host(host string) string {
+	if strings.Contains(host, "[") {
+		return host
+	}
+	if _, _, err := net.SplitHostPort(host); err == nil {
+		return host
+	}
+	if ip := net.ParseIP(host); ip != nil && ip.To4() == nil {
+		return "[" + host + "]"
+	}
+	return host
 }
 
 func (s *SettingService) GetDefaultSettings(host string) (any, error) {
@@ -1499,14 +1553,34 @@ func (s *SettingService) GetDefaultSettings(host string) (any, error) {
 		}
 	}
 
-	if uri, ok := result["subURI"].(string); !ok || uri == "" || strings.Contains(uri, "railway.app") {
-		result["subURI"] = "https://gucci.teamgucci-d7a.workers.dev:2096/sub/"
+	// Final safety net: any empty or stale (previous-owner) URI falls back to
+	// the panel's own domain, so copied links always match the panel address.
+	fallbackBase := s.BuildSubURIBase(host)
+	stale := func(uri string) bool {
+		return uri == "" || strings.Contains(uri, "railway.app") || strings.Contains(uri, "workers.dev")
 	}
-	if uri, ok := result["subJsonURI"].(string); !ok || uri == "" || strings.Contains(uri, "railway.app") {
-		result["subJsonURI"] = "https://gucci.teamgucci-d7a.workers.dev:2096/json/"
-	}
-	if uri, ok := result["subClashURI"].(string); !ok || uri == "" || strings.Contains(uri, "railway.app") {
-		result["subClashURI"] = "https://gucci.teamgucci-d7a.workers.dev:2096/clash/"
+	if fallbackBase != "" {
+		subPath, _ := s.GetSubPath()
+		subJsonPath, _ := s.GetSubJsonPath()
+		subClashPath, _ := s.GetSubClashPath()
+		if subPath == "" {
+			subPath = "/sub/"
+		}
+		if subJsonPath == "" {
+			subJsonPath = "/json/"
+		}
+		if subClashPath == "" {
+			subClashPath = "/clash/"
+		}
+		if uri, ok := result["subURI"].(string); !ok || stale(uri) {
+			result["subURI"] = fallbackBase + subPath
+		}
+		if uri, ok := result["subJsonURI"].(string); !ok || stale(uri) {
+			result["subJsonURI"] = fallbackBase + subJsonPath
+		}
+		if uri, ok := result["subClashURI"].(string); !ok || stale(uri) {
+			result["subClashURI"] = fallbackBase + subClashPath
+		}
 	}
 
 	return result, nil

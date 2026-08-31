@@ -2546,48 +2546,32 @@ func seed3InboundsAnd3HostsMigration() error {
 }
 
 func normalizeGucciSubscriptionSettings() error {
-	const defaultSubURI = "https://gucci.teamgucci.workers.dev:2096/sub/"
-	const defaultJsonURI = "https://gucci.teamgucci.workers.dev:2096/json/"
-	const defaultClashURI = "https://gucci.teamgucci.workers.dev:2096/clash/"
-
-	// 1. subURI
-	var subSetting model.Setting
-	err := db.Where("key = ?", "subURI").First(&subSetting).Error
-	if errors.Is(err, gorm.ErrRecordNotFound) {
-		db.Create(&model.Setting{Key: "subURI", Value: defaultSubURI})
-	} else if err == nil {
-		if subSetting.Value == "" || strings.Contains(subSetting.Value, "railway.app") {
-			db.Model(&model.Setting{}).Where("id = ?", subSetting.Id).Update("value", defaultSubURI)
+	// Subscription links must always follow the domain the panel itself is
+	// served on, so no panel-specific host is baked in here. Leaving these
+	// settings empty makes the panel derive the base URL from the incoming
+	// request, which works for every fork/deployment and custom domain.
+	// Legacy rows that still point at a previous owner's host are cleared.
+	staleHosts := []string{"workers.dev", "railway.app", "teamgucci"}
+	isStale := func(v string) bool {
+		for _, h := range staleHosts {
+			if strings.Contains(v, h) {
+				return true
+			}
 		}
+		return false
 	}
 
-	// 2. subJsonURI
-	var jsonSetting model.Setting
-	err = db.Where("key = ?", "subJsonURI").First(&jsonSetting).Error
-	if errors.Is(err, gorm.ErrRecordNotFound) {
-		db.Create(&model.Setting{Key: "subJsonURI", Value: defaultJsonURI})
-	} else if err == nil {
-		if jsonSetting.Value == "" || strings.Contains(jsonSetting.Value, "railway.app") {
-			db.Model(&model.Setting{}).Where("id = ?", jsonSetting.Id).Update("value", defaultJsonURI)
+	for _, key := range []string{"subURI", "subJsonURI", "subClashURI", "subDomain"} {
+		var setting model.Setting
+		err := db.Where("key = ?", key).First(&setting).Error
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			continue
+		} else if err != nil {
+			return err
 		}
-	}
-
-	// 3. subClashURI
-	var clashSetting model.Setting
-	err = db.Where("key = ?", "subClashURI").First(&clashSetting).Error
-	if errors.Is(err, gorm.ErrRecordNotFound) {
-		db.Create(&model.Setting{Key: "subClashURI", Value: defaultClashURI})
-	} else if err == nil {
-		if clashSetting.Value == "" || strings.Contains(clashSetting.Value, "railway.app") {
-			db.Model(&model.Setting{}).Where("id = ?", clashSetting.Id).Update("value", defaultClashURI)
+		if setting.Value != "" && isStale(setting.Value) {
+			db.Model(&model.Setting{}).Where("id = ?", setting.Id).Update("value", "")
 		}
-	}
-
-	// 4. subDomain
-	var subDomainSetting model.Setting
-	err = db.Where("key = ?", "subDomain").First(&subDomainSetting).Error
-	if err == nil && (strings.Contains(subDomainSetting.Value, "workers.dev") || strings.Contains(subDomainSetting.Value, "railway.app")) {
-		db.Model(&model.Setting{}).Where("id = ?", subDomainSetting.Id).Update("value", "")
 	}
 
 	return nil
