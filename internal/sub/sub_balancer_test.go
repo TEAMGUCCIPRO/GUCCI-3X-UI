@@ -63,8 +63,8 @@ func TestSubJson_BalancerDocument(t *testing.T) {
 		t.Fatalf("GetJson: %v", err)
 	}
 	docs := parseSubJsonDocs(t, out)
-	if len(docs) != 3 {
-		t.Fatalf("docs = %d, want 3 (2 inbounds + 1 balancer):\n%s", len(docs), out)
+	if len(docs) != 5 {
+		t.Fatalf("docs = %d, want 5 (2 dummies + 2 inbounds + 1 balancer):\n%s", len(docs), out)
 	}
 
 	balancerDoc := findDocByRemarks(docs, "auto")
@@ -118,7 +118,7 @@ func TestSubJson_BalancerDocument(t *testing.T) {
 
 	// The routing rewrite must not leak into the manual documents: s.configJson
 	// is shared, so a missing clone would corrupt every other doc.
-	for _, remarks := range []string{"tcpin-tcpin@e", "wsin-wsin@e"} {
+	for _, remarks := range []string{"✅ 👤 tcpin@e", "✅ 👤 wsin@e"} {
 		manual := findDocByRemarks(docs, remarks)
 		if manual == nil {
 			t.Fatalf("manual doc %q missing:\n%s", remarks, out)
@@ -165,8 +165,14 @@ func TestSubJson_BalancerOrderInterleavesWithInbounds(t *testing.T) {
 	for _, doc := range docs {
 		remarks = append(remarks, doc["remarks"].(string))
 	}
-	if strings.Join(remarks, ",") != "first-first@e,bal,later-later@e" {
-		t.Fatalf("doc order = %v, want [first bal later]", remarks)
+	if len(remarks) < 5 {
+		t.Fatalf("doc order = %v, want 2 dummies then [first bal later]", remarks)
+	}
+	if remarks[0] != gucciUpdateNoticeRemark {
+		t.Fatalf("first dummy = %q", remarks[0])
+	}
+	if strings.Join(remarks[2:], ",") != "✅ 👤 first@e,bal,✅ 👤 later@e" {
+		t.Fatalf("doc order = %v, want [dummy dummy first bal later]", remarks)
 	}
 	balancerDoc := findDocByRemarks(docs, "bal")
 	routing, _ := balancerDoc["routing"].(map[string]any)
@@ -195,11 +201,11 @@ func TestSubJson_BalancerDisabledAndEmptySkipped(t *testing.T) {
 		t.Fatalf("GetJson: %v", err)
 	}
 	docs := parseSubJsonDocs(t, out)
-	if len(docs) != 1 {
-		t.Fatalf("docs = %d, want 1:\n%s", len(docs), out)
+	if len(docs) != 3 {
+		t.Fatalf("docs = %d, want 3 (2 dummies + 1 inbound):\n%s", len(docs), out)
 	}
-	if docs[0]["remarks"] != "only-only@e" {
-		t.Fatalf("remaining doc = %v", docs[0]["remarks"])
+	if findDocByRemarks(docs, "✅ 👤 only@e") == nil {
+		t.Fatalf("remaining inbound doc missing: %v", docs)
 	}
 }
 

@@ -372,34 +372,8 @@ func (s *SubService) getSubs(subId string) ([]string, []string, int64, xray.Clie
 	traffic.Enable = hasEnabledClient
 
 	if s.subscriptionBody {
-		// Two GUCCI placeholder configs open every subscription body so the
-		// client app shows the update reminder first and the full status/quota sample
-		// second. Both point at 127.0.0.1:1 so they never connect.
-		firstDummy := buildLinkWithParams("vless://00000000-0000-0000-0000-000000000000@127.0.0.1:1", map[string]string{
-			"encryption": "none",
-			"security":   "none",
-			"type":       "tcp",
-		}, gucciUpdateNoticeRemark)
-
-		firstEmail := subId
-		if len(uniqueEmails) > 0 {
-			firstEmail = uniqueEmails[0]
-		}
-
-		clientRec := model.Client{Email: firstEmail, SubID: subId}
-
-		ctx := remarkContext{
-			client: clientRec,
-			stats:  traffic,
-		}
-		secondRemark := expandRemarkVars(gucciInfoRemarkTemplate, ctx)
-		secondDummy := buildLinkWithParams("vless://00000000-0000-0000-0000-000000000000@127.0.0.1:1", map[string]string{
-			"encryption": "none",
-			"security":   "none",
-			"type":       "tcp",
-		}, secondRemark)
-
-		result = append([]string{firstDummy, secondDummy}, result...)
+		s.remarkTemplate = gucciConfigRemarkTemplate
+		result = s.applyGucciSubscriptionBody(result, emails, subId, traffic)
 	}
 
 	return result, emails, lastOnline, traffic, nil

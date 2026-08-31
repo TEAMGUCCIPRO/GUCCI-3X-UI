@@ -411,7 +411,7 @@ func (a *SUBController) subs(c *gin.Context) {
 	subId := c.Param("subid")
 	scheme, host, hostWithPort, _ := a.subService.ResolveRequest(c)
 	subReq := a.subService.ForRequest(host)
-	subReq.subscriptionBody = true
+	subReq.EnableSubscriptionBody()
 	subs, _, _, traffic, err := subReq.getSubs(subId)
 	if err != nil || len(subs) == 0 {
 		writeSubError(c, err)
@@ -830,6 +830,7 @@ func (a *SUBController) ApplyCommonHeaders(
 	// Basics
 	if profileTitle != "" {
 		c.Writer.Header().Set("Profile-Title", "base64:"+base64.StdEncoding.EncodeToString([]byte(profileTitle)))
+		c.Writer.Header().Set("Content-Disposition", fmt.Sprintf(`attachment; filename*=UTF-8''%s`, url.PathEscape(profileTitle)))
 	}
 	if profileSupportUrl != "" {
 		c.Writer.Header().Set("Support-Url", profileSupportUrl)

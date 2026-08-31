@@ -17,6 +17,7 @@ import (
 	"github.com/mhsanaei/3x-ui/v3/internal/util/json_util"
 	"github.com/mhsanaei/3x-ui/v3/internal/util/random"
 	wgutil "github.com/mhsanaei/3x-ui/v3/internal/util/wireguard"
+	"github.com/mhsanaei/3x-ui/v3/internal/xray"
 )
 
 //go:embed default.json
@@ -68,7 +69,7 @@ func NewSubJsonService(mux string, rules string, finalMask string, subService *S
 // GetJson generates a JSON subscription configuration for the given subscription ID and host.
 func (s *SubJsonService) GetJson(subId string, host string, alwaysReturnArray bool) (string, string, error) {
 	subReq := s.SubService.ForRequest(host)
-	subReq.subscriptionBody = true
+	subReq.EnableSubscriptionBody()
 	inbounds, err := subReq.getInboundsBySubId(subId)
 	if err != nil {
 		return "", "", err
@@ -84,6 +85,8 @@ func (s *SubJsonService) GetJson(subId string, host string, alwaysReturnArray bo
 	var header string
 
 	seenEmails := make(map[string]struct{})
+	var firstEmail string
+	var hasEnabled bool
 	entries := make([]subConfigEntry, 0, len(inbounds))
 	// Prepare Inbounds
 	for _, inbound := range inbounds {
@@ -99,6 +102,12 @@ func (s *SubJsonService) GetJson(subId string, host string, alwaysReturnArray bo
 		var inboundConfigs []json_util.RawMessage
 		for _, client := range clients {
 			seenEmails[client.Email] = struct{}{}
+			if firstEmail == "" {
+				firstEmail = client.Email
+			}
+			if client.Enable {
+				hasEnabled = true
+			}
 			inboundConfigs = append(inboundConfigs, s.getConfig(subReq, inbound, client, host)...)
 		}
 		if len(inboundConfigs) > 0 {
@@ -133,10 +142,13 @@ func (s *SubJsonService) GetJson(subId string, host string, alwaysReturnArray bo
 				continue
 			}
 			seenEmails[ext.Email] = struct{}{}
-			remark := el.Name
-			if remark == "" {
-				remark = ext.Email
+			if firstEmail == "" {
+				firstEmail = ext.Email
 			}
+			if ext.Enable {
+				hasEnabled = true
+			}
+			remark := gucciConfigRemark(ext.Email, subReq.statsForGucci(ext.Email, xray.ClientTraffic{Enable: ext.Enable}))
 			newOutbounds := []json_util.RawMessage{outbound}
 			newOutbounds = append(newOutbounds, s.defaultOutbounds...)
 			newConfigJson := make(map[string]any)
@@ -157,6 +169,11 @@ func (s *SubJsonService) GetJson(subId string, host string, alwaysReturnArray bo
 		emails = append(emails, e)
 	}
 	traffic, _ := subReq.AggregateTrafficByEmails(emails)
+	traffic.Enable = hasEnabled
+	if firstEmail == "" {
+		firstEmail = subId
+	}
+	configArray = append(s.gucciDummyConfigs(gucciInfoRemark(firstEmail, subReq.statsForGucci(firstEmail, traffic))), configArray...)
 
 	var finalJson []byte
 	if len(configArray) == 1 && !alwaysReturnArray {
@@ -167,6 +184,39 @@ func (s *SubJsonService) GetJson(subId string, host string, alwaysReturnArray bo
 
 	header = fmt.Sprintf("upload=%d; download=%d; total=%d; expire=%d", traffic.Up, traffic.Down, traffic.Total, traffic.ExpiryTime/1000)
 	return string(finalJson), header, nil
+}
+
+// gucciDummyConfigs returns the two non-working GUCCI announcement profiles
+// (update reminder, then the full status+quota sample) that must appear first
+// in the JSON subscription the client app imports.
+func (s *SubJsonService) gucciDummyConfigs(infoRemark string) []json_util.RawMessage {
+	stream := json_util.RawMessage(`{
+  "network": "tcp",
+  "security": "none"
+}`)
+	makeDummy := func(remark string) json_util.RawMessage {
+		outbound := Outbound{
+			Protocol:       "vless",
+			Tag:            "proxy",
+			StreamSettings: stream,
+			Settings: map[string]any{
+				"address":    "127.0.0.1",
+				"port":       1,
+				"id":         gucciDummyUUID,
+				"encryption": "none",
+				"level":      8,
+			},
+		}
+		proxyRaw, _ := json.MarshalIndent(outbound, "", "  ")
+		newOutbounds := append([]json_util.RawMessage{proxyRaw}, s.defaultOutbounds...)
+		newConfigJson := make(map[string]any)
+		maps.Copy(newConfigJson, s.configJson)
+		newConfigJson["outbounds"] = newOutbounds
+		newConfigJson["remarks"] = remark
+		newConfig, _ := json.MarshalIndent(newConfigJson, "", "  ")
+		return newConfig
+	}
+	return []json_util.RawMessage{makeDummy(gucciUpdateNoticeRemark), makeDummy(infoRemark)}
 }
 
 // subConfigEntry is one ordered block of the JSON subscription: an inbound's
@@ -544,9 +594,8 @@ func (s *SubJsonService) getConfig(subReq *SubService, inbound *model.Inbound, c
 		newConfigJson := make(map[string]any)
 		maps.Copy(newConfigJson, s.configJson)
 
-		transport, _ := newStream["network"].(string)
 		newConfigJson["outbounds"] = newOutbounds
-		newConfigJson["remarks"] = subReq.endpointRemark(inbound, client.Email, extPrxy, transport)
+		newConfigJson["remarks"] = gucciConfigRemark(client.Email, subReq.statsForGucci(client.Email, xray.ClientTraffic{Enable: client.Enable}))
 
 		newConfig, _ := json.MarshalIndent(newConfigJson, "", "  ")
 		newJsonArray = append(newJsonArray, newConfig)

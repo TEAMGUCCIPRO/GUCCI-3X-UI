@@ -139,13 +139,13 @@ if [ -f "$DB" ]; then
   sqlite3 "$DB" "DELETE FROM settings WHERE key IN ('subURI', 'subJsonURI', 'subClashURI') AND value LIKE '%:2096%';"
   db_setting subListen 127.0.0.1
   db_setting subPort 2096
+  db_setting_force subTitle "{{STATUS_EMOJI}} 👤 {{EMAIL}} | 📊 {{TRAFFIC_LEFT}} | 🕔 {{TIME_LEFT}}"
+  db_setting_force remarkTemplate "{{STATUS_EMOJI}} 👤 {{EMAIL}}"
+  db_setting_force subAnnounce "⚡️ 👑 🅖🅤🅒🅒🅘 🅣🅔🅐🅜 👑 ⚡️"
   if [ -n "${RAILWAY_PUBLIC_DOMAIN:-}" ]; then
     db_setting_force subURI "https://${RAILWAY_PUBLIC_DOMAIN}/sub/"
     db_setting_force subJsonURI "https://${RAILWAY_PUBLIC_DOMAIN}/json/"
     db_setting_force subClashURI "https://${RAILWAY_PUBLIC_DOMAIN}/clash/"
-    db_setting subTitle "{{STATUS_EMOJI}} 👤 {{EMAIL}} | 📊 {{TRAFFIC_LEFT}} | 🕔 {{TIME_LEFT}}"
-    db_setting remarkTemplate "{{STATUS_EMOJI}} 👤 {{EMAIL}}"
-    db_setting subAnnounce "⚡️ 👑 🅖🅤🅒🅒🅘 🅣🅔🅐🅜 👑 ⚡️"
     db_setting subSupportUrl "https://t.me/MR_GUCCI_YT"
   fi
 fi

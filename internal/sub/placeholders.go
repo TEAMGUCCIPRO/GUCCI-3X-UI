@@ -87,12 +87,16 @@ func subMetadataUsesPlaceholders(values ...string) bool {
 func (a *SUBController) metadataForSubRequest(getSubReq func() *SubService, subID string, fallbackProfileURL string) renderedSubMetadata {
 	var context remarkContext
 	var hasContext bool
-	if subMetadataUsesPlaceholders(a.subTitle, a.subSupportUrl, a.subProfileUrl, a.subAnnounce) {
-		var err error
+	// Always load the subscriber so the Happ Profile-Title can show that
+	// user's status, email, remaining traffic and remaining time.
+	if getSubReq != nil {
 		subReq := getSubReq()
-		context, hasContext, err = subReq.subscriptionTemplateContextBySubID(subID)
-		if err != nil {
-			logger.Warning("sub: load template contexts for subscription metadata:", err)
+		if subReq != nil {
+			var err error
+			context, hasContext, err = subReq.subscriptionTemplateContextBySubID(subID)
+			if err != nil {
+				logger.Warning("sub: load template contexts for subscription metadata:", err)
+			}
 		}
 	}
 	profileURL := a.subProfileUrl
@@ -102,8 +106,12 @@ func (a *SUBController) metadataForSubRequest(getSubReq func() *SubService, subI
 		profileURL = renderSubPlaceholders(profileURL, subPlaceholderData{SubID: subID, Context: context, HasCtx: hasContext, Escape: true})
 	}
 	data := subPlaceholderData{SubID: subID, Context: context, HasCtx: hasContext}
+	email := ""
+	if hasContext {
+		email = context.client.Email
+	}
 	return renderedSubMetadata{
-		Title:      renderSubPlaceholders(a.subTitle, data),
+		Title:      gucciProfileTitle(email, subID, context.stats),
 		SupportURL: renderSubPlaceholders(a.subSupportUrl, subPlaceholderData{SubID: subID, Context: context, HasCtx: hasContext, Escape: true}),
 		ProfileURL: profileURL,
 		Announce:   renderSubPlaceholders(a.subAnnounce, data),
@@ -135,7 +143,19 @@ func (s *SubService) subscriptionTemplateContextBySubID(subID string) (remarkCon
 			}
 		}
 	}
+	if client.Email != "" {
+		emails = append(emails, client.Email)
+	}
+	if client.Enable {
+		hasEnabledClient = true
+	}
 	traffic, _ := s.AggregateTrafficByEmails(emails)
 	traffic.Enable = hasEnabledClient
+	if traffic.ExpiryTime == 0 {
+		traffic.ExpiryTime = client.ExpiryTime
+	}
+	if traffic.Total == 0 {
+		traffic.Total = client.TotalGB
+	}
 	return remarkContext{client: client, stats: traffic}, true, nil
 }

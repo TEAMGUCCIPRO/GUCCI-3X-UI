@@ -36,24 +36,33 @@ func TestJsonAndClashServeExternalLinkOnlySub(t *testing.T) {
 	if jsonOut == "" {
 		t.Fatal("GetJson returned empty for an external-link-only sub")
 	}
-	if !strings.Contains(jsonOut, "DE-Provider") {
-		t.Fatalf("GetJson missing external remark: %s", jsonOut)
+	if !strings.Contains(jsonOut, "example.com") {
+		t.Fatalf("GetJson missing external endpoint: %s", jsonOut)
 	}
-	var config map[string]any
-	if err := json.Unmarshal([]byte(jsonOut), &config); err != nil {
-		t.Fatalf("legacy GetJson must return an object for a single profile: %v; body=%s", err, jsonOut)
+	var configs []map[string]any
+	if err := json.Unmarshal([]byte(jsonOut), &configs); err != nil {
+		t.Fatalf("GetJson with GUCCI dummies must return an array: %v; body=%s", err, jsonOut)
+	}
+	if len(configs) != 3 {
+		t.Fatalf("GetJson profile count = %d, want 3 (2 dummies + 1 real)", len(configs))
+	}
+	if configs[0]["remarks"] != gucciUpdateNoticeRemark {
+		t.Fatalf("first json remark = %v", configs[0]["remarks"])
+	}
+	if configs[2]["remarks"] != "✅ 👤 ext@x" {
+		t.Fatalf("real json remark = %v, want status+email (provider name must not leak)", configs[2]["remarks"])
 	}
 
 	standardOut, _, err := jsonService.GetJson("ext-only", "sub.example.com", true)
 	if err != nil {
 		t.Fatalf("standards-compliant GetJson err = %v", err)
 	}
-	var configs []map[string]any
-	if err := json.Unmarshal([]byte(standardOut), &configs); err != nil {
-		t.Fatalf("standards-compliant GetJson must return an array for a single profile: %v; body=%s", err, standardOut)
+	var standardConfigs []map[string]any
+	if err := json.Unmarshal([]byte(standardOut), &standardConfigs); err != nil {
+		t.Fatalf("standards-compliant GetJson must return an array: %v; body=%s", err, standardOut)
 	}
-	if len(configs) != 1 {
-		t.Fatalf("standards-compliant GetJson profile count = %d, want 1", len(configs))
+	if len(standardConfigs) != 3 {
+		t.Fatalf("standards-compliant GetJson profile count = %d, want 3", len(standardConfigs))
 	}
 
 	clashOut, _, err := NewSubClashService(false, "", base).GetClash("ext-only", "sub.example.com")
@@ -63,7 +72,13 @@ func TestJsonAndClashServeExternalLinkOnlySub(t *testing.T) {
 	if clashOut == "" {
 		t.Fatal("GetClash returned empty for an external-link-only sub")
 	}
-	if !strings.Contains(clashOut, "DE-Provider") {
+	if !strings.Contains(clashOut, "example.com") {
 		t.Fatalf("GetClash missing external proxy: %s", clashOut)
+	}
+	if !strings.Contains(clashOut, "✅ 👤 ext@x") {
+		t.Fatalf("GetClash missing status+email name: %s", clashOut)
+	}
+	if strings.Contains(clashOut, "DE-Provider") {
+		t.Fatalf("external provider remark leaked into Clash: %s", clashOut)
 	}
 }

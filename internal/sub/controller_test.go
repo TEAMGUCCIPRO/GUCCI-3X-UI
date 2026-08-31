@@ -373,8 +373,8 @@ func TestStandardSubscriptionAutoDetectsFormats(t *testing.T) {
 		if got := resp.Header().Get("Content-Type"); got != "text/plain; charset=utf-8" {
 			t.Fatalf("Content-Type = %q, want legacy text/plain", got)
 		}
-		if body := strings.TrimSpace(resp.Body.String()); !strings.HasPrefix(body, "{") {
-			t.Fatalf("legacy explicit JSON body is not an object: %s", body)
+		if body := strings.TrimSpace(resp.Body.String()); !strings.HasPrefix(body, "[") {
+			t.Fatalf("explicit JSON body with GUCCI dummies is not an array: %s", body)
 		}
 	})
 

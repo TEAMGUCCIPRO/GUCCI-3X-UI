@@ -11,6 +11,7 @@ import (
 
 	"github.com/mhsanaei/3x-ui/v3/internal/database/model"
 	wgutil "github.com/mhsanaei/3x-ui/v3/internal/util/wireguard"
+	"github.com/mhsanaei/3x-ui/v3/internal/xray"
 )
 
 type SubClashService struct {
@@ -25,7 +26,7 @@ func NewSubClashService(enableRouting bool, clashRules string, subService *SubSe
 
 func (s *SubClashService) GetClash(subId string, host string) (string, string, error) {
 	subReq := s.SubService.ForRequest(host)
-	subReq.subscriptionBody = true
+	subReq.EnableSubscriptionBody()
 	inbounds, err := subReq.getInboundsBySubId(subId)
 	if err != nil {
 		return "", "", err
@@ -41,6 +42,8 @@ func (s *SubClashService) GetClash(subId string, host string) (string, string, e
 	var proxies []map[string]any
 
 	seenEmails := make(map[string]struct{})
+	var firstEmail string
+	var hasEnabled bool
 	for _, inbound := range inbounds {
 		clients := subReq.matchingClients(inbound, subId)
 		if len(clients) == 0 {
@@ -52,17 +55,27 @@ func (s *SubClashService) GetClash(subId string, host string) (string, string, e
 		}
 		for _, client := range clients {
 			seenEmails[client.Email] = struct{}{}
+			if firstEmail == "" {
+				firstEmail = client.Email
+			}
+			if client.Enable {
+				hasEnabled = true
+			}
 			proxies = append(proxies, s.getProxies(subReq, inbound, client, host)...)
 		}
 	}
 	for _, ext := range externalLinks {
 		for _, el := range expandEntry(ext) {
-			name := el.Name
-			if name == "" {
-				name = ext.Email
-			}
+			st := subReq.statsForGucci(ext.Email, xray.ClientTraffic{Enable: ext.Enable})
+			name := gucciConfigRemark(ext.Email, st)
 			if proxy := s.clashProxyFromExternal(el.Link, name); proxy != nil {
 				seenEmails[ext.Email] = struct{}{}
+				if firstEmail == "" {
+					firstEmail = ext.Email
+				}
+				if ext.Enable {
+					hasEnabled = true
+				}
 				proxies = append(proxies, proxy)
 			}
 		}
@@ -72,13 +85,18 @@ func (s *SubClashService) GetClash(subId string, host string) (string, string, e
 		return "", "", nil
 	}
 
-	ensureUniqueProxyNames(proxies)
-
 	emails := make([]string, 0, len(seenEmails))
 	for e := range seenEmails {
 		emails = append(emails, e)
 	}
 	traffic, _ := subReq.AggregateTrafficByEmails(emails)
+	traffic.Enable = hasEnabled
+	if firstEmail == "" {
+		firstEmail = subId
+	}
+	proxies = append(gucciDummyClashProxies(gucciInfoRemark(firstEmail, subReq.statsForGucci(firstEmail, traffic))), proxies...)
+
+	ensureUniqueProxyNames(proxies)
 
 	proxyNames := make([]string, 0, len(proxies)+1)
 	for _, proxy := range proxies {
@@ -236,7 +254,7 @@ func (s *SubClashService) buildProxy(subReq *SubService, inbound *model.Inbound,
 	network, _ := stream["network"].(string)
 
 	proxy := map[string]any{
-		"name":   subReq.endpointRemark(inbound, client.Email, ep, network),
+		"name":   gucciConfigRemark(client.Email, subReq.statsForGucci(client.Email, xray.ClientTraffic{Enable: client.Enable})),
 		"server": inbound.Listen,
 		"port":   inbound.Port,
 		"udp":    true,
@@ -310,7 +328,7 @@ func (s *SubClashService) buildHysteriaProxy(subReq *SubService, inbound *model.
 	}
 
 	proxy := map[string]any{
-		"name":   subReq.endpointRemark(inbound, client.Email, ep, "quic"),
+		"name":   gucciConfigRemark(client.Email, subReq.statsForGucci(client.Email, xray.ClientTraffic{Enable: client.Enable})),
 		"type":   proxyType,
 		"server": inbound.Listen,
 		"port":   inbound.Port,
@@ -392,7 +410,7 @@ func (s *SubClashService) buildWireguardProxy(subReq *SubService, inbound *model
 	secretKey, _ := inboundSettings["secretKey"].(string)
 
 	proxy := map[string]any{
-		"name":        subReq.endpointRemark(inbound, client.Email, ep, ""),
+		"name":        gucciConfigRemark(client.Email, subReq.statsForGucci(client.Email, xray.ClientTraffic{Enable: client.Enable})),
 		"type":        "wireguard",
 		"server":      inbound.Listen,
 		"port":        inbound.Port,

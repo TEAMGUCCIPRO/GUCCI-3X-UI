@@ -76,7 +76,6 @@ func TestMetadataForSubRequestDoesNotExpandFallbackProfileURL(t *testing.T) {
 	fallback := "https://sub.example.com/sub/sub-123?x={{EMAIL}}"
 
 	metadata := a.metadataForSubRequest(func() *SubService {
-		t.Fatal("metadataForSubRequest loaded a subscription context without configured placeholders")
 		return nil
 	}, "sub-123", fallback)
 
@@ -117,7 +116,7 @@ func TestMetadataForSubRequestUsesStableClientIdentity(t *testing.T) {
 	}
 	metadata := a.metadataForSubRequest(func() *SubService { return &SubService{} }, "sub-123", "https://fallback.example/{{EMAIL}}")
 
-	if metadata.Title != "isVPN — john doe@example.com" {
+	if metadata.Title != "✅ 👤 john doe@example.com | 📊 ∞ | 🕔 ∞" {
 		t.Fatalf("Title = %q", metadata.Title)
 	}
 	if metadata.SupportURL != "https://support.example/?email=john+doe%40example.com&tg=42" {
