@@ -110,10 +110,14 @@ export default function HostFormModal({
 
   const inboundSelectOptions = useMemo(
     () =>
-      inboundOptions.map((ib) => ({
-        value: ib.id,
-        label: ib.remark || ib.tag || `#${ib.id}`,
-      })),
+      [...inboundOptions]
+        // Order the inbound picker by listening port (52831, 52832, 52833, ...)
+        // so it always reads in ascending port order regardless of inbound id.
+        .sort((a, b) => (a.port ?? 0) - (b.port ?? 0) || a.id - b.id)
+        .map((ib) => ({
+          value: ib.id,
+          label: ib.remark || ib.tag || `#${ib.id}`,
+        })),
     [inboundOptions],
   );
 
