@@ -57,7 +57,7 @@ func gucciTrafficLeft(st xray.ClientTraffic) string {
 }
 
 // gucciInfoRemark is the subscription profile title and the second dummy config:
-// ☑ 👤 email | 📊 10.09 GB | 🕔 27 روز
+// ✅ 👤 email | 📊 10.09 GB | 🕔 27 روز
 func gucciInfoRemark(email string, st xray.ClientTraffic) string {
 	if email == "" {
 		email = "-"
@@ -65,10 +65,13 @@ func gucciInfoRemark(email string, st xray.ClientTraffic) string {
 	return fmt.Sprintf("%s 👤 %s | 📊 %s | 🕔 %s", statusEmoji(st), email, gucciTrafficLeft(st), timeLeftLabel(st.ExpiryTime))
 }
 
-// gucciConfigRemark is the name of every real config, same shape as the
-// profile title: ☑ 👤 email | 📊 traffic left | 🕔 time left
+// gucciConfigRemark is the name of every real config: status + email only.
+// ✅ 👤 email  (❌ 👤 email when inactive)
 func gucciConfigRemark(email string, st xray.ClientTraffic) string {
-	return gucciInfoRemark(email, st)
+	if email == "" {
+		email = "-"
+	}
+	return fmt.Sprintf("%s 👤 %s", statusEmoji(st), email)
 }
 
 func (s *SubService) statsForGucci(email string, fallback xray.ClientTraffic) xray.ClientTraffic {
