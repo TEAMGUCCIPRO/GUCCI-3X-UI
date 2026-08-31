@@ -91,7 +91,7 @@ const links: string[] = Array.isArray(subData.links) ? subData.links : [];
 const linkEmails: string[] = Array.isArray(subData.emails) ? subData.emails : [];
 const subEmail = [...new Set(linkEmails.filter(Boolean))].join(', ');
 const datepicker = subData.datepicker || 'gregorian';
-const announce = subData.announce || '⚡️ 👑 🅖🅤🅒🅒🅘 🅣🅔🅐🅜 👑 ⚡️';
+const announce = subData.announce || '👑⚡ 🅣 🅔 🅐 🅜 🅖 🅤 🅒 🅒 🅘 ⚡👑';
 
 const appendRawView = (url: string) => `${url}${url.includes('?') ? '&' : '?'}view=raw`;
 

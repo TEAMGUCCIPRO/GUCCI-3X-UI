@@ -13,7 +13,7 @@ const gucciDummyHostPort = "127.0.0.1:1"
 const gucciDummyUUID = "00000000-0000-0000-0000-000000000000"
 
 // Orange Happ announcement bar (Announce header + #announce body line).
-const gucciAnnounceText = "⚡️ 👑 🅖🅤🅒🅒🅘 🅣🅔🅐🅜 👑 ⚡️"
+const gucciAnnounceText = "👑⚡ 🅣 🅔 🅐 🅜 🅖 🅤 🅒 🅒 🅘 ⚡👑"
 
 // EnableSubscriptionBody marks this request as a client-app import (raw /json
 // /clash) and locks the per-config remark template so host/inbound names cannot
