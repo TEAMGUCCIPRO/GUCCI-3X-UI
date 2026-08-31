@@ -33,8 +33,8 @@ var salamanderWarningSeen sync.Map
 
 // SubService provides business logic for generating subscription links and managing subscription data.
 // gucciConfigRemarkTemplate is the fixed per-client config name format for real configs:
-// status emoji and email (e.g. ✅ 👤 Qm5V4Pp5 or ❌ 👤 Qm5V4Pp5).
-const gucciConfigRemarkTemplate = "{{STATUS_EMOJI}} 👤 {{EMAIL}}"
+// status emoji, email, remaining traffic and remaining time.
+const gucciConfigRemarkTemplate = "{{STATUS_EMOJI}} 👤 {{EMAIL}} | 📊 {{TRAFFIC_LEFT}} | 🕔 {{TIME_LEFT}}"
 
 // gucciInfoRemarkTemplate is the full format with status, email, traffic and time
 // used for the subscription title and the second dummy config.

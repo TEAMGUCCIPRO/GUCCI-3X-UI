@@ -116,7 +116,7 @@ func TestMetadataForSubRequestUsesStableClientIdentity(t *testing.T) {
 	}
 	metadata := a.metadataForSubRequest(func() *SubService { return &SubService{} }, "sub-123", "https://fallback.example/{{EMAIL}}")
 
-	if metadata.Title != "✅ 👤 john doe@example.com | 📊 ∞ | 🕔 ∞" {
+	if metadata.Title != "☑ 👤 john doe@example.com | 📊 ∞ | 🕔 ∞" {
 		t.Fatalf("Title = %q", metadata.Title)
 	}
 	if metadata.SupportURL != "https://support.example/?email=john+doe%40example.com&tg=42" {

@@ -336,7 +336,7 @@ func max64(a, b int64) int64 {
 func statusEmoji(st xray.ClientTraffic) string {
 	switch clientStatus(st) {
 	case "active":
-		return "✅"
+		return "☑"
 	default:
 		return "❌"
 	}

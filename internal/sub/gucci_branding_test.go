@@ -26,7 +26,7 @@ func TestGucciInfoRemark_ActiveWithQuotaAndDays(t *testing.T) {
 		ExpiryTime: expiry,
 	}
 	got := gucciInfoRemark("Qm5V4Pp5", st)
-	if !strings.HasPrefix(got, "✅ 👤 Qm5V4Pp5 | 📊 10.00 GB | 🕔 27 روز") {
+	if !strings.HasPrefix(got, "☑ 👤 Qm5V4Pp5 | 📊 10.00 GB | 🕔 27 روز") {
 		t.Fatalf("active info remark = %q", got)
 	}
 }
@@ -39,11 +39,11 @@ func TestGucciInfoRemark_InactiveUnlimited(t *testing.T) {
 	}
 }
 
-func TestGucciConfigRemark_StatusEmailOnly(t *testing.T) {
-	if got := gucciConfigRemark("Qm5V4Pp5", xray.ClientTraffic{Enable: true}); got != "✅ 👤 Qm5V4Pp5" {
+func TestGucciConfigRemark_StatusEmailTrafficTime(t *testing.T) {
+	if got := gucciConfigRemark("Qm5V4Pp5", xray.ClientTraffic{Enable: true}); got != "☑ 👤 Qm5V4Pp5 | 📊 ∞ | 🕔 ∞" {
 		t.Fatalf("active config remark = %q", got)
 	}
-	if got := gucciConfigRemark("Qm5V4Pp5", xray.ClientTraffic{Enable: false}); got != "❌ 👤 Qm5V4Pp5" {
+	if got := gucciConfigRemark("Qm5V4Pp5", xray.ClientTraffic{Enable: false}); got != "❌ 👤 Qm5V4Pp5 | 📊 ∞ | 🕔 ∞" {
 		t.Fatalf("inactive config remark = %q", got)
 	}
 }
@@ -67,12 +67,12 @@ func TestApplyGucciSubscriptionBody_OrderAndRewritesHostNames(t *testing.T) {
 	if got := linkFragment(t, result[0]); got != gucciUpdateNoticeRemark {
 		t.Fatalf("first dummy remark = %q, want update notice", got)
 	}
-	if got := linkFragment(t, result[1]); got != "✅ 👤 tdu4dxst60 | 📊 ∞ | 🕔 ∞" {
+	if got := linkFragment(t, result[1]); got != "☑ 👤 tdu4dxst60 | 📊 ∞ | 🕔 ∞" {
 		t.Fatalf("second dummy remark = %q", got)
 	}
 	for i, link := range result[2:] {
-		if got := linkFragment(t, link); got != "✅ 👤 tdu4dxst60" {
-			t.Fatalf("real config %d remark = %q, want status+email (host/inbound name must not leak)", i, got)
+		if got := linkFragment(t, link); got != "☑ 👤 tdu4dxst60 | 📊 ∞ | 🕔 ∞" {
+			t.Fatalf("real config %d remark = %q, want status+email+quota+time (host/inbound name must not leak)", i, got)
 		}
 		if strings.Contains(link, "guc-") && strings.Contains(link, "#guc") {
 			t.Fatalf("host remark leaked into real config: %s", link)
@@ -107,11 +107,11 @@ func TestGetSubs_SubscriptionBodyUsesGucciNames(t *testing.T) {
 	if got := linkFragment(t, flat[0]); got != gucciUpdateNoticeRemark {
 		t.Fatalf("first = %q", got)
 	}
-	if got := linkFragment(t, flat[1]); !strings.HasPrefix(got, "✅ 👤 guc-fra2831@e | 📊") {
+	if got := linkFragment(t, flat[1]); !strings.HasPrefix(got, "☑ 👤 guc-fra2831@e | 📊") {
 		t.Fatalf("second = %q", got)
 	}
 	for _, link := range flat[2:] {
-		if got := linkFragment(t, link); got != "✅ 👤 guc-fra2831@e" {
+		if got := linkFragment(t, link); got != "☑ 👤 guc-fra2831@e | 📊 ∞ | 🕔 ∞" {
 			t.Fatalf("real remark = %q from %s", got, link)
 		}
 		if strings.Contains(urlPathUnescapeOr(link), "guc-host2831") {
@@ -143,7 +143,7 @@ func TestSubsHTTP_ProfileTitleAndConfigRemarks(t *testing.T) {
 	}
 
 	title := parseHappMetaValue(t, w.Header().Get("Profile-Title"))
-	if title != "✅ 👤 Qm5V4Pp5@e | 📊 ∞ | 🕔 ∞" {
+	if title != "☑ 👤 Qm5V4Pp5@e | 📊 ∞ | 🕔 ∞" {
 		t.Fatalf("Profile-Title = %q", title)
 	}
 	if got := w.Header().Get("subscription-name"); got != title {
@@ -168,7 +168,7 @@ func TestSubsHTTP_ProfileTitleAndConfigRemarks(t *testing.T) {
 	if got := linkFragment(t, lines[1]); got != title {
 		t.Fatalf("second config = %q, want same as profile title %q", got, title)
 	}
-	if got := linkFragment(t, lines[2]); got != "✅ 👤 Qm5V4Pp5@e" {
+	if got := linkFragment(t, lines[2]); got != "☑ 👤 Qm5V4Pp5@e | 📊 ∞ | 🕔 ∞" {
 		t.Fatalf("real config = %q", got)
 	}
 }
@@ -197,10 +197,10 @@ func TestGetJsonAndClash_SubscriptionBodyUsesGucciNames(t *testing.T) {
 		t.Fatalf("json first remark = %v", docs[0]["remarks"])
 	}
 	info, _ := docs[1]["remarks"].(string)
-	if !strings.HasPrefix(info, "✅ 👤 guc-fra2831@e | 📊") {
+	if !strings.HasPrefix(info, "☑ 👤 guc-fra2831@e | 📊") {
 		t.Fatalf("json second remark = %q", info)
 	}
-	if docs[2]["remarks"] != "✅ 👤 guc-fra2831@e" {
+	if docs[2]["remarks"] != "☑ 👤 guc-fra2831@e | 📊 ∞ | 🕔 ∞" {
 		t.Fatalf("json real remark = %v", docs[2]["remarks"])
 	}
 	if strings.Contains(out, "guc-host2831") {
@@ -214,10 +214,10 @@ func TestGetJsonAndClash_SubscriptionBodyUsesGucciNames(t *testing.T) {
 	if !strings.Contains(yaml, gucciUpdateNoticeRemark) {
 		t.Fatalf("clash missing update dummy:\n%s", yaml)
 	}
-	if !strings.Contains(yaml, "✅ 👤 guc-fra2831@e | 📊") {
+	if !strings.Contains(yaml, "☑ 👤 guc-fra2831@e | 📊") {
 		t.Fatalf("clash missing info dummy:\n%s", yaml)
 	}
-	if !strings.Contains(yaml, "✅ 👤 guc-fra2831@e") {
+	if !strings.Contains(yaml, "☑ 👤 guc-fra2831@e | 📊 ∞ | 🕔 ∞") {
 		t.Fatalf("clash missing config name:\n%s", yaml)
 	}
 	if strings.Contains(yaml, "guc-host2831") {
@@ -226,8 +226,8 @@ func TestGetJsonAndClash_SubscriptionBodyUsesGucciNames(t *testing.T) {
 }
 
 func TestHappBodyDirectives_FallbackAnnounce(t *testing.T) {
-	got := happBodyDirectives("✅ 👤 Qm5V4Pp5 | 📊 ∞ | 🕔 ∞", "")
-	assertHappDirectives(t, got, "✅ 👤 Qm5V4Pp5 | 📊 ∞ | 🕔 ∞", gucciAnnounceText)
+	got := happBodyDirectives("☑ 👤 Qm5V4Pp5 | 📊 ∞ | 🕔 ∞", "")
+	assertHappDirectives(t, got, "☑ 👤 Qm5V4Pp5 | 📊 ∞ | 🕔 ∞", gucciAnnounceText)
 }
 
 func TestSubsHTTP_EncryptedBodyStillCarriesHappDirectives(t *testing.T) {
@@ -249,7 +249,7 @@ func TestSubsHTTP_EncryptedBodyStillCarriesHappDirectives(t *testing.T) {
 		t.Fatalf("status = %d body=%s", w.Code, w.Body.String())
 	}
 	title := parseHappMetaValue(t, w.Header().Get("Profile-Title"))
-	if !strings.HasPrefix(title, "✅ 👤 Qm5V4Pp5@e | 📊") {
+	if !strings.HasPrefix(title, "☑ 👤 Qm5V4Pp5@e | 📊") {
 		t.Fatalf("Profile-Title = %q", title)
 	}
 	if got := parseHappMetaValue(t, w.Header().Get("Announce")); got != gucciAnnounceText {

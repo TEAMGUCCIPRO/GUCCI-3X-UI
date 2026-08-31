@@ -132,7 +132,7 @@ func (s *Server) initRouter() (*gin.Engine, error) {
 	Encrypt := false
 
 	// GUCCI build: the config-name template for real configs is fixed to status + email
-	// (e.g. ✅ 👤 Qm5V4Pp5 or ❌ 👤 Qm5V4Pp5).
+	// (e.g. ☑ 👤 Qm5V4Pp5 | 📊 ∞ | 🕔 ∞).
 	RemarkTemplate := gucciConfigRemarkTemplate
 
 	SubUpdates, err := s.settingService.GetSubUpdates()
