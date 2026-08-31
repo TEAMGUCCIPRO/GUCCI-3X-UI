@@ -118,7 +118,7 @@ func TestSubJson_BalancerDocument(t *testing.T) {
 
 	// The routing rewrite must not leak into the manual documents: s.configJson
 	// is shared, so a missing clone would corrupt every other doc.
-	for _, remarks := range []string{"☑ 👤 tcpin@e | 📊 ∞ | 🕔 ∞", "☑ 👤 wsin@e | 📊 ∞ | 🕔 ∞"} {
+	for _, remarks := range []string{"✅ 👤 tcpin@e", "✅ 👤 wsin@e"} {
 		manual := findDocByRemarks(docs, remarks)
 		if manual == nil {
 			t.Fatalf("manual doc %q missing:\n%s", remarks, out)
@@ -171,7 +171,7 @@ func TestSubJson_BalancerOrderInterleavesWithInbounds(t *testing.T) {
 	if remarks[0] != gucciUpdateNoticeRemark {
 		t.Fatalf("first dummy = %q", remarks[0])
 	}
-	if strings.Join(remarks[2:], ",") != "☑ 👤 first@e | 📊 ∞ | 🕔 ∞,bal,☑ 👤 later@e | 📊 ∞ | 🕔 ∞" {
+	if strings.Join(remarks[2:], ",") != "✅ 👤 first@e,bal,✅ 👤 later@e" {
 		t.Fatalf("doc order = %v, want [dummy dummy first bal later]", remarks)
 	}
 	balancerDoc := findDocByRemarks(docs, "bal")
@@ -204,7 +204,7 @@ func TestSubJson_BalancerDisabledAndEmptySkipped(t *testing.T) {
 	if len(docs) != 3 {
 		t.Fatalf("docs = %d, want 3 (2 dummies + 1 inbound):\n%s", len(docs), out)
 	}
-	if findDocByRemarks(docs, "☑ 👤 only@e | 📊 ∞ | 🕔 ∞") == nil {
+	if findDocByRemarks(docs, "✅ 👤 only@e") == nil {
 		t.Fatalf("remaining inbound doc missing: %v", docs)
 	}
 }
