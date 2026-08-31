@@ -16,20 +16,21 @@
 }
 
 @keyframes gucciGridMove {
-  0% { background-position: 0 0; }
-  100% { background-position: 60px 60px; }
+  0% { transform: translate3d(0, 0, 0); }
+  100% { transform: translate3d(60px, 60px, 0); }
 }
 
 .subscription-page::before {
   content: '';
   position: fixed;
-  inset: 0;
+  inset: -80px;
   pointer-events: none;
   background-image:
     linear-gradient(rgba(168, 85, 247, 0.07) 1px, transparent 1px),
     linear-gradient(90deg, rgba(168, 85, 247, 0.07) 1px, transparent 1px);
   background-size: 60px 60px;
-  animation: gucciGridMove 6s linear infinite;
+  animation: gucciGridMove 8s linear infinite;
+  will-change: transform;
   z-index: 0;
 }
 
@@ -95,17 +96,17 @@
 }
 
 .gucci-promo-banner {
-  background: linear-gradient(-45deg, #180633, #3b0764, #581c87, #7e22ce, #1c063b);
-  background-size: 350% 350%;
-  animation: gucciGradientShift 7s ease infinite, gucciPulseGlow 3.5s ease-in-out infinite;
+  background: linear-gradient(135deg, #180633 0%, #3b0764 28%, #581c87 55%, #7e22ce 78%, #1c063b 100%);
   border-radius: 20px;
-  padding: 26px 16px;
+  padding: clamp(18px, 4.5vw, 26px) clamp(10px, 3.5vw, 18px);
   margin-bottom: 24px;
   text-align: center;
   position: relative;
   overflow: hidden;
   border: 2px solid rgba(192, 132, 252, 0.95);
   box-shadow: 0 0 35px rgba(168, 85, 247, 0.6), inset 0 0 25px rgba(126, 34, 206, 0.4);
+  contain: paint;
+  transform: translateZ(0);
 }
 
 /* Light sweep beam overlay */
@@ -116,8 +117,9 @@
   bottom: -20%;
   width: 50%;
   background: linear-gradient(90deg, transparent 0%, rgba(255, 255, 255, 0.3) 30%, rgba(254, 240, 138, 0.6) 50%, rgba(192, 132, 252, 0.4) 70%, transparent 100%);
-  animation: gucciLightSweep 4s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+  animation: gucciLightSweep 5s cubic-bezier(0.4, 0, 0.2, 1) infinite;
   pointer-events: none;
+  will-change: transform, opacity;
   z-index: 2;
 }
 
@@ -127,8 +129,9 @@
   position: absolute;
   inset: 0;
   background: linear-gradient(115deg, transparent 30%, rgba(233, 213, 255, 0.35) 46%, rgba(168, 85, 247, 0.18) 50%, transparent 62%);
-  animation: gucciLightning 4s ease-in-out infinite;
+  animation: gucciLightning 6s ease-in-out infinite;
   pointer-events: none;
+  will-change: opacity;
   z-index: 1;
 }
 
@@ -140,72 +143,75 @@
 }
 
 .promo-title-inner {
-  display: inline-flex;
+  display: flex;
   align-items: center;
   justify-content: center;
   flex-wrap: wrap;
-  gap: 8px;
+  gap: clamp(4px, 1.4vw, 10px);
+  width: 100%;
+  line-height: 1.35;
 }
 
 .gucci-animated-bolt {
   display: inline-block;
-  font-size: 30px !important;
-  animation: gucciBoltEnergy 1.6s ease-in-out infinite alternate;
-  filter: drop-shadow(0 0 12px #facc15) drop-shadow(0 0 24px #eab308);
+  font-size: clamp(20px, 5.5vw, 30px) !important;
+  animation: gucciBoltEnergy 1.8s ease-in-out infinite alternate;
+  filter: drop-shadow(0 0 10px #facc15) drop-shadow(0 0 20px #eab308);
   transform-origin: center center;
+  will-change: transform;
 }
 
 /* G U C C I  T E A M — exact royal purple gradient and lightning glow from Admin Panel */
 .gucci-brand-wordmark {
-  display: inline-block;
-  font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif !important;
-  font-weight: 950 !important;
-  font-size: 30px !important;
-  letter-spacing: 5px !important;
-  background: linear-gradient(135deg, #ffffff 0%, #f3e8ff 20%, #e9d5ff 40%, #c084fc 60%, #a855f7 80%, #7e22ce 100%);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  animation: gucciSidebarGlow 2.5s ease-in-out infinite alternate;
+  display: inline-flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: clamp(3px, 1.2vw, 9px);
   user-select: none;
 }
 
+.gucci-brand-letter {
+  display: inline-block;
+  font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif !important;
+  font-weight: 950 !important;
+  font-size: clamp(19px, 5.6vw, 32px) !important;
+  line-height: 1.15;
+  letter-spacing: 0 !important;
+  background: linear-gradient(140deg, #ffffff 0%, #a5f3fc 18%, #38bdf8 34%, #c084fc 52%, #f472b6 70%, #fbbf24 88%, #ffffff 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  color: transparent;
+  filter: drop-shadow(0 0 6px rgba(56, 189, 248, 0.85)) drop-shadow(0 0 14px rgba(192, 132, 252, 0.75));
+  animation: gucciLetterPop 2.6s ease-in-out infinite alternate;
+  will-change: transform;
+}
+
+@keyframes gucciLetterPop {
+  0% { transform: translate3d(0, 0, 0) scale(1); }
+  100% { transform: translate3d(0, -2px, 0) scale(1.04); }
+}
+
 @keyframes gucciBoltEnergy {
-  0% {
-    transform: scale(0.95) rotate(-10deg);
-    filter: drop-shadow(0 0 8px #facc15) drop-shadow(0 0 16px #eab308);
-  }
-  50% {
-    transform: scale(1.22) rotate(12deg);
-    filter: drop-shadow(0 0 18px #fef08a) drop-shadow(0 0 32px #f59e0b) drop-shadow(0 0 45px #a855f7);
-  }
-  100% {
-    transform: scale(1.05) rotate(-5deg);
-    filter: drop-shadow(0 0 12px #facc15) drop-shadow(0 0 24px #eab308);
-  }
+  0% { transform: scale(0.95) rotate(-10deg); }
+  50% { transform: scale(1.18) rotate(12deg); }
+  100% { transform: scale(1.05) rotate(-5deg); }
 }
 
 .gucci-animated-crown {
   display: inline-block;
-  font-size: 28px;
-  margin: 0 4px;
-  animation: gucciCrownFloat 2.4s ease-in-out infinite;
-  filter: drop-shadow(0 0 12px #fbbf24) drop-shadow(0 0 25px #d97706);
+  font-size: clamp(20px, 5.5vw, 28px);
+  animation: gucciCrownFloat 2.8s ease-in-out infinite;
+  filter: drop-shadow(0 0 10px #fbbf24) drop-shadow(0 0 20px #d97706);
   transform-origin: bottom center;
+  will-change: transform;
 }
 
 @keyframes gucciCrownFloat {
-  0%, 100% {
-    transform: translateY(0) rotate(0deg) scale(1);
-    filter: drop-shadow(0 0 10px #fbbf24) drop-shadow(0 0 20px #d97706);
-  }
-  25% {
-    transform: translateY(-6px) rotate(-8deg) scale(1.12);
-    filter: drop-shadow(0 0 18px #fef3c7) drop-shadow(0 0 32px #f59e0b) drop-shadow(0 0 42px #ec4899);
-  }
-  75% {
-    transform: translateY(-4px) rotate(8deg) scale(1.1);
-    filter: drop-shadow(0 0 18px #fef3c7) drop-shadow(0 0 32px #f59e0b) drop-shadow(0 0 42px #8b5cf6);
-  }
+  0%, 100% { transform: translate3d(0, 0, 0) rotate(0deg) scale(1); }
+  25% { transform: translate3d(0, -5px, 0) rotate(-8deg) scale(1.1); }
+  75% { transform: translate3d(0, -3px, 0) rotate(8deg) scale(1.08); }
 }
 
 .gucci-animated-spin {
@@ -645,14 +651,58 @@
 }
 
 @media (max-width: 576px) {
-  .promo-title .gucci-brand-wordmark {
-    font-size: 22px !important;
-    letter-spacing: 3px !important;
+  .subscription-page {
+    background-attachment: scroll;
+  }
+  .subscription-page::before {
+    animation: none;
+  }
+  .gucci-promo-banner::before {
+    animation: none;
+    opacity: 0;
+  }
+  .gucci-promo-banner::after {
+    animation-duration: 7s;
+  }
+  .promo-title .gucci-brand-letter {
+    font-size: clamp(17px, 6vw, 24px) !important;
   }
   .subpage-header-title {
     font-size: 17px !important;
   }
   .subpage-header-subtitle {
     max-width: 150px;
+  }
+}
+
+
+/* Landscape phones: keep the wordmark on a single tidy line. */
+@media (max-width: 900px) and (orientation: landscape) {
+  .promo-title-inner {
+    flex-wrap: nowrap;
+    gap: 6px;
+  }
+  .gucci-brand-wordmark {
+    flex-wrap: nowrap;
+    gap: 4px;
+  }
+  .gucci-brand-letter {
+    font-size: clamp(15px, 2.6vw, 24px) !important;
+  }
+  .gucci-animated-bolt,
+  .gucci-animated-crown {
+    font-size: clamp(16px, 2.8vw, 24px) !important;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .subscription-page::before,
+  .gucci-promo-banner::before,
+  .gucci-promo-banner::after,
+  .gucci-brand-letter,
+  .gucci-animated-bolt,
+  .gucci-animated-crown,
+  .gucci-animated-spin {
+    animation: none !important;
   }
 }
