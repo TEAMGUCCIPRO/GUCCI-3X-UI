@@ -458,7 +458,7 @@ func TestStatusEmoji(t *testing.T) {
 		stats xray.ClientTraffic
 		want  string
 	}{
-		{xray.ClientTraffic{Enable: true, Total: 10 * gb, Up: gb}, "☑"},
+		{xray.ClientTraffic{Enable: true, Total: 10 * gb, Up: gb}, "✅"},
 		{xray.ClientTraffic{Enable: true, Total: 10 * gb, Up: 10 * gb, Down: 1}, "❌"},
 		{xray.ClientTraffic{Enable: false}, "❌"},
 		{xray.ClientTraffic{Enable: true, ExpiryTime: 1000}, "❌"},
@@ -552,12 +552,12 @@ func TestExpandNewTokensInTemplate(t *testing.T) {
 	}
 
 	cases := []struct{ tmpl, want string }{
-		{"{{STATUS_EMOJI}}", "☑"},
+		{"{{STATUS_EMOJI}}", "✅"},
 		{"{{USAGE_PERCENTAGE}}", "50.0％"},
 		{"{{PROTOCOL}}", "VLESS"},
 		{"{{TRANSPORT}}", "ws"},
 		{"{{SECURITY}}", "REALITY"},
-		{"{{STATUS_EMOJI}} {{INBOUND}}", "☑ DE"},
+		{"{{STATUS_EMOJI}} {{INBOUND}}", "✅ DE"},
 	}
 	for _, c := range cases {
 		if got := expandRemarkVars(c.tmpl, ctx); got != c.want {
@@ -625,7 +625,7 @@ func TestExpandRemarkVars_SingleBracketUI(t *testing.T) {
 		{"{DATA_LEFT}", "50.00GB"},
 		{"{DATA_USAGE}", "50.00GB"},
 		{"{DATA_LIMIT}", "100.00GB"},
-		{"{STATUS_EMOJI}", "☑"},
+		{"{STATUS_EMOJI}", "✅"},
 		{"{USAGE_PERCENTAGE}", "50.0％"},
 		{"{PROTOCOL}", "VLESS"},
 		{"{TRANSPORT}", "ws"},
@@ -705,7 +705,7 @@ func TestIdentityOnAllLinks(t *testing.T) {
 		subscriptionBody: true,
 	}
 	client := model.Client{Email: "alice@x"}
-	const want = "DE-alice@x|alice@x|📊80.00GB|☑"
+	const want = "DE-alice@x|alice@x|📊80.00GB|✅"
 	for i := 0; i < 2; i++ {
 		if got := s.genTemplatedRemark(inbound, client, "", "ws"); got != want {
 			t.Fatalf("link %d = %q, want full template %q", i+1, got, want)
