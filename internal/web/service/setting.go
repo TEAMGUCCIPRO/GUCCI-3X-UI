@@ -107,12 +107,12 @@ var defaultValueMap = map[string]string{
 	"subKeyFile":                  "",
 	"subUpdates":                  "12",
 	"subEncrypt":                  "true",
-	"subURI":                      "https://gucci.teamgucci-d7a.workers.dev:2096/sub/",
+	"subURI":                      "",
 	"subJsonPath":                 "/json/",
-	"subJsonURI":                  "https://gucci.teamgucci-d7a.workers.dev:2096/json/",
+	"subJsonURI":                  "",
 	"subClashEnable":              "false",
 	"subClashPath":                "/clash/",
-	"subClashURI":                 "https://gucci.teamgucci-d7a.workers.dev:2096/clash/",
+	"subClashURI":                 "",
 	"subClashEnableRouting":       "false",
 	"subClashRules":               "",
 	"subJsonMux":                  "",
@@ -854,10 +854,40 @@ func (s *SettingService) GetPageSize() (int, error) {
 	return s.getInt("pageSize")
 }
 
+// gucciPanelSubBase returns the origin the panel itself is served on, which is
+// the origin every subscription link must use. Railway injects
+// RAILWAY_PUBLIC_DOMAIN with the generated (or custom) domain of the service;
+// when it is absent the panel/request host is used instead. An empty result
+// means "unknown", and callers then fall back to the request host.
+func gucciPanelSubBase(host string) string {
+	if domain := strings.TrimSpace(os.Getenv("RAILWAY_PUBLIC_DOMAIN")); domain != "" {
+		domain = strings.TrimRight(domain, "/")
+		if strings.HasPrefix(domain, "http://") || strings.HasPrefix(domain, "https://") {
+			return domain
+		}
+		return "https://" + domain
+	}
+	h := strings.TrimRight(strings.TrimSpace(host), "/")
+	if h == "" {
+		return ""
+	}
+	if strings.HasPrefix(h, "http://") || strings.HasPrefix(h, "https://") {
+		return h
+	}
+	return "https://" + h
+}
+
+func gucciDefaultSubURI(path string) string {
+	if base := gucciPanelSubBase(""); base != "" {
+		return base + path
+	}
+	return ""
+}
+
 func (s *SettingService) GetSubURI() (string, error) {
 	val, err := s.getString("subURI")
 	if err != nil || val == "" {
-		return "https://gucci.teamgucci-d7a.workers.dev:2096/sub/", nil
+		return gucciDefaultSubURI("/sub/"), nil
 	}
 	return val, nil
 }
@@ -865,7 +895,7 @@ func (s *SettingService) GetSubURI() (string, error) {
 func (s *SettingService) GetSubJsonURI() (string, error) {
 	val, err := s.getString("subJsonURI")
 	if err != nil || val == "" {
-		return "https://gucci.teamgucci-d7a.workers.dev:2096/json/", nil
+		return gucciDefaultSubURI("/json/"), nil
 	}
 	return val, nil
 }
@@ -881,7 +911,7 @@ func (s *SettingService) GetSubClashPath() (string, error) {
 func (s *SettingService) GetSubClashURI() (string, error) {
 	val, err := s.getString("subClashURI")
 	if err != nil || val == "" {
-		return "https://gucci.teamgucci-d7a.workers.dev:2096/clash/", nil
+		return gucciDefaultSubURI("/clash/"), nil
 	}
 	return val, nil
 }
@@ -1427,7 +1457,7 @@ func (s *SettingService) BuildSubURIBase(host string) string {
 			return trimmed[:idx]
 		}
 	}
-	return "https://gucci.teamgucci-d7a.workers.dev:2096"
+	return gucciPanelSubBase(host)
 }
 
 func (s *SettingService) GetDefaultSettings(host string) (any, error) {
@@ -1499,14 +1529,15 @@ func (s *SettingService) GetDefaultSettings(host string) (any, error) {
 		}
 	}
 
-	if uri, ok := result["subURI"].(string); !ok || uri == "" || strings.Contains(uri, "railway.app") {
-		result["subURI"] = "https://gucci.teamgucci-d7a.workers.dev:2096/sub/"
-	}
-	if uri, ok := result["subJsonURI"].(string); !ok || uri == "" || strings.Contains(uri, "railway.app") {
-		result["subJsonURI"] = "https://gucci.teamgucci-d7a.workers.dev:2096/json/"
-	}
-	if uri, ok := result["subClashURI"].(string); !ok || uri == "" || strings.Contains(uri, "railway.app") {
-		result["subClashURI"] = "https://gucci.teamgucci-d7a.workers.dev:2096/clash/"
+	// Never rewrite the panel's own domain away: fill in only what is still
+	// missing, using the origin the panel is reachable on.
+	fallbackBase := gucciPanelSubBase(host)
+	if fallbackBase != "" {
+		for key, path := range map[string]string{"subURI": "/sub/", "subJsonURI": "/json/", "subClashURI": "/clash/"} {
+			if uri, ok := result[key].(string); !ok || strings.TrimSpace(uri) == "" {
+				result[key] = fallbackBase + path
+			}
+		}
 	}
 
 	return result, nil

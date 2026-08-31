@@ -147,13 +147,9 @@ export default function QrCodeModal({
     let nextSub = '';
     let nextSubJson = '';
     if (subSettings?.enable && subId) {
-      const baseSubURI = subSettings.subURI && !subSettings.subURI.includes('railway.app') 
-        ? subSettings.subURI 
-        : 'https://gucci.teamgucci-d7a.workers.dev:2096/sub/';
+      const baseSubURI = subSettings.subURI || `${(typeof window === 'undefined' ? '' : window.location.origin)}/sub/`;
       nextSub = baseSubURI + subId;
-      const baseJsonURI = subSettings.subJsonURI && !subSettings.subJsonURI.includes('railway.app')
-        ? subSettings.subJsonURI
-        : 'https://gucci.teamgucci-d7a.workers.dev:2096/json/';
+      const baseJsonURI = subSettings.subJsonURI || `${(typeof window === 'undefined' ? '' : window.location.origin)}/json/`;
       nextSubJson = subSettings.subJsonEnable ? baseJsonURI + subId : '';
     }
     setSubLink(nextSub);

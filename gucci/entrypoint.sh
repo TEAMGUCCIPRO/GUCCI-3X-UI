@@ -1,11 +1,11 @@
 #!/bin/sh
 set -eu
 
-# Serve the user-created domain on port 1 and Railway's internal health/router
-# port simultaneously. Railway may inject PORT=8080 even when the domain target
-# is 1; listening on both makes a fresh Fork work with zero Variables.
+# Serve the user-created domain on port 1. A second listener is added only when
+# Railway actually injects a different PORT, so port 1 stays the single public
+# port the "Generate Domain" dialog can target.
 PUBLIC_PORT="${GUCCI_PUBLIC_PORT:-1}"
-HEALTH_PORT="${PORT:-8080}"
+HEALTH_PORT="${PORT:-${GUCCI_PUBLIC_PORT:-1}}"
 PANEL_PORT="${XUI_INTERNAL_PORT:-2053}"
 PANEL_PATH="${XUI_WEB_BASE_PATH:-/}"
 INITIAL_USER="${XUI_INITIAL_USERNAME:-gucci}"
@@ -136,7 +136,7 @@ db_setting_force() {
 }
 if [ -f "$DB" ]; then
   sqlite3 "$DB" "UPDATE settings SET value='/' WHERE key='webBasePath';"
-  sqlite3 "$DB" "DELETE FROM settings WHERE key IN ('subURI', 'subJsonURI', 'subClashURI') AND value LIKE '%:2096%';"
+  sqlite3 "$DB" "DELETE FROM settings WHERE key IN ('subURI', 'subJsonURI', 'subClashURI') AND (value LIKE '%:2096%' OR value LIKE '%workers.dev%');"
   db_setting subListen 127.0.0.1
   db_setting subPort 2096
   db_setting_force subTitle "{{STATUS_EMOJI}} 👤 {{EMAIL}} | 📊 {{TRAFFIC_LEFT}} | 🕔 {{TIME_LEFT}}"

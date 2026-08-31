@@ -2546,47 +2546,51 @@ func seed3InboundsAnd3HostsMigration() error {
 }
 
 func normalizeGucciSubscriptionSettings() error {
-	const defaultSubURI = "https://gucci.teamgucci.workers.dev:2096/sub/"
-	const defaultJsonURI = "https://gucci.teamgucci.workers.dev:2096/json/"
-	const defaultClashURI = "https://gucci.teamgucci.workers.dev:2096/clash/"
+	// Subscription links must always be built from the domain the panel itself
+	// is served on (Railway exposes it as RAILWAY_PUBLIC_DOMAIN), so a created
+	// client's link is https://<panel-domain>/sub/<email>.
+	base := strings.TrimRight(strings.TrimSpace(os.Getenv("RAILWAY_PUBLIC_DOMAIN")), "/")
+	if base != "" && !strings.HasPrefix(base, "http://") && !strings.HasPrefix(base, "https://") {
+		base = "https://" + base
+	}
 
-	// 1. subURI
-	var subSetting model.Setting
-	err := db.Where("key = ?", "subURI").First(&subSetting).Error
-	if errors.Is(err, gorm.ErrRecordNotFound) {
-		db.Create(&model.Setting{Key: "subURI", Value: defaultSubURI})
-	} else if err == nil {
-		if subSetting.Value == "" || strings.Contains(subSetting.Value, "railway.app") {
-			db.Model(&model.Setting{}).Where("id = ?", subSetting.Id).Update("value", defaultSubURI)
+	// Only empty values and values pointing at the old external worker /
+	// internal subscription port are replaced; a domain the administrator set
+	// on purpose is left untouched.
+	isStale := func(value string) bool {
+		v := strings.TrimSpace(value)
+		return v == "" || strings.Contains(v, "workers.dev") || strings.Contains(v, ":2096")
+	}
+
+	normalize := func(key, path string) {
+		want := ""
+		if base != "" {
+			want = base + path
+		}
+		var setting model.Setting
+		err := db.Where("key = ?", key).First(&setting).Error
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			if want != "" {
+				db.Create(&model.Setting{Key: key, Value: want})
+			}
+			return
+		}
+		if err != nil {
+			return
+		}
+		if isStale(setting.Value) {
+			db.Model(&model.Setting{}).Where("id = ?", setting.Id).Update("value", want)
 		}
 	}
 
-	// 2. subJsonURI
-	var jsonSetting model.Setting
-	err = db.Where("key = ?", "subJsonURI").First(&jsonSetting).Error
-	if errors.Is(err, gorm.ErrRecordNotFound) {
-		db.Create(&model.Setting{Key: "subJsonURI", Value: defaultJsonURI})
-	} else if err == nil {
-		if jsonSetting.Value == "" || strings.Contains(jsonSetting.Value, "railway.app") {
-			db.Model(&model.Setting{}).Where("id = ?", jsonSetting.Id).Update("value", defaultJsonURI)
-		}
-	}
+	normalize("subURI", "/sub/")
+	normalize("subJsonURI", "/json/")
+	normalize("subClashURI", "/clash/")
 
-	// 3. subClashURI
-	var clashSetting model.Setting
-	err = db.Where("key = ?", "subClashURI").First(&clashSetting).Error
-	if errors.Is(err, gorm.ErrRecordNotFound) {
-		db.Create(&model.Setting{Key: "subClashURI", Value: defaultClashURI})
-	} else if err == nil {
-		if clashSetting.Value == "" || strings.Contains(clashSetting.Value, "railway.app") {
-			db.Model(&model.Setting{}).Where("id = ?", clashSetting.Id).Update("value", defaultClashURI)
-		}
-	}
-
-	// 4. subDomain
+	// subDomain stays empty so the subscription listener answers on the panel
+	// domain (and any custom domain) instead of a single hardcoded host.
 	var subDomainSetting model.Setting
-	err = db.Where("key = ?", "subDomain").First(&subDomainSetting).Error
-	if err == nil && (strings.Contains(subDomainSetting.Value, "workers.dev") || strings.Contains(subDomainSetting.Value, "railway.app")) {
+	if err := db.Where("key = ?", "subDomain").First(&subDomainSetting).Error; err == nil && strings.TrimSpace(subDomainSetting.Value) != "" {
 		db.Model(&model.Setting{}).Where("id = ?", subDomainSetting.Id).Update("value", "")
 	}
 

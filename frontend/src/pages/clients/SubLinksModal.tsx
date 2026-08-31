@@ -44,12 +44,8 @@ export default function SubLinksModal({
 
   const rows = useMemo<Row[]>(() => {
     if (!enabled) return [];
-    const baseSubURI = subSettings?.subURI && !subSettings.subURI.includes('railway.app')
-      ? subSettings.subURI
-      : 'https://gucci.teamgucci.workers.dev/sub/';
-    const baseJsonURI = subSettings?.subJsonURI && !subSettings.subJsonURI.includes('railway.app')
-      ? subSettings.subJsonURI
-      : 'https://gucci.teamgucci.workers.dev/json/';
+    const baseSubURI = subSettings?.subURI || `${(typeof window === 'undefined' ? '' : window.location.origin)}/sub/`;
+    const baseJsonURI = subSettings?.subJsonURI || `${(typeof window === 'undefined' ? '' : window.location.origin)}/json/`;
     const byEmail = new Map(clients.map((c) => [c.email, c]));
     const out: Row[] = [];
     for (const email of emails) {

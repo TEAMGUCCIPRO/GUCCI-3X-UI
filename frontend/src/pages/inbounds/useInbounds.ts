@@ -181,12 +181,15 @@ export function useInbounds() {
   const pageSize = defaults.pageSize ?? 0;
   const datepicker = (defaults.datepicker as 'gregorian' | 'jalalian') || 'gregorian';
 
+  // The panel's own origin is the authoritative base for subscription links.
+  const panelOrigin = typeof window === 'undefined' ? '' : window.location.origin;
+
   const subSettings: SubSettings = useMemo(
     () => ({
       enable: !!defaults.subEnable,
       subTitle: defaults.subTitle || '',
-      subURI: defaults.subURI || 'https://gucci.teamgucci.workers.dev:2096/sub/',
-      subJsonURI: defaults.subJsonURI || 'https://gucci.teamgucci.workers.dev:2096/json/',
+      subURI: defaults.subURI || `${panelOrigin}/sub/`,
+      subJsonURI: defaults.subJsonURI || `${panelOrigin}/json/`,
       subJsonEnable: !!defaults.subJsonEnable,
       publicHost: defaults.subDomain || defaults.webDomain || '',
     }),

@@ -78,14 +78,17 @@ const expireMs = Number(subData.expire || 0) * 1000;
 const lastOnlineMs = Number(subData.lastOnline || 0);
 const rawSubUrl = subData.subUrl || '';
 
-const normalizeToWorker = (url: string, path: string) => {
-  if (!url || url.includes('railway.app')) {
-    return `https://gucci.teamgucci-d7a.workers.dev:2096${path}${sId}`;
+// Fall back to the origin this page is served from, so the link always points
+// at the panel's own domain instead of an external host.
+const normalizeSubUrl = (url: string, path: string) => {
+  if (url) {
+    return url;
   }
-  return url;
+  const origin = typeof window === 'undefined' ? '' : window.location.origin;
+  return `${origin}${path}${sId}`;
 };
 
-const subUrl = normalizeToWorker(rawSubUrl, '/sub/');
+const subUrl = normalizeSubUrl(rawSubUrl, '/sub/');
 const subTitle = subData.subTitle || '';
 const links: string[] = Array.isArray(subData.links) ? subData.links : [];
 const linkEmails: string[] = Array.isArray(subData.emails) ? subData.emails : [];

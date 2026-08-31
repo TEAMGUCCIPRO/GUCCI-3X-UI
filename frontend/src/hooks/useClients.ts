@@ -263,13 +263,15 @@ export function useClients(options: UseClientsOptions = {}) {
   const onlines = useMemo(() => onlinesQuery.data ?? [], [onlinesQuery.data]);
 
   const defaults = defaultsQuery.data ?? {};
+  // Subscription links always use the origin the panel is served from.
+  const panelOrigin = typeof window === 'undefined' ? '' : window.location.origin;
   const subSettings: SubSettings = useMemo(
     () => ({
       enable: !!defaults.subEnable,
-      subURI: (defaults.subURI as string) || 'https://gucci.teamgucci.workers.dev:2096/sub/',
-      subJsonURI: (defaults.subJsonURI as string) || 'https://gucci.teamgucci.workers.dev:2096/json/',
+      subURI: (defaults.subURI as string) || `${panelOrigin}/sub/`,
+      subJsonURI: (defaults.subJsonURI as string) || `${panelOrigin}/json/`,
       subJsonEnable: !!defaults.subJsonEnable,
-      subClashURI: (defaults.subClashURI as string) || 'https://gucci.teamgucci.workers.dev:2096/clash/',
+      subClashURI: (defaults.subClashURI as string) || `${panelOrigin}/clash/`,
       subClashEnable: !!defaults.subClashEnable,
       publicHost: (defaults.subDomain as string) || (defaults.webDomain as string) || '',
     }),
