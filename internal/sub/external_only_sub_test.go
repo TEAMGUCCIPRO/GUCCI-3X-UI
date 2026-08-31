@@ -49,7 +49,7 @@ func TestJsonAndClashServeExternalLinkOnlySub(t *testing.T) {
 	if configs[0]["remarks"] != gucciUpdateNoticeRemark {
 		t.Fatalf("first json remark = %v", configs[0]["remarks"])
 	}
-	if configs[2]["remarks"] != "☑ 👤 ext@x | 📊 ∞ | 🕔 ∞" {
+	if configs[2]["remarks"] != "✅ 👤 ext@x" {
 		t.Fatalf("real json remark = %v, want status+email (provider name must not leak)", configs[2]["remarks"])
 	}
 
@@ -75,7 +75,7 @@ func TestJsonAndClashServeExternalLinkOnlySub(t *testing.T) {
 	if !strings.Contains(clashOut, "example.com") {
 		t.Fatalf("GetClash missing external proxy: %s", clashOut)
 	}
-	if !strings.Contains(clashOut, "☑ 👤 ext@x | 📊 ∞ | 🕔 ∞") {
+	if strings.Count(clashOut, "✅ 👤 ext@x") < 2 {
 		t.Fatalf("GetClash missing status+email name: %s", clashOut)
 	}
 	if strings.Contains(clashOut, "DE-Provider") {
