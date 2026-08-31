@@ -416,17 +416,17 @@ func (a *SUBController) subs(c *gin.Context) {
 	if err != nil || len(subs) == 0 {
 		writeSubError(c, err)
 	} else {
-		var result strings.Builder
-		for _, sub := range subs {
-			result.WriteString(sub)
-			result.WriteString("\n")
-		}
-
-		// Add headers
 		header := fmt.Sprintf("upload=%d; download=%d; total=%d; expire=%d", traffic.Up, traffic.Down, traffic.Total, traffic.ExpiryTime/1000)
 		profileURL := fmt.Sprintf("%s://%s%s", scheme, hostWithPort, c.Request.RequestURI)
 		metadata := a.metadataForSubRequest(func() *SubService { return subReq }, subId, profileURL)
 		a.ApplyCommonHeaders(c, header, a.updateInterval, metadata.Title, metadata.SupportURL, metadata.ProfileURL, metadata.Announce, a.subEnableRouting, a.subRoutingRules, a.subHideSettings)
+
+		var result strings.Builder
+		result.WriteString(happBodyDirectives(metadata.Title, metadata.Announce))
+		for _, sub := range subs {
+			result.WriteString(sub)
+			result.WriteString("\n")
+		}
 
 		if a.subIncyEnableRouting && a.subIncyRoutingRules != "" {
 			incyRules, _, err := resolveIncyRoutingSource(a.subIncyRoutingRules)
@@ -827,10 +827,12 @@ func (a *SUBController) ApplyCommonHeaders(
 	c.Writer.Header().Set("Subscription-Userinfo", header)
 	c.Writer.Header().Set("Profile-Update-Interval", updateInterval)
 
-	// Basics
+	// Basics. Happ names the import from Profile-Title (or #profile-title in
+	// the body). Do not set Content-Disposition here: Happ treats filename /
+	// filename* as a fallback name and filename*=UTF-8''<emoji title> made it
+	// fall back to "Subscription-QMY". Clash / ?view=raw set CD themselves.
 	if profileTitle != "" {
-		c.Writer.Header().Set("Profile-Title", "base64:"+base64.StdEncoding.EncodeToString([]byte(profileTitle)))
-		c.Writer.Header().Set("Content-Disposition", fmt.Sprintf(`attachment; filename*=UTF-8''%s`, url.PathEscape(profileTitle)))
+		c.Writer.Header().Set("Profile-Title", happBase64Value(profileTitle))
 	}
 	if profileSupportUrl != "" {
 		c.Writer.Header().Set("Support-Url", profileSupportUrl)
@@ -838,8 +840,9 @@ func (a *SUBController) ApplyCommonHeaders(
 	if profileUrl != "" {
 		c.Writer.Header().Set("Profile-Web-Page-Url", profileUrl)
 	}
+	profileAnnounce = gucciAnnounce(profileAnnounce)
 	if profileAnnounce != "" {
-		c.Writer.Header().Set("Announce", "base64:"+base64.StdEncoding.EncodeToString([]byte(profileAnnounce)))
+		c.Writer.Header().Set("Announce", happBase64Value(profileAnnounce))
 	}
 
 	// Advanced (Happ). Routing stays independent of the enable flag; remote

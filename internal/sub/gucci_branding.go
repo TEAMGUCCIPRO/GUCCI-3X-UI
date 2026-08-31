@@ -1,6 +1,7 @@
 package sub
 
 import (
+	"encoding/base64"
 	"fmt"
 	"strings"
 
@@ -10,6 +11,9 @@ import (
 
 const gucciDummyHostPort = "127.0.0.1:1"
 const gucciDummyUUID = "00000000-0000-0000-0000-000000000000"
+
+// Orange Happ announcement bar (Announce header + #announce body line).
+const gucciAnnounceText = "⚡️ 👑 🅖🅤🅒🅒🅘 🅣🅔🅐🅜 👑 ⚡️"
 
 // EnableSubscriptionBody marks this request as a client-app import (raw /json
 // /clash) and locks the per-config remark template so host/inbound names cannot
@@ -167,4 +171,35 @@ func gucciProfileTitle(email, subID string, st xray.ClientTraffic) string {
 		email = subID
 	}
 	return gucciInfoRemark(email, st)
+}
+
+func gucciAnnounce(value string) string {
+	if strings.TrimSpace(value) == "" {
+		return gucciAnnounceText
+	}
+	return value
+}
+
+func happBase64Value(plain string) string {
+	return "base64:" + base64.StdEncoding.EncodeToString([]byte(plain))
+}
+
+// happBodyDirectives puts Happ profile-title / announce in the subscription
+// body so the app still names the import and shows the orange bar when a proxy
+// (nginx, Cloudflare) drops custom HTTP headers. Encrypted responses wrap this
+// plaintext before base64-encoding the whole payload.
+func happBodyDirectives(title, announce string) string {
+	var b strings.Builder
+	if strings.TrimSpace(title) != "" {
+		b.WriteString("#profile-title: ")
+		b.WriteString(happBase64Value(title))
+		b.WriteByte('\n')
+	}
+	announce = gucciAnnounce(announce)
+	if strings.TrimSpace(announce) != "" {
+		b.WriteString("#announce: ")
+		b.WriteString(happBase64Value(announce))
+		b.WriteByte('\n')
+	}
+	return b.String()
 }

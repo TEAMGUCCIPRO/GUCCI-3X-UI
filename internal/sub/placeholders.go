@@ -114,7 +114,7 @@ func (a *SUBController) metadataForSubRequest(getSubReq func() *SubService, subI
 		Title:      gucciProfileTitle(email, subID, context.stats),
 		SupportURL: renderSubPlaceholders(a.subSupportUrl, subPlaceholderData{SubID: subID, Context: context, HasCtx: hasContext, Escape: true}),
 		ProfileURL: profileURL,
-		Announce:   renderSubPlaceholders(a.subAnnounce, data),
+		Announce:   gucciAnnounce(renderSubPlaceholders(a.subAnnounce, data)),
 	}
 }
 

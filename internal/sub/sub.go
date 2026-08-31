@@ -184,7 +184,7 @@ func (s *Server) initRouter() (*gin.Engine, error) {
 
 	// GUCCI build: fixed team announcement banner in the client app, with the
 	// squared-letter GUCCI TEAM wordmark.
-	SubAnnounce := "⚡️ 👑 🅖🅤🅒🅒🅘 🅣🅔🅐🅜 👑 ⚡️"
+	SubAnnounce := gucciAnnounceText
 
 	SubEnableRouting, err := s.settingService.GetSubEnableRouting()
 	if err != nil {

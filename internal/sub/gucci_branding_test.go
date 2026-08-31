@@ -129,7 +129,7 @@ func TestSubsHTTP_ProfileTitleAndConfigRemarks(t *testing.T) {
 	NewSUBController(router.Group("/"),
 		WithSUBTitle(gucciInfoRemarkTemplate),
 		WithSUBRemarkTemplate(gucciConfigRemarkTemplate),
-		WithSUBAnnounce("⚡️ 👑 🅖🅤🅒🅒🅘 🅣🅔🅐🅜 👑 ⚡️"),
+		WithSUBAnnounce(gucciAnnounceText),
 		WithSUBEncryption(false),
 	)
 
@@ -142,30 +142,22 @@ func TestSubsHTTP_ProfileTitleAndConfigRemarks(t *testing.T) {
 		t.Fatalf("status = %d body=%s", w.Code, w.Body.String())
 	}
 
-	titleHdr := w.Header().Get("Profile-Title")
-	if !strings.HasPrefix(titleHdr, "base64:") {
-		t.Fatalf("Profile-Title = %q, want base64:", titleHdr)
-	}
-	decoded, err := base64.StdEncoding.DecodeString(strings.TrimPrefix(titleHdr, "base64:"))
-	if err != nil {
-		t.Fatalf("decode Profile-Title: %v", err)
-	}
-	title := string(decoded)
+	title := decodeHappBase64Header(t, w.Header().Get("Profile-Title"))
 	if title != "✅ 👤 Qm5V4Pp5@e | 📊 ∞ | 🕔 ∞" {
 		t.Fatalf("Profile-Title decoded = %q", title)
 	}
-	if !strings.Contains(w.Header().Get("Content-Disposition"), url.PathEscape(title)) {
-		t.Fatalf("Content-Disposition = %q, want filename from title", w.Header().Get("Content-Disposition"))
+	if cd := w.Header().Get("Content-Disposition"); cd != "" {
+		t.Fatalf("raw Happ path must not set Content-Disposition (Happ uses it as the profile name); got %q", cd)
 	}
-	announce := w.Header().Get("Announce")
-	if announce == "" {
-		t.Fatal("missing Announce header")
+	if got := decodeHappBase64Header(t, w.Header().Get("Announce")); got != gucciAnnounceText {
+		t.Fatalf("Announce decoded = %q", got)
 	}
 
 	body := w.Body.String()
-	lines := strings.Split(strings.TrimSpace(body), "\n")
+	assertHappDirectives(t, body, title, gucciAnnounceText)
+	lines := happShareLines(body)
 	if len(lines) < 3 {
-		t.Fatalf("body lines = %d, body=%s", len(lines), body)
+		t.Fatalf("share lines = %d, body=%s", len(lines), body)
 	}
 	if got := linkFragment(t, lines[0]); got != gucciUpdateNoticeRemark {
 		t.Fatalf("first config = %q", got)
@@ -227,6 +219,89 @@ func TestGetJsonAndClash_SubscriptionBodyUsesGucciNames(t *testing.T) {
 	}
 	if strings.Contains(yaml, "guc-host2831") {
 		t.Fatalf("host remark leaked into Clash:\n%s", yaml)
+	}
+}
+
+func TestHappBodyDirectives_FallbackAnnounce(t *testing.T) {
+	got := happBodyDirectives("✅ 👤 Qm5V4Pp5 | 📊 ∞ | 🕔 ∞", "")
+	assertHappDirectives(t, got, "✅ 👤 Qm5V4Pp5 | 📊 ∞ | 🕔 ∞", gucciAnnounceText)
+}
+
+func TestSubsHTTP_EncryptedBodyStillCarriesHappDirectives(t *testing.T) {
+	gin.SetMode(gin.TestMode)
+	seedSubDB(t)
+	seedSubInbound(t, "s1", "Qm5V4Pp5", 4431, 1, `{"network":"tcp","security":"none"}`)
+
+	router := gin.New()
+	NewSUBController(router.Group("/"),
+		WithSUBEncryption(true),
+	)
+
+	req := httptest.NewRequest(http.MethodGet, "/sub/s1", nil)
+	req.Host = "sub.example.com"
+	req.Header.Set("User-Agent", "Happ/1.0")
+	w := httptest.NewRecorder()
+	router.ServeHTTP(w, req)
+	if w.Code != http.StatusOK {
+		t.Fatalf("status = %d body=%s", w.Code, w.Body.String())
+	}
+	if cd := w.Header().Get("Content-Disposition"); cd != "" {
+		t.Fatalf("encrypted Happ path must not set Content-Disposition; got %q", cd)
+	}
+	title := decodeHappBase64Header(t, w.Header().Get("Profile-Title"))
+	if !strings.HasPrefix(title, "✅ 👤 Qm5V4Pp5@e | 📊") {
+		t.Fatalf("Profile-Title decoded = %q", title)
+	}
+	if got := decodeHappBase64Header(t, w.Header().Get("Announce")); got != gucciAnnounceText {
+		t.Fatalf("Announce decoded = %q", got)
+	}
+	decoded, err := base64.StdEncoding.DecodeString(w.Body.String())
+	if err != nil {
+		t.Fatalf("encrypted body is not base64: %v", err)
+	}
+	assertHappDirectives(t, string(decoded), title, gucciAnnounceText)
+}
+
+func decodeHappBase64Header(t *testing.T, value string) string {
+	t.Helper()
+	if !strings.HasPrefix(value, "base64:") {
+		t.Fatalf("want base64: prefix, got %q", value)
+	}
+	decoded, err := base64.StdEncoding.DecodeString(strings.TrimPrefix(value, "base64:"))
+	if err != nil {
+		t.Fatalf("decode: %v from %q", err, value)
+	}
+	return string(decoded)
+}
+
+func happShareLines(body string) []string {
+	var out []string
+	for _, line := range strings.Split(body, "\n") {
+		line = strings.TrimSpace(line)
+		if line == "" || strings.HasPrefix(line, "#") {
+			continue
+		}
+		out = append(out, line)
+	}
+	return out
+}
+
+func assertHappDirectives(t *testing.T, body, wantTitle, wantAnnounce string) {
+	t.Helper()
+	var gotTitle, gotAnnounce string
+	for _, line := range strings.Split(body, "\n") {
+		switch {
+		case strings.HasPrefix(line, "#profile-title:"):
+			gotTitle = decodeHappBase64Header(t, strings.TrimSpace(strings.TrimPrefix(line, "#profile-title:")))
+		case strings.HasPrefix(line, "#announce:"):
+			gotAnnounce = decodeHappBase64Header(t, strings.TrimSpace(strings.TrimPrefix(line, "#announce:")))
+		}
+	}
+	if gotTitle != wantTitle {
+		t.Fatalf("#profile-title = %q, want %q\nbody=%s", gotTitle, wantTitle, body)
+	}
+	if gotAnnounce != wantAnnounce {
+		t.Fatalf("#announce = %q, want %q\nbody=%s", gotAnnounce, wantAnnounce, body)
 	}
 }
 
