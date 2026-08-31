@@ -383,7 +383,11 @@ export default function SubPage() {
                         }
                         return (
                           <span key={i} className="gucci-brand-wordmark">
-                            {tok.trim()}
+                            {Array.from(tok).filter((ch) => ch.trim().length > 0).map((ch, j) => (
+                              <span key={`${i}-${j}`} className="gucci-brand-letter">
+                                {ch}
+                              </span>
+                            ))}
                           </span>
                         );
                       })}
