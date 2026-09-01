@@ -468,7 +468,7 @@ func TestDeletedSubscriptionFormatsReplaceCachedActiveTitle(t *testing.T) {
 				t.Fatalf("status = %d, want 200; body=%s", resp.Code, resp.Body.String())
 			}
 			title := parseHappMetaValue(t, resp.Header().Get("Profile-Title"))
-			if !strings.HasPrefix(title, "❌ 👤 deleted |") {
+			if !strings.HasPrefix(title, "👤 deleted |") {
 				t.Fatalf("Profile-Title = %q, want deleted status", title)
 			}
 			if got := resp.Header().Get("subscription-name"); got != title {
