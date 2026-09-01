@@ -84,6 +84,14 @@ type SubService struct {
 	// with the clients array left out; generators read only inbound-level
 	// fields (encryption, method, version, …) from it.
 	settingsByInbound map[int]map[string]any
+	// lastSub* caches the subscription state getSubs computed for this request
+	// (emails + aggregated traffic incl. the live enable flag). The profile
+	// title is rendered from this exact state so the subscription link name can
+	// never disagree with the per-config remarks it ships with.
+	lastSubID      string
+	lastSubEmails  []string
+	lastSubTraffic xray.ClientTraffic
+	lastSubLoaded  bool
 }
 
 // NewSubService creates a new subscription service with the given configuration.
@@ -119,6 +127,10 @@ func (s *SubService) PrepareForRequest(host string) {
 	s.clientsByInbound = map[int]map[string]model.Client{}
 	s.fullyPrimedInbounds = map[int]bool{}
 	s.settingsByInbound = map[int]map[string]any{}
+	s.lastSubID = ""
+	s.lastSubEmails = nil
+	s.lastSubTraffic = xray.ClientTraffic{}
+	s.lastSubLoaded = false
 	s.loadNodes()
 	s.loadRemarkSettings()
 }
@@ -370,6 +382,12 @@ func (s *SubService) getSubs(subId string) ([]string, []string, int64, xray.Clie
 	}
 	traffic, lastOnline := s.AggregateTrafficByEmails(uniqueEmails)
 	traffic.Enable = hasEnabledClient
+	// Remember the state the config remarks are built from so the profile
+	// title reuses it instead of re-deriving status from a second query.
+	s.lastSubID = subId
+	s.lastSubEmails = append([]string(nil), emails...)
+	s.lastSubTraffic = traffic
+	s.lastSubLoaded = true
 
 	if s.subscriptionBody {
 		s.remarkTemplate = gucciConfigRemarkTemplate
