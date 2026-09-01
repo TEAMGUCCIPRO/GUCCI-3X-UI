@@ -85,3 +85,104 @@
   font-weight: 600;
   color: var(--ant-color-text-secondary);
 }
+
+/* ===================================================================
+   Electric purple plasma usage bar (replaces the old green progress)
+   =================================================================== */
+.usage-summary {
+  position: relative;
+  overflow: hidden;
+  background: linear-gradient(150deg, rgba(30, 8, 60, 0.85), rgba(14, 4, 32, 0.9));
+  border: 1px solid rgba(168, 85, 247, 0.55);
+  box-shadow: 0 0 22px rgba(126, 34, 206, 0.35), inset 0 0 22px rgba(88, 28, 135, 0.35);
+}
+
+.usage-summary-bar-wrap {
+  position: relative;
+}
+
+.usage-summary-bar--neon .ant-progress-inner {
+  background: rgba(59, 7, 100, 0.55) !important;
+  border: 1px solid rgba(192, 132, 252, 0.35);
+  box-shadow: inset 0 0 12px rgba(88, 28, 135, 0.8);
+  overflow: hidden;
+}
+
+.usage-summary-bar--neon .ant-progress-bg {
+  position: relative;
+  background-size: 220% 100% !important;
+  animation: usagePlasmaFlow 3.2s linear infinite, usagePlasmaGlow 1.9s ease-in-out infinite alternate;
+  box-shadow:
+    0 0 12px rgba(192, 132, 252, 0.9),
+    0 0 26px rgba(168, 85, 247, 0.8);
+}
+
+.usage-summary-bar--neon .ant-progress-bg::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: repeating-linear-gradient(
+    115deg,
+    rgba(255, 255, 255, 0.22) 0 8px,
+    transparent 8px 20px
+  );
+  animation: usagePlasmaStripes 0.9s linear infinite;
+  mix-blend-mode: screen;
+}
+
+.usage-summary-spark {
+  position: absolute;
+  top: 50%;
+  width: 10px;
+  height: 22px;
+  margin-left: -5px;
+  transform: translateY(-50%);
+  border-radius: 6px;
+  background: #ffffff;
+  box-shadow:
+    0 0 10px #f0abfc,
+    0 0 22px #c084fc,
+    0 0 40px #a855f7;
+  animation: usageSparkFlicker 1.1s steps(1, end) infinite;
+  pointer-events: none;
+}
+
+@keyframes usagePlasmaFlow {
+  0% { background-position: 0% 50%; }
+  100% { background-position: 220% 50%; }
+}
+
+@keyframes usagePlasmaGlow {
+  0% { filter: brightness(1) saturate(1.1); }
+  100% { filter: brightness(1.35) saturate(1.5); }
+}
+
+@keyframes usagePlasmaStripes {
+  0% { background-position: 0 0; }
+  100% { background-position: 40px 0; }
+}
+
+@keyframes usageSparkFlicker {
+  0%, 70%, 100% { opacity: 1; }
+  75% { opacity: 0.35; }
+  80% { opacity: 1; }
+  85% { opacity: 0.5; }
+}
+
+.usage-summary-pct {
+  color: #e9d5ff;
+  text-shadow: 0 0 10px rgba(168, 85, 247, 0.9);
+}
+
+.usage-summary-used {
+  color: #ffffff;
+  text-shadow: 0 0 12px rgba(192, 132, 252, 0.8);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .usage-summary-bar--neon .ant-progress-bg,
+  .usage-summary-bar--neon .ant-progress-bg::after,
+  .usage-summary-spark {
+    animation: none !important;
+  }
+}

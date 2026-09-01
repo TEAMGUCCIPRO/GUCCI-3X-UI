@@ -367,7 +367,12 @@ export default function SubPage() {
         {messageContextHolder}
         <Layout className={pageClass}>
           <Layout.Content className="content">
-            <SubStatusPage kind={statusKind} announce={announce} />
+            <SubStatusPage
+              kind={statusKind}
+              announce={announce}
+              header={cardTitle}
+              extra={cardExtra}
+            />
           </Layout.Content>
         </Layout>
       </ConfigProvider>

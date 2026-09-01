@@ -982,3 +982,377 @@
     animation: none !important;
   }
 }
+
+/* ===================================================================
+   V2 — Ultra neon gaming wordmark + status stage
+   (appended overrides: later rules win over the base definitions)
+   =================================================================== */
+
+.gucci-wordmark {
+  gap: 8px;
+  perspective: 600px;
+}
+
+.gucci-letter {
+  position: relative;
+  width: 44px;
+  height: 44px;
+  background:
+    radial-gradient(circle at 32% 24%, rgba(255, 255, 255, 0.85), rgba(216, 180, 254, 0.35) 42%, rgba(76, 29, 149, 0.9) 100%);
+  border: 1px solid rgba(255, 255, 255, 0.9);
+  box-shadow:
+    0 0 14px rgba(216, 180, 254, 0.9),
+    0 0 30px rgba(168, 85, 247, 0.75),
+    0 0 60px rgba(124, 58, 237, 0.45),
+    inset 0 0 16px rgba(255, 255, 255, 0.5);
+  animation:
+    gucciLetterPulse 2.4s cubic-bezier(0.45, 0, 0.55, 1) infinite alternate,
+    gucciLetterWave 3.6s cubic-bezier(0.45, 0, 0.55, 1) infinite;
+  will-change: transform, box-shadow;
+}
+
+/* rotating conic energy ring around every letter */
+.gucci-letter::before {
+  content: '';
+  position: absolute;
+  inset: -3px;
+  border-radius: 50%;
+  background: conic-gradient(
+    from 0deg,
+    transparent 0deg,
+    rgba(236, 72, 153, 0.9) 60deg,
+    rgba(168, 85, 247, 0.95) 140deg,
+    rgba(56, 189, 248, 0.85) 220deg,
+    transparent 300deg
+  );
+  filter: blur(3px);
+  opacity: 0.85;
+  animation: gucciLetterOrbit 2.8s linear infinite;
+  pointer-events: none;
+  z-index: -1;
+}
+
+/* glass highlight sweep across each chip */
+.gucci-letter::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  background: linear-gradient(115deg, transparent 30%, rgba(255, 255, 255, 0.75) 48%, transparent 62%);
+  opacity: 0;
+  animation: gucciLetterShine 3.4s ease-in-out infinite;
+  pointer-events: none;
+}
+
+.gucci-letter-glyph {
+  font-size: 24px;
+  color: #ffffff;
+  text-shadow:
+    0 0 4px #ffffff,
+    0 0 12px #f5d0fe,
+    0 0 24px #c084fc,
+    0 0 42px #a855f7,
+    0 0 70px #7c3aed;
+  animation: gucciLetterFlicker 5.4s steps(1, end) infinite;
+}
+
+@keyframes gucciLetterWave {
+  0%, 100% { transform: translateY(0) rotateX(0deg) scale(1); }
+  35% { transform: translateY(-7px) rotateX(12deg) scale(1.09); }
+  70% { transform: translateY(2px) rotateX(-6deg) scale(0.98); }
+}
+
+@keyframes gucciLetterOrbit {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+@keyframes gucciLetterShine {
+  0%, 62%, 100% { opacity: 0; transform: translateX(-40%); }
+  70% { opacity: 0.9; transform: translateX(0%); }
+  86% { opacity: 0; transform: translateX(40%); }
+}
+
+.gucci-wordmark--hero {
+  gap: 10px;
+}
+.gucci-wordmark--hero .gucci-letter {
+  width: 54px;
+  height: 54px;
+}
+.gucci-wordmark--hero .gucci-letter-glyph {
+  font-size: 30px;
+}
+
+/* ------------------- animated stage background ------------------- */
+.gucci-status-wrap {
+  position: relative;
+  z-index: 1;
+  display: block;
+  padding: 18px 12px 56px;
+  isolation: isolate;
+}
+
+.gucci-stage {
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  overflow: hidden;
+  pointer-events: none;
+  background:
+    radial-gradient(900px 620px at 12% -8%, rgba(124, 58, 237, 0.45), transparent 62%),
+    radial-gradient(820px 660px at 108% 12%, rgba(236, 72, 153, 0.28), transparent 58%),
+    radial-gradient(1000px 800px at 50% 118%, rgba(88, 28, 135, 0.55), transparent 62%),
+    linear-gradient(165deg, #08030f 0%, #180a33 48%, #0a0418 100%);
+}
+
+.gucci-stage-orb {
+  position: absolute;
+  border-radius: 50%;
+  filter: blur(70px);
+  opacity: 0.55;
+  mix-blend-mode: screen;
+}
+.gucci-stage-orb--1 {
+  width: 420px; height: 420px; top: -80px; left: -60px;
+  background: radial-gradient(circle, #a855f7, transparent 70%);
+  animation: gucciOrbDrift 15s ease-in-out infinite;
+}
+.gucci-stage-orb--2 {
+  width: 360px; height: 360px; bottom: -90px; right: -70px;
+  background: radial-gradient(circle, #ec4899, transparent 70%);
+  animation: gucciOrbDrift 19s ease-in-out infinite reverse;
+}
+.gucci-stage-orb--3 {
+  width: 300px; height: 300px; top: 40%; left: 55%;
+  background: radial-gradient(circle, #6366f1, transparent 70%);
+  animation: gucciOrbDrift 23s ease-in-out infinite;
+}
+
+@keyframes gucciOrbDrift {
+  0%, 100% { transform: translate3d(0, 0, 0) scale(1); }
+  33% { transform: translate3d(60px, 50px, 0) scale(1.15); }
+  66% { transform: translate3d(-50px, 30px, 0) scale(0.92); }
+}
+
+.gucci-stage-scan {
+  position: absolute;
+  inset: 0;
+  background:
+    repeating-linear-gradient(0deg, rgba(168, 85, 247, 0.07) 0 1px, transparent 1px 4px),
+    linear-gradient(rgba(192, 132, 252, 0.06) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(192, 132, 252, 0.06) 1px, transparent 1px);
+  background-size: 100% 4px, 70px 70px, 70px 70px;
+  animation: gucciGridMove 7s linear infinite;
+  opacity: 0.9;
+}
+
+.gucci-stage-bolt {
+  position: absolute;
+  top: -10%;
+  width: 2px;
+  height: 120%;
+  background: linear-gradient(180deg, transparent, #f5d0fe, #ffffff, #c084fc, transparent);
+  filter: blur(1px) drop-shadow(0 0 14px #d8b4fe);
+  opacity: 0;
+}
+.gucci-stage-bolt--a { left: 22%; transform: rotate(9deg); animation: gucciBoltStrike 6.5s steps(1, end) infinite; }
+.gucci-stage-bolt--b { right: 18%; transform: rotate(-11deg); animation: gucciBoltStrike 9s steps(1, end) 2.4s infinite; }
+
+@keyframes gucciBoltStrike {
+  0%, 90%, 100% { opacity: 0; }
+  91% { opacity: 0.9; }
+  92% { opacity: 0.05; }
+  93% { opacity: 1; }
+  94% { opacity: 0.1; }
+  95% { opacity: 0.7; }
+  96% { opacity: 0; }
+}
+
+/* ------------------- shell + top bar (user dashboard) ------------------- */
+.gucci-status-shell {
+  width: 100%;
+  max-width: 780px;
+  margin: 0 auto;
+}
+
+.gucci-status-topbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+  margin-bottom: 16px;
+  padding: 12px 16px;
+  border-radius: 20px;
+  background: linear-gradient(135deg, rgba(30, 10, 60, 0.85), rgba(12, 4, 28, 0.9));
+  border: 1px solid rgba(192, 132, 252, 0.55);
+  box-shadow:
+    0 0 26px rgba(126, 34, 206, 0.5),
+    inset 0 0 22px rgba(88, 28, 135, 0.45);
+  backdrop-filter: blur(8px);
+}
+
+.gucci-status-topbar-user {
+  min-width: 0;
+  flex: 1 1 auto;
+}
+
+.gucci-status-topbar .subpage-header-title,
+.gucci-status-topbar .subpage-header-subtitle {
+  color: #f5f3ff;
+}
+
+/* ------------------- card ------------------- */
+.gucci-status-card {
+  max-width: none;
+  padding: 26px 22px 20px;
+  border-radius: 30px;
+  background:
+    radial-gradient(130% 100% at 50% -15%, rgba(216, 180, 254, 0.35), transparent 60%),
+    linear-gradient(-45deg, #1b0736, #3b0764, #581c87, #6d28d9, #1b0736);
+  background-size: 100% 100%, 380% 380%;
+  border: 2px solid rgba(233, 213, 255, 0.85);
+  box-shadow:
+    0 0 55px rgba(168, 85, 247, 0.55),
+    0 0 120px rgba(109, 40, 217, 0.4),
+    inset 0 0 55px rgba(59, 7, 100, 0.65);
+}
+
+.gucci-status-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 16px;
+  margin-bottom: 6px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 900;
+  letter-spacing: 3px;
+  color: #fff;
+  background: rgba(10, 3, 24, 0.7);
+  border: 1px solid rgba(248, 113, 113, 0.8);
+  box-shadow: 0 0 20px rgba(248, 113, 113, 0.55);
+}
+.gucci-status--amber .gucci-status-badge {
+  border-color: rgba(251, 191, 36, 0.85);
+  box-shadow: 0 0 20px rgba(251, 191, 36, 0.55);
+}
+.gucci-status-badge-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #f87171;
+  box-shadow: 0 0 12px #f87171;
+  animation: gucciBadgeBlink 1.4s ease-in-out infinite;
+}
+.gucci-status--amber .gucci-status-badge-dot {
+  background: #fbbf24;
+  box-shadow: 0 0 12px #fbbf24;
+}
+@keyframes gucciBadgeBlink {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50% { opacity: 0.25; transform: scale(0.7); }
+}
+
+.gucci-status-icon {
+  position: relative;
+  width: 124px;
+  height: 124px;
+  background:
+    radial-gradient(circle at 50% 35%, rgba(124, 58, 237, 0.55), #12042a 72%);
+  border: 3px solid rgba(251, 191, 36, 0.9);
+}
+.gucci-status-icon-ring {
+  position: absolute;
+  inset: -10px;
+  border-radius: 50%;
+  background: conic-gradient(from 0deg, transparent, #fbbf24, #ec4899, #a855f7, transparent);
+  filter: blur(6px);
+  opacity: 0.85;
+  animation: gucciLetterOrbit 3.6s linear infinite;
+  z-index: -1;
+}
+.gucci-status--red .gucci-status-icon-ring {
+  background: conic-gradient(from 0deg, transparent, #f87171, #ec4899, #a855f7, transparent);
+}
+.gucci-status-icon-glyph {
+  font-size: 50px;
+  filter: drop-shadow(0 0 16px rgba(255, 255, 255, 0.7));
+}
+
+.gucci-status-title {
+  font-size: 32px;
+  margin-top: 20px;
+  background: linear-gradient(92deg, #ffffff, #f5d0fe, #c084fc, #ffffff, #f0abfc);
+  background-size: 300% 100%;
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  color: transparent;
+  text-shadow: none;
+  filter: drop-shadow(0 0 18px rgba(192, 132, 252, 0.85));
+  animation: gucciGradientShift 5s linear infinite;
+}
+
+.gucci-status-body {
+  color: #ede9fe;
+  text-shadow: 0 0 12px rgba(124, 58, 237, 0.7);
+}
+
+.gucci-status-pill {
+  background: linear-gradient(135deg, rgba(30, 8, 60, 0.9), rgba(12, 4, 28, 0.9));
+}
+
+/* the old washed-out light-blue support box becomes a neon violet console */
+.gucci-status-support {
+  position: relative;
+  overflow: hidden;
+  color: #faf5ff;
+  background: linear-gradient(135deg, rgba(45, 12, 88, 0.9), rgba(14, 4, 32, 0.92));
+  border: 2px solid rgba(216, 180, 254, 0.9);
+  box-shadow:
+    0 0 28px rgba(168, 85, 247, 0.6),
+    inset 0 0 24px rgba(88, 28, 135, 0.6);
+}
+.gucci-status-support::after {
+  content: '';
+  position: absolute;
+  top: -30%;
+  bottom: -30%;
+  width: 40%;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.25), transparent);
+  animation: gucciLightSweep 5.5s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+  pointer-events: none;
+}
+
+.gucci-status-footer {
+  letter-spacing: 5px;
+  color: rgba(245, 208, 254, 0.85);
+}
+
+@media (max-width: 576px) {
+  .gucci-letter { width: 33px; height: 33px; }
+  .gucci-letter-glyph { font-size: 18px; }
+  .gucci-wordmark--hero .gucci-letter { width: 38px; height: 38px; }
+  .gucci-wordmark--hero .gucci-letter-glyph { font-size: 21px; }
+  .gucci-wordmark, .gucci-wordmark--hero { gap: 6px; }
+  .gucci-status-title { font-size: 22px; }
+  .gucci-status-icon { width: 96px; height: 96px; }
+  .gucci-status-icon-glyph { font-size: 40px; }
+  .gucci-status-topbar { padding: 10px 12px; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .gucci-letter::before,
+  .gucci-letter::after,
+  .gucci-stage-orb,
+  .gucci-stage-scan,
+  .gucci-stage-bolt,
+  .gucci-status-icon-ring,
+  .gucci-status-badge-dot,
+  .gucci-status-support::after,
+  .gucci-status-title {
+    animation: none !important;
+  }
+}

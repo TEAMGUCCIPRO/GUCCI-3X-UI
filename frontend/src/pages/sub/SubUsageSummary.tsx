@@ -15,10 +15,12 @@ interface SubUsageSummaryProps {
   isActive: boolean;
 }
 
-function pickStrokeColor(pct: number): { from: string; to: string } {
-  if (pct >= 90) return { from: '#ff7875', to: '#ff4d4f' };
-  if (pct >= 75) return { from: '#ffc53d', to: '#fa8c16' };
-  return { from: '#5fc983', to: '#36b37e' };
+// Neon "electric purple" usage bar — the green/amber ramp is gone, high usage
+// only shifts the plasma towards pink/red inside the same purple family.
+function pickStrokeColor(pct: number): { from: string; mid: string; to: string } {
+  if (pct >= 90) return { from: '#f0abfc', mid: '#e879f9', to: '#f43f5e' };
+  if (pct >= 75) return { from: '#e9d5ff', mid: '#c084fc', to: '#ec4899' };
+  return { from: '#e9d5ff', mid: '#a855f7', to: '#7c3aed' };
 }
 
 function formatExpiryChip(expireMs: number): { label: string; color: string } | null {
@@ -74,14 +76,17 @@ export default function SubUsageSummary({
         </div>
       </div>
       {!isUnlimited && (
-        <Progress
-          percent={pct}
-          showInfo={false}
-          strokeColor={{ '0%': stroke.from, '100%': stroke.to }}
-          railColor="var(--ant-color-fill-secondary)"
-          strokeWidth={10}
-          className="usage-summary-bar"
-        />
+        <div className="usage-summary-bar-wrap">
+          <Progress
+            percent={pct}
+            showInfo={false}
+            strokeColor={{ '0%': stroke.from, '50%': stroke.mid, '100%': stroke.to }}
+            railColor="rgba(88, 28, 135, 0.45)"
+            strokeWidth={12}
+            className="usage-summary-bar usage-summary-bar--neon"
+          />
+          <span className="usage-summary-spark" style={{ left: `${pct}%` }} aria-hidden="true" />
+        </div>
       )}
       <div className="usage-summary-foot">
         {!isUnlimited && (

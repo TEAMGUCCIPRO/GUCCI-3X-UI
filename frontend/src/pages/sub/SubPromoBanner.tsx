@@ -36,7 +36,7 @@ export default function SubPromoBanner({ announce }: { announce: string }) {
         <GucciWordmark text={announce} />
       </div>
       <div className="promo-subtitle">
-        برای دریافت پنل و اطلاعات بیشتر حتما با آی‌دی‌های زیر در تلگرام با ما در ارتباط باشید:
+        میتوانید از طریق آیدی های زیر با ما در ارتباط باشید
       </div>
 
       <Row gutter={[12, 12]} className="promo-grid">
