@@ -656,3 +656,23 @@
     max-width: 150px;
   }
 }
+
+/* Status notice shown for disabled / expired / removed subscriptions,
+   directly under the promo block. */
+.sub-status-notice {
+  margin: 0 0 16px;
+  padding: 12px 16px;
+  border-radius: 12px;
+  border: 1px solid rgba(255, 77, 79, 0.45);
+  background: rgba(255, 77, 79, 0.08);
+  color: #cf1322;
+  font-weight: 600;
+  text-align: center;
+  line-height: 1.9;
+}
+
+.is-dark .sub-status-notice {
+  border-color: rgba(255, 120, 117, 0.5);
+  background: rgba(255, 77, 79, 0.14);
+  color: #ff9c99;
+}

@@ -315,12 +315,55 @@ func (a *SUBController) maybeServeSubPage(c *gin.Context) bool {
 	if !wantsHTML {
 		return false
 	}
-	page, ok := a.buildSubPageData(c)
+	page, err, ok := a.tryBuildSubPageData(c)
 	if !ok {
+		if err != nil {
+			c.Status(http.StatusInternalServerError)
+			return true
+		}
+		// Deleted client / unknown subId: browsers used to get a blank 404.
+		// Serve the same subscription page shell with a "removed" notice so
+		// the promo/contact block is still visible to the visitor.
+		a.serveSubNoticePage(c, subNoticeRemoved)
 		return true
 	}
 	a.serveSubPage(c, page.BasePath, page)
 	return true
+}
+
+// subNotice values are read by the SPA (window.__SUB_PAGE_DATA__.notice) to
+// pick the status message it shows above the subscription details.
+const (
+	subNoticeRemoved = "removed"
+)
+
+// serveSubNoticePage renders the subscription page shell for a subId that has
+// no usable links (deleted client or unknown id).
+func (a *SUBController) serveSubNoticePage(c *gin.Context, notice string) {
+	subId := c.Param("subid")
+	_, host, _, hostHeader := a.subService.ResolveRequest(c)
+	subReq := a.subService.ForRequest(host)
+	basePath, exists := c.Get("base_path")
+	if !exists {
+		basePath = "/"
+	}
+	basePathStr := basePath.(string)
+	metadata := a.metadataForSubRequest(func() *SubService { return subReq }, subId, "")
+	page := PageData{
+		Host:          hostHeader,
+		BasePath:      basePathStr,
+		SId:           subId,
+		Enabled:       false,
+		Total:         "∞",
+		Download:      "0 B",
+		Upload:        "0 B",
+		Used:          "0 B",
+		SubTitle:      metadata.Title,
+		SubSupportUrl: metadata.SupportURL,
+		SubAnnounce:   metadata.Announce,
+		Notice:        notice,
+	}
+	a.serveSubPageWithStatus(c, http.StatusNotFound, basePathStr, page)
 }
 
 func (a *SUBController) maybeServeSubInfo(c *gin.Context) bool {
@@ -340,14 +383,24 @@ func (a *SUBController) maybeServeSubInfo(c *gin.Context) bool {
 }
 
 func (a *SUBController) buildSubPageData(c *gin.Context) (PageData, bool) {
+	page, err, ok := a.tryBuildSubPageData(c)
+	if !ok {
+		writeSubError(c, err)
+		return PageData{}, false
+	}
+	return page, true
+}
+
+// tryBuildSubPageData builds the page view-model without writing any response.
+// ok=false with err=nil means the subId matched nothing (deleted client).
+func (a *SUBController) tryBuildSubPageData(c *gin.Context) (PageData, error, bool) {
 	subId := c.Param("subid")
 	_, host, _, hostHeader := a.subService.ResolveRequest(c)
 	subReq := a.subService.ForRequest(host)
 	subReq.subscriptionBody = false
 	subs, emails, lastOnline, traffic, err := subReq.getSubs(subId)
 	if err != nil || len(subs) == 0 {
-		writeSubError(c, err)
-		return PageData{}, false
+		return PageData{}, err, false
 	}
 	subURL, subJsonURL, subClashURL := subReq.BuildURLs(a.subPath, a.subJsonPath, a.subClashPath, subId)
 	if !a.jsonEnabled {
@@ -364,7 +417,7 @@ func (a *SUBController) buildSubPageData(c *gin.Context) (PageData, bool) {
 	metadata := a.metadataForSubRequest(func() *SubService { return subReq }, subId, "")
 	page := subReq.BuildPageData(subId, hostHeader, traffic, lastOnline, subs, emails, subURL, subJsonURL, subClashURL, basePathStr, metadata.Title, metadata.SupportURL)
 	page.SubAnnounce = metadata.Announce
-	return page, true
+	return page, nil, true
 }
 
 func dedupeEmails(emails []string) []string {
@@ -512,6 +565,13 @@ func compileUserAgentRegex(name, pattern, defaultPattern string) *regexp.Regexp 
 // page's static asset references resolve correctly when the panel runs
 // behind a URL prefix.
 func (a *SUBController) serveSubPage(c *gin.Context, basePath string, page PageData) {
+	a.serveSubPageWithStatus(c, http.StatusOK, basePath, page)
+}
+
+// serveSubPageWithStatus is serveSubPage with an explicit HTTP status so the
+// "subscription removed" notice page can keep its 404 while still returning
+// the rendered page body.
+func (a *SUBController) serveSubPageWithStatus(c *gin.Context, status int, basePath string, page PageData) {
 	var body []byte
 	if diskBody, diskErr := os.ReadFile("internal/web/dist/subpage.html"); diskErr == nil {
 		body = diskBody
@@ -550,7 +610,7 @@ func (a *SUBController) serveSubPage(c *gin.Context, basePath string, page PageD
 				logger.Error("sub: custom template execution failed, using default page:", execErr)
 			} else {
 				setNoCacheHeaders(c)
-				c.Data(http.StatusOK, "text/html; charset=utf-8", buf.Bytes())
+				c.Data(status, "text/html; charset=utf-8", buf.Bytes())
 				return
 			}
 		}
@@ -579,7 +639,7 @@ func (a *SUBController) serveSubPage(c *gin.Context, basePath string, page PageD
 	out := bytes.Replace(body, []byte("</head>"), inject, 1)
 
 	setNoCacheHeaders(c)
-	c.Data(http.StatusOK, "text/html; charset=utf-8", out)
+	c.Data(status, "text/html; charset=utf-8", out)
 }
 
 // subPageContext builds the shared view-model map: the template context for
@@ -616,6 +676,7 @@ func (a *SUBController) subPageContext(page PageData) map[string]any {
 		"emails":        page.Emails,
 		"datepicker":    datepicker,
 		"announce":      page.SubAnnounce,
+		"notice":        page.Notice,
 	}
 }
 

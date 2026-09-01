@@ -2658,6 +2658,7 @@ type PageData struct {
 	SubAnnounce   string
 	Result        []string
 	Emails        []string
+	Notice        string
 }
 
 // ResolveRequest extracts scheme and host info from request/headers consistently.
