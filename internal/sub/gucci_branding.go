@@ -167,12 +167,20 @@ func (s *SubService) applyGucciSubscriptionBody(result, emails []string, subId s
 	return append(gucciDummyLinks(infoRemark), rewritten...)
 }
 
+// gucciProfileTitle is the subscription link name shown inside client apps.
+// It carries no status mark on purpose: only the user, the remaining traffic
+// and the remaining time, always computed from the live state of this request.
+// 👤 email | 📊 10.09 GB | 🕔 27 روز
 func gucciProfileTitle(email, subID string, st xray.ClientTraffic) string {
 	if email == "" {
 		email = subID
 	}
-	return gucciInfoRemark(email, st)
+	if email == "" {
+		email = "-"
+	}
+	return fmt.Sprintf("👤 %s | 📊 %s | 🕔 %s", email, gucciTrafficLeft(st), timeLeftLabel(st.ExpiryTime))
 }
+
 
 func gucciAnnounce(value string) string {
 	if strings.TrimSpace(value) == "" {
