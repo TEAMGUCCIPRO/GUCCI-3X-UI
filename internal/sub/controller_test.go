@@ -453,6 +453,34 @@ func TestFormatEndpointsRawViewBypassesBrowserPage(t *testing.T) {
 	}
 }
 
+func TestDeletedSubscriptionFormatsReplaceCachedActiveTitle(t *testing.T) {
+	seedSubDB(t)
+	gin.SetMode(gin.TestMode)
+	router := newSubscriptionTestRouter(subscriptionTestRouterConfig{})
+
+	for _, path := range []string{"/sub/deleted", "/json/deleted", "/clash/deleted"} {
+		t.Run(path, func(t *testing.T) {
+			req := httptest.NewRequest(http.MethodGet, "http://sub.example.com"+path, nil)
+			resp := httptest.NewRecorder()
+			router.ServeHTTP(resp, req)
+
+			if resp.Code != http.StatusOK {
+				t.Fatalf("status = %d, want 200; body=%s", resp.Code, resp.Body.String())
+			}
+			title := parseHappMetaValue(t, resp.Header().Get("Profile-Title"))
+			if !strings.HasPrefix(title, "❌ 👤 deleted |") {
+				t.Fatalf("Profile-Title = %q, want deleted status", title)
+			}
+			if got := resp.Header().Get("subscription-name"); got != title {
+				t.Fatalf("subscription-name = %q, want %q", got, title)
+			}
+			if cc := resp.Header().Get("Cache-Control"); !strings.Contains(cc, "no-store") {
+				t.Fatalf("Cache-Control = %q, want no-store", cc)
+			}
+		})
+	}
+}
+
 func writeFile(t *testing.T, path, content string) {
 	t.Helper()
 	if err := os.WriteFile(path, []byte(content), 0o644); err != nil {

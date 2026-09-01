@@ -438,6 +438,7 @@ func dedupeEmails(emails []string) []string {
 
 // subs handles HTTP requests for subscription links, returning either HTML page or base64-encoded subscription data.
 func (a *SUBController) subs(c *gin.Context) {
+	setNoCacheHeaders(c)
 	userAgent := c.GetHeader("User-Agent")
 	if a.maybeServeSubInfo(c) {
 		logSubscriptionRoute(userAgent, "info")
@@ -813,15 +814,13 @@ func (a *SUBController) serveJson(c *gin.Context, alwaysReturnArray bool, conten
 }
 
 func (a *SUBController) serveJsonBody(c *gin.Context, alwaysReturnArray bool, contentType string, rawDownload bool) bool {
+	setNoCacheHeaders(c)
 	subId := c.Param("subid")
 	scheme, host, hostWithPort, _ := a.subService.ResolveRequest(c)
 	jsonSub, header, err := a.subJsonService.GetJson(subId, host, alwaysReturnArray)
 	if err != nil {
 		writeSubError(c, err)
 		return true
-	}
-	if len(jsonSub) == 0 {
-		return false
 	}
 	profileURL := fmt.Sprintf("%s://%s%s", scheme, hostWithPort, c.Request.RequestURI)
 	var subReq *SubService
@@ -831,6 +830,20 @@ func (a *SUBController) serveJsonBody(c *gin.Context, alwaysReturnArray bool, co
 		}
 		return subReq
 	}, subId, profileURL)
+	if len(jsonSub) == 0 {
+		if !strings.HasPrefix(metadata.Title, "❌") {
+			return false
+		}
+		// Keep the response valid so clients replace their cached active profile
+		// name. A bare 404 leaves the old green check visible indefinitely.
+		blocked, marshalErr := json.MarshalIndent(a.subJsonService.gucciDummyConfigs(metadata.Title), "", "  ")
+		if marshalErr != nil {
+			writeSubError(c, marshalErr)
+			return true
+		}
+		jsonSub = string(blocked)
+		header = "upload=0; download=0; total=0; expire=0"
+	}
 	a.ApplyCommonHeaders(c, header, a.updateInterval, metadata.Title, metadata.SupportURL, metadata.ProfileURL, metadata.Announce, a.subEnableRouting, a.subRoutingRules, a.subHideSettings)
 	if rawDownload {
 		c.Writer.Header().Set("Content-Disposition", `attachment; filename="subscription.json"`)
@@ -861,15 +874,13 @@ func (a *SUBController) subClashs(c *gin.Context) {
 }
 
 func (a *SUBController) serveClashBody(c *gin.Context, rawDownload bool) bool {
+	setNoCacheHeaders(c)
 	subId := c.Param("subid")
 	scheme, host, hostWithPort, _ := a.subService.ResolveRequest(c)
 	clashSub, header, err := a.subClashService.GetClash(subId, host)
 	if err != nil {
 		writeSubError(c, err)
 		return true
-	}
-	if len(clashSub) == 0 {
-		return false
 	}
 	profileURL := fmt.Sprintf("%s://%s%s", scheme, hostWithPort, c.Request.RequestURI)
 	var subReq *SubService
@@ -879,6 +890,34 @@ func (a *SUBController) serveClashBody(c *gin.Context, rawDownload bool) bool {
 		}
 		return subReq
 	}, subId, profileURL)
+	if len(clashSub) == 0 {
+		if !strings.HasPrefix(metadata.Title, "❌") {
+			return false
+		}
+		// Return an importable blocked profile instead of a bare 404, otherwise
+		// Clash-family clients retain the previous green profile title.
+		proxies := gucciDummyClashProxies(metadata.Title)
+		proxyNames := make([]string, 0, len(proxies)+1)
+		for _, proxy := range proxies {
+			if name, ok := proxy["name"].(string); ok && name != "" {
+				proxyNames = append(proxyNames, name)
+			}
+		}
+		proxyNames = append(proxyNames, "DIRECT")
+		blocked, marshalErr := marshalClashYAML(map[string]any{
+			"proxies": proxies,
+			"proxy-groups": []map[string]any{{
+				"name": "PROXY", "type": "select", "proxies": proxyNames,
+			}},
+			"rules": []string{"MATCH,PROXY"},
+		})
+		if marshalErr != nil {
+			writeSubError(c, marshalErr)
+			return true
+		}
+		clashSub = string(blocked)
+		header = "upload=0; download=0; total=0; expire=0"
+	}
 	a.ApplyCommonHeaders(c, header, a.updateInterval, metadata.Title, metadata.SupportURL, metadata.ProfileURL, metadata.Announce, a.subEnableRouting, a.subRoutingRules, a.subHideSettings)
 	if rawDownload {
 		c.Writer.Header().Set("Content-Disposition", `attachment; filename="subscription.yaml"`)

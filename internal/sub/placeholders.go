@@ -139,10 +139,8 @@ func (s *SubService) subscriptionTemplateContextBySubID(subID string) (remarkCon
 	// client_records row can lag behind a panel disable, which used to keep a
 	// green ✅ on the subscription profile title while every config name had
 	// already flipped to ❌.
-	var hasInboundClient bool
 	for _, inbound := range inbounds {
 		for _, c := range s.matchingClients(inbound, subID) {
-			hasInboundClient = true
 			emails = append(emails, c.Email)
 			if c.Enable {
 				hasEnabledClient = true
@@ -152,9 +150,8 @@ func (s *SubService) subscriptionTemplateContextBySubID(subID string) (remarkCon
 	if client.Email != "" {
 		emails = append(emails, client.Email)
 	}
-	if !hasInboundClient && client.Enable {
-		hasEnabledClient = true
-	}
+	// Do not fall back to client_records.Enable when the live client is gone:
+	// that row can lag behind disable/detach and would keep Profile-Title green.
 	traffic, _ := s.AggregateTrafficByEmails(emails)
 	traffic.Enable = hasEnabledClient
 	if traffic.ExpiryTime == 0 {

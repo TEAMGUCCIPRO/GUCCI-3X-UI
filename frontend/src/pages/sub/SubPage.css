@@ -1728,7 +1728,6 @@
 }
 .gucci-status-topbar .subpage-header-user {
   justify-content: flex-end;
-  flex-direction: row-reverse;
   text-align: end;
   width: auto;
   gap: 14px;
