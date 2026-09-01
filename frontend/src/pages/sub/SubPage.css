@@ -1727,14 +1727,17 @@
   justify-content: flex-end;
 }
 .gucci-status-topbar .subpage-header-user {
+  /* Identical avatar/name spacing to the active subscription dashboard head. */
   justify-content: flex-end;
-  text-align: end;
   width: auto;
-  gap: 14px;
+  gap: 10px;
+  text-align: right;
+  direction: rtl;
 }
 .gucci-status-topbar .subpage-header-text {
-  align-items: flex-end;
-  text-align: end;
+  align-items: flex-start;
+  text-align: right;
+  gap: 3px;
 }
 @media (max-width: 480px) {
   .gucci-status-topbar {

@@ -134,6 +134,7 @@ func (s *SubService) subscriptionTemplateContextBySubID(subID string) (remarkCon
 
 	inbounds, _ := s.getInboundsBySubId(subID)
 	var emails []string
+	var hasLiveClient bool
 	var hasEnabledClient bool
 	// Live inbound clients are the source of truth for the enable flag: the
 	// client_records row can lag behind a panel disable, which used to keep a
@@ -142,6 +143,7 @@ func (s *SubService) subscriptionTemplateContextBySubID(subID string) (remarkCon
 	for _, inbound := range inbounds {
 		for _, c := range s.matchingClients(inbound, subID) {
 			emails = append(emails, c.Email)
+			hasLiveClient = true
 			if c.Enable {
 				hasEnabledClient = true
 			}
@@ -150,8 +152,12 @@ func (s *SubService) subscriptionTemplateContextBySubID(subID string) (remarkCon
 	if client.Email != "" {
 		emails = append(emails, client.Email)
 	}
-	// Do not fall back to client_records.Enable when the live client is gone:
-	// that row can lag behind disable/detach and would keep Profile-Title green.
+	// No live inbound client visible (external-only subscription, inbound not
+	// loaded): trust the stored record so an ACTIVE user keeps the green check
+	// and only a real disable/expiry flips the subscription title to the cross.
+	if !hasLiveClient && client.Enable {
+		hasEnabledClient = true
+	}
 	traffic, _ := s.AggregateTrafficByEmails(emails)
 	traffic.Enable = hasEnabledClient
 	if traffic.ExpiryTime == 0 {
