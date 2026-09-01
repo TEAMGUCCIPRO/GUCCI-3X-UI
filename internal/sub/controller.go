@@ -466,7 +466,28 @@ func (a *SUBController) subs(c *gin.Context) {
 	subReq := a.subService.ForRequest(host)
 	subReq.EnableSubscriptionBody()
 	subs, _, _, traffic, err := subReq.getSubs(subId)
-	if err != nil || len(subs) == 0 {
+	if err == nil && len(subs) == 0 {
+		// Deleted / fully removed subscription: a bare 404 made client apps
+		// (v2box, Happ, v2rayNG…) keep the last cached profile title with its
+		// green ✅. Serve a valid, empty subscription whose profile title and
+		// single placeholder config both carry ❌ so the app renames itself.
+		profileURL := fmt.Sprintf("%s://%s%s", scheme, hostWithPort, c.Request.RequestURI)
+		metadata := a.metadataForSubRequest(func() *SubService { return subReq }, subId, profileURL)
+		a.ApplyCommonHeaders(c, "upload=0; download=0; total=0; expire=0", a.updateInterval, metadata.Title, metadata.SupportURL, metadata.ProfileURL, metadata.Announce, a.subEnableRouting, a.subRoutingRules, a.subHideSettings)
+		var blocked strings.Builder
+		blocked.WriteString(happBodyDirectives(metadata.Title, metadata.Announce))
+		for _, link := range gucciDummyLinks(metadata.Title) {
+			blocked.WriteString(link)
+			blocked.WriteString("\n")
+		}
+		if a.subEncrypt {
+			c.String(200, base64.StdEncoding.EncodeToString([]byte(blocked.String())))
+		} else {
+			c.String(200, blocked.String())
+		}
+		return
+	}
+	if err != nil {
 		writeSubError(c, err)
 	} else {
 		header := fmt.Sprintf("upload=%d; download=%d; total=%d; expire=%d", traffic.Up, traffic.Down, traffic.Total, traffic.ExpiryTime/1000)

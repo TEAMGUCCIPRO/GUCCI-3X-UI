@@ -135,8 +135,14 @@ func (s *SubService) subscriptionTemplateContextBySubID(subID string) (remarkCon
 	inbounds, _ := s.getInboundsBySubId(subID)
 	var emails []string
 	var hasEnabledClient bool
+	// Live inbound clients are the source of truth for the enable flag: the
+	// client_records row can lag behind a panel disable, which used to keep a
+	// green ✅ on the subscription profile title while every config name had
+	// already flipped to ❌.
+	var hasInboundClient bool
 	for _, inbound := range inbounds {
 		for _, c := range s.matchingClients(inbound, subID) {
+			hasInboundClient = true
 			emails = append(emails, c.Email)
 			if c.Enable {
 				hasEnabledClient = true
@@ -146,7 +152,7 @@ func (s *SubService) subscriptionTemplateContextBySubID(subID string) (remarkCon
 	if client.Email != "" {
 		emails = append(emails, client.Email)
 	}
-	if client.Enable {
+	if !hasInboundClient && client.Enable {
 		hasEnabledClient = true
 	}
 	traffic, _ := s.AggregateTrafficByEmails(emails)
