@@ -42,6 +42,7 @@ import { theme as antdTheme } from 'antd';
 import SubUsageSummary from './SubUsageSummary';
 import UserAvatar from './UserAvatar';
 import SubPromoBanner from './SubPromoBanner';
+import SubStatusPage, { type SubStatusKind } from './SubStatusPage';
 import './SubPage.css';
 
 const QR_SIZE = 240;
@@ -76,7 +77,7 @@ const links: string[] = Array.isArray(subData.links) ? subData.links : [];
 const linkEmails: string[] = Array.isArray(subData.emails) ? subData.emails : [];
 const subEmail = [...new Set(linkEmails.filter(Boolean))].join(', ');
 const datepicker = subData.datepicker || 'gregorian';
-const announce = subData.announce || '👑⚡ 🅣 🅔 🅐 🅜 🅖 🅤 🅒 🅒 🅘 ⚡👑';
+const announce = subData.announce || '🅣 🅔 🅐 🅜  🅖 🅤 🅒 🅒 🅘';
 
 const appendRawView = (url: string) => `${url}${url.includes('?') ? '&' : '?'}view=raw`;
 
@@ -99,6 +100,14 @@ const isActive = (() => {
   if (isQuotaDepleted) return false;
   if (isExpired) return false;
   return true;
+})();
+
+const statusKind: SubStatusKind | null = (() => {
+  if (isRemoved) return 'removed';
+  if (!enabled) return 'disabled';
+  if (isExpired) return 'expired';
+  if (isQuotaDepleted) return 'depleted';
+  return null;
 })();
 
 const statusNoticeText = (() => {
@@ -352,6 +361,19 @@ export default function SubPage() {
     };
   }, [isUltra]);
 
+  if (statusKind) {
+    return (
+      <ConfigProvider theme={subAntdTheme}>
+        {messageContextHolder}
+        <Layout className={pageClass}>
+          <Layout.Content className="content">
+            <SubStatusPage kind={statusKind} announce={announce} />
+          </Layout.Content>
+        </Layout>
+      </ConfigProvider>
+    );
+  }
+
   return (
     <ConfigProvider theme={subAntdTheme}>
       {messageContextHolder}
@@ -361,7 +383,9 @@ export default function SubPage() {
             <Col xs={24} sm={22} md={18} lg={14} xl={12}>
               <Card hoverable className="subscription-card" title={cardTitle} extra={cardExtra}>
                 <SubPromoBanner announce={announce} />
-                {!isActive && <div className="sub-status-notice">{statusNoticeText}</div>}
+                {!isActive && statusNoticeText && (
+                  <div className="sub-status-notice">{statusNoticeText}</div>
+                )}
                 <Descriptions
                   bordered
                   column={1}

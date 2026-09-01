@@ -93,7 +93,7 @@ var defaultValueMap = map[string]string{
 	"subTitle":                    "{{STATUS_EMOJI}} 👤 {{EMAIL}} | 📊 {{TRAFFIC_LEFT}} | 🕔 {{TIME_LEFT}}",
 	"subSupportUrl":               "https://t.me/MR_GUCCI_YT",
 	"subProfileUrl":               "",
-	"subAnnounce":                 "👑⚡ 🅣 🅔 🅐 🅜 🅖 🅤 🅒 🅒 🅘 ⚡👑",
+	"subAnnounce":                 "🅣 🅔 🅐 🅜  🅖 🅤 🅒 🅒 🅘",
 	"subEnableRouting":            "false",
 	"subRoutingRules":             "",
 	"subHideSettings":             "false",
