@@ -110,22 +110,13 @@ const statusKind: SubStatusKind | null = (() => {
   return null;
 })();
 
-const statusNoticeText = (() => {
-  if (isRemoved) {
-    return 'این اشتراک حذف شده یا لینک آن معتبر نیست. برای دریافت اشتراک جدید از راه‌های ارتباطی بالا با ما در تماس باشید.';
-  }
-  if (!enabled) {
-    return 'اشتراک شما غیرفعال شده است. برای فعال‌سازی از راه‌های ارتباطی بالا با ما در تماس باشید.';
-  }
-  if (isQuotaDepleted) {
-    return 'حجم اشتراک شما به پایان رسیده است. برای تمدید از راه‌های ارتباطی بالا با ما در تماس باشید.';
-  }
-  if (isExpired) {
-    return 'اشتراک شما منقضی شده است. برای تمدید از راه‌های ارتباطی بالا با ما در تماس باشید.';
-  }
+const statusNoticeKey = (() => {
+  if (isRemoved) return 'subscription.gucci.noticeRemoved';
+  if (!enabled) return 'subscription.gucci.noticeDisabled';
+  if (isQuotaDepleted) return 'subscription.gucci.noticeDepleted';
+  if (isExpired) return 'subscription.gucci.noticeExpired';
   return '';
 })();
-
 
 export default function SubPage() {
   const { t } = useTranslation();
@@ -279,14 +270,14 @@ export default function SubPage() {
     [],
   );
 
-  const userDisplayName = subEmail || sId || 'کاربر گرامی';
+  const userDisplayName = subEmail || sId || t('subscription.gucci.guest');
 
   const cardTitle = (
     <div className="subpage-header-user">
       <UserAvatar seed={userDisplayName} size={52} isActive={isActive} />
       <div className="subpage-header-text">
         <span className="subpage-header-title">
-          <span>داشبورد کاربری</span>
+          <span>{t('subscription.gucci.dashboard')}</span>
         </span>
         <span className="subpage-header-subtitle">{userDisplayName}</span>
       </div>
@@ -372,6 +363,7 @@ export default function SubPage() {
               announce={announce}
               header={cardTitle}
               extra={cardExtra}
+              configName={userDisplayName}
             />
           </Layout.Content>
         </Layout>
@@ -388,8 +380,8 @@ export default function SubPage() {
             <Col xs={24} sm={22} md={18} lg={14} xl={12}>
               <Card hoverable className="subscription-card" title={cardTitle} extra={cardExtra}>
                 <SubPromoBanner announce={announce} />
-                {!isActive && statusNoticeText && (
-                  <div className="sub-status-notice">{statusNoticeText}</div>
+                {!isActive && statusNoticeKey && (
+                  <div className="sub-status-notice">{t(statusNoticeKey)}</div>
                 )}
                 <Descriptions
                   bordered

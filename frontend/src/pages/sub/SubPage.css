@@ -1356,3 +1356,176 @@
     animation: none !important;
   }
 }
+
+/* ============================================================
+   Status page (disabled / expired / removed / no-quota)
+   — same header layout as the subscription dashboard:
+     user profile on the RIGHT, language switcher on the LEFT —
+     plus an extra neon / gaming lighting pass.
+   ============================================================ */
+.gucci-status-topbar {
+  flex-direction: row-reverse;
+  position: relative;
+  overflow: hidden;
+}
+.gucci-status-topbar::before {
+  content: '';
+  position: absolute;
+  inset: -60% -10%;
+  background: conic-gradient(
+    from 0deg,
+    transparent 0deg,
+    rgba(168, 85, 247, 0.35) 40deg,
+    transparent 90deg,
+    transparent 180deg,
+    rgba(236, 72, 153, 0.3) 220deg,
+    transparent 280deg
+  );
+  animation: gucciLetterOrbit 9s linear infinite;
+  pointer-events: none;
+  z-index: 0;
+}
+.gucci-status-topbar > * {
+  position: relative;
+  z-index: 1;
+}
+.gucci-status-topbar-extra {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex: 0 0 auto;
+}
+.gucci-status-topbar .subpage-header-user {
+  justify-content: flex-end;
+  width: 100%;
+}
+
+/* config name chip inside the status card */
+.gucci-status-config {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  margin: 14px auto 4px;
+  padding: 8px 16px;
+  border-radius: 999px;
+  direction: ltr;
+  background: linear-gradient(135deg, rgba(30, 8, 60, 0.92), rgba(12, 4, 28, 0.92));
+  border: 1px solid rgba(192, 132, 252, 0.75);
+  box-shadow:
+    0 0 22px rgba(168, 85, 247, 0.55),
+    inset 0 0 18px rgba(88, 28, 135, 0.55);
+}
+.gucci-status-config-label {
+  font-size: 11px;
+  font-weight: 900;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  color: #f0abfc;
+  text-shadow: 0 0 10px rgba(240, 171, 252, 0.8);
+}
+.gucci-status-config-value {
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  font-size: 14px;
+  font-weight: 800;
+  color: #ffffff;
+  text-shadow: 0 0 12px rgba(216, 180, 254, 0.9);
+  word-break: break-all;
+}
+
+/* deeper stage lighting */
+.gucci-stage-vignette {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background:
+    radial-gradient(120% 90% at 50% 0%, transparent 45%, rgba(2, 0, 8, 0.75) 100%),
+    radial-gradient(80% 60% at 50% 100%, rgba(168, 85, 247, 0.18), transparent 70%);
+  animation: gucciVignettePulse 6s ease-in-out infinite;
+}
+@keyframes gucciVignettePulse {
+  0%, 100% { opacity: 0.85; }
+  50% { opacity: 1; }
+}
+
+.gucci-status-card {
+  position: relative;
+  overflow: hidden;
+  animation: gucciCardFloat 7s ease-in-out infinite;
+}
+@keyframes gucciCardFloat {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-6px); }
+}
+.gucci-status-card::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  padding: 2px;
+  background: conic-gradient(from 0deg, #f0abfc, #a855f7, #38bdf8, #ec4899, #f0abfc);
+  -webkit-mask:
+    linear-gradient(#000 0 0) content-box,
+    linear-gradient(#000 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
+  opacity: 0.85;
+  animation: gucciLetterOrbit 6s linear infinite;
+  pointer-events: none;
+}
+.gucci-status-card::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: repeating-linear-gradient(
+    0deg,
+    rgba(255, 255, 255, 0.045) 0 1px,
+    transparent 1px 3px
+  );
+  mix-blend-mode: overlay;
+  opacity: 0.6;
+}
+
+.gucci-status-title {
+  animation: gucciGradientShift 5s linear infinite, gucciTitleFlicker 7s steps(1, end) infinite;
+}
+@keyframes gucciTitleFlicker {
+  0%, 92%, 100% { opacity: 1; }
+  93% { opacity: 0.35; }
+  94% { opacity: 1; }
+  96% { opacity: 0.5; }
+  97% { opacity: 1; }
+}
+
+.gucci-status-pill {
+  border: 1px solid rgba(248, 113, 113, 0.7);
+  box-shadow: 0 0 22px rgba(248, 113, 113, 0.35), inset 0 0 18px rgba(88, 28, 135, 0.5);
+}
+.gucci-status--amber .gucci-status-pill {
+  border-color: rgba(251, 191, 36, 0.75);
+  box-shadow: 0 0 22px rgba(251, 191, 36, 0.35), inset 0 0 18px rgba(88, 28, 135, 0.5);
+}
+
+.gucci-status-icon {
+  animation: gucciIconPulse 3.2s ease-in-out infinite;
+}
+@keyframes gucciIconPulse {
+  0%, 100% { box-shadow: 0 0 30px rgba(168, 85, 247, 0.6); transform: scale(1); }
+  50% { box-shadow: 0 0 60px rgba(236, 72, 153, 0.8); transform: scale(1.05); }
+}
+
+@media (max-width: 576px) {
+  .gucci-status-config { margin-top: 10px; padding: 6px 12px; }
+  .gucci-status-config-value { font-size: 12px; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .gucci-status-card,
+  .gucci-status-card::before,
+  .gucci-status-title,
+  .gucci-status-icon,
+  .gucci-stage-vignette,
+  .gucci-status-topbar::before {
+    animation: none !important;
+  }
+}

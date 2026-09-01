@@ -1,4 +1,5 @@
 import { Button, Col, Row } from 'antd';
+import { useTranslation } from 'react-i18next';
 
 import GucciWordmark from './GucciWordmark';
 
@@ -11,20 +12,21 @@ const YOUTUBE_ICON =
   'M23.498 6.186a3.016 3.016 0 0 0-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 0 0 .502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 0 0 2.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 0 0 2.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z';
 
 export const promoItems = [
-  { label: 'ربات تلگرام', url: 'https://t.me/ThunderEcho3448bot', icon: TELEGRAM_ICON, kind: 'telegram', theme: 'purple' },
-  { label: 'پشتیبانی تلگرام', url: 'https://t.me/MR_GUCCI_YT', icon: TELEGRAM_ICON, kind: 'telegram', theme: 'red' },
-  { label: 'کانال اول تلگرام', url: 'https://t.me/VPN_GUCCI_CHANEL', icon: TELEGRAM_ICON, kind: 'telegram', theme: 'blue' },
-  { label: 'کانال دوم تلگرام', url: 'https://t.me/VPN_GUCCI_IR', icon: TELEGRAM_ICON, kind: 'telegram', theme: 'yellow' },
-  { label: 'کانال سوم تلگرام', url: 'https://t.me/GUCCI_CHANEL_IR', icon: TELEGRAM_ICON, kind: 'telegram', theme: 'purple' },
-  { label: 'گروه چت تلگرام', url: 'https://t.me/GUCCI_CHAT_IR', icon: TELEGRAM_ICON, kind: 'telegram', theme: 'silver' },
-  { label: 'اینستاگرام', url: 'https://www.instagram.com/vpn_gucci_ir?igsi=MXRsdmhid3pxZmZqMQ%3D%3D&utm_source=qr', icon: INSTAGRAM_ICON, kind: 'instagram', theme: 'insta' },
-  { label: 'یوتیوب', url: 'https://youtube.com/@vpn_gucci?si=HOdcsuj20CH3aAv5', icon: YOUTUBE_ICON, kind: 'youtube', theme: 'yt' },
+  { key: 'promoBot', label: 'ربات تلگرام', url: 'https://t.me/ThunderEcho3448bot', icon: TELEGRAM_ICON, kind: 'telegram', theme: 'purple' },
+  { key: 'promoSupport', label: 'پشتیبانی تلگرام', url: 'https://t.me/MR_GUCCI_YT', icon: TELEGRAM_ICON, kind: 'telegram', theme: 'red' },
+  { key: 'promoChannel1', label: 'کانال اول تلگرام', url: 'https://t.me/VPN_GUCCI_CHANEL', icon: TELEGRAM_ICON, kind: 'telegram', theme: 'blue' },
+  { key: 'promoChannel2', label: 'کانال دوم تلگرام', url: 'https://t.me/VPN_GUCCI_IR', icon: TELEGRAM_ICON, kind: 'telegram', theme: 'yellow' },
+  { key: 'promoChannel3', label: 'کانال سوم تلگرام', url: 'https://t.me/GUCCI_CHANEL_IR', icon: TELEGRAM_ICON, kind: 'telegram', theme: 'purple' },
+  { key: 'promoChat', label: 'گروه چت تلگرام', url: 'https://t.me/GUCCI_CHAT_IR', icon: TELEGRAM_ICON, kind: 'telegram', theme: 'silver' },
+  { key: 'promoInstagram', label: 'اینستاگرام', url: 'https://www.instagram.com/vpn_gucci_ir?igsi=MXRsdmhid3pxZmZqMQ%3D%3D&utm_source=qr', icon: INSTAGRAM_ICON, kind: 'instagram', theme: 'insta' },
+  { key: 'promoYoutube', label: 'یوتیوب', url: 'https://youtube.com/@vpn_gucci?si=HOdcsuj20CH3aAv5', icon: YOUTUBE_ICON, kind: 'youtube', theme: 'yt' },
 ];
 
 // The channel/support promo block shown on the subscription page. Rendered
 // identically on the active page, the disabled/expired page and the
 // removed-subscription page — same markup, colors, buttons and animations.
 export default function SubPromoBanner({ announce }: { announce: string }) {
+  const { t } = useTranslation();
   const open = (url: string) => {
     if (!url) return;
     window.open(url, '_blank');
@@ -35,13 +37,11 @@ export default function SubPromoBanner({ announce }: { announce: string }) {
       <div className="promo-title">
         <GucciWordmark text={announce} />
       </div>
-      <div className="promo-subtitle">
-        میتوانید از طریق آیدی های زیر با ما در ارتباط باشید
-      </div>
+      <div className="promo-subtitle">{t('subscription.gucci.promoSubtitle')}</div>
 
       <Row gutter={[12, 12]} className="promo-grid">
         {promoItems.map((item) => (
-          <Col key={item.label} xs={24} sm={12}>
+          <Col key={item.key} xs={24} sm={12}>
             <Button
               block
               className={`promo-btn promo-btn--${item.theme}`}
@@ -58,7 +58,7 @@ export default function SubPromoBanner({ announce }: { announce: string }) {
                   <path d={item.icon} />
                 </svg>
               </span>
-              <span className="promo-label">{item.label}</span>
+              <span className="promo-label">{t(`subscription.gucci.${item.key}`)}</span>
             </Button>
           </Col>
         ))}

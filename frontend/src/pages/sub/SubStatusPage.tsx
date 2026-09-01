@@ -1,57 +1,41 @@
 import type { ReactNode } from 'react';
+import { useTranslation } from 'react-i18next';
 
 import GucciWordmark from './GucciWordmark';
 import SubPromoBanner from './SubPromoBanner';
 
 export type SubStatusKind = 'disabled' | 'removed' | 'expired' | 'depleted';
 
-const COPY: Record<
-  SubStatusKind,
-  { title: string; body: string; state: string; badge: string }
-> = {
-  disabled: {
-    title: 'سرویس شما غیرفعال شده است',
-    body: 'کاربر گرامی، این سرویس توسط مالک سرویس غیرفعال شده است و در حال حاضر امکان استفاده از لینک اشتراک وجود ندارد.',
-    state: 'وضعیت سرویس: غیرفعال',
-    badge: 'DISABLED',
-  },
-  removed: {
-    title: 'کاربر گرامی این سرویس شما منقضی و حذف شده است',
-    body: 'کاربر گرامی، این سرویس توسط مالک سرویس منقضی و حذف شده است و در حال حاضر امکان استفاده از لینک اشتراک وجود ندارد.',
-    state: 'وضعیت سرویس: حذف شده',
-    badge: 'REMOVED',
-  },
-  expired: {
-    title: 'سرویس شما منقضی شده است',
-    body: 'کاربر گرامی، مدت زمان این سرویس به پایان رسیده است و در حال حاضر امکان استفاده از لینک اشتراک وجود ندارد.',
-    state: 'وضعیت سرویس: منقضی',
-    badge: 'EXPIRED',
-  },
-  depleted: {
-    title: 'حجم سرویس شما به پایان رسیده است',
-    body: 'کاربر گرامی، حجم این سرویس به طور کامل مصرف شده است و در حال حاضر امکان استفاده از لینک اشتراک وجود ندارد.',
-    state: 'وضعیت سرویس: اتمام حجم',
-    badge: 'NO QUOTA',
-  },
+const BADGE: Record<SubStatusKind, string> = {
+  disabled: 'DISABLED',
+  removed: 'REMOVED',
+  expired: 'EXPIRED',
+  depleted: 'NO QUOTA',
 };
 
 // Full-screen neon gaming status page shown instead of the dashboard when the
 // subscription is disabled, expired, out of quota or deleted. The user header
 // (avatar / email / language) and the promo block are the exact same pieces
-// used on the active subscription page.
+// used on the active subscription page, and every string is translated.
 export default function SubStatusPage({
   kind,
   announce,
   header,
   extra,
+  configName,
 }: {
   kind: SubStatusKind;
   announce: string;
   header?: ReactNode;
   extra?: ReactNode;
+  configName?: string;
 }) {
-  const copy = COPY[kind];
+  const { t } = useTranslation();
   const tone = kind === 'disabled' ? 'amber' : 'red';
+
+  const title = t(`subscription.gucci.${kind}Title`);
+  const body = t(`subscription.gucci.${kind}Body`);
+  const state = t(`subscription.gucci.${kind}State`);
 
   return (
     <div className={`gucci-status-wrap gucci-status--${tone}`}>
@@ -62,6 +46,7 @@ export default function SubStatusPage({
         <span className="gucci-stage-scan" />
         <span className="gucci-stage-bolt gucci-stage-bolt--a" />
         <span className="gucci-stage-bolt gucci-stage-bolt--b" />
+        <span className="gucci-stage-vignette" />
       </div>
 
       <div className="gucci-status-shell">
@@ -77,7 +62,7 @@ export default function SubStatusPage({
 
           <div className="gucci-status-badge">
             <span className="gucci-status-badge-dot" aria-hidden="true" />
-            {copy.badge}
+            {BADGE[kind]}
           </div>
 
           <div className="gucci-status-icon" aria-hidden="true">
@@ -87,20 +72,27 @@ export default function SubStatusPage({
 
           <GucciWordmark text={announce} className="gucci-wordmark--hero" />
 
-          <h1 className="gucci-status-title">{copy.title}</h1>
+          <h1 className="gucci-status-title">{title}</h1>
           <div className="gucci-status-divider" aria-hidden="true" />
 
-          <p className="gucci-status-body">{copy.body}</p>
+          {configName && (
+            <div className="gucci-status-config">
+              <span className="gucci-status-config-label">
+                {t('subscription.gucci.configName')}
+              </span>
+              <span className="gucci-status-config-value">{configName}</span>
+            </div>
+          )}
 
-          <div className="gucci-status-pill">🔒 {copy.state}</div>
+          <p className="gucci-status-body">{body}</p>
 
-          <div className="gucci-status-support">
-            📩 برای دریافت مجدد سرویس یا فعال‌سازی دوباره، لطفاً با پشتیبانی در ارتباط باشید
-          </div>
+          <div className="gucci-status-pill">🔒 {state}</div>
+
+          <div className="gucci-status-support">{t('subscription.gucci.support')}</div>
 
           <SubPromoBanner announce={announce} />
 
-          <div className="gucci-status-footer">GUCCI TEAM • VPN SERVICE</div>
+          <div className="gucci-status-footer">{t('subscription.gucci.footer')}</div>
         </div>
       </div>
     </div>
