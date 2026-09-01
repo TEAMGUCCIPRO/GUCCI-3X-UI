@@ -7,18 +7,17 @@ import (
 	"github.com/mhsanaei/3x-ui/v3/internal/xray"
 )
 
-// The subscription link name must carry the same status emoji as the config
-// names shipped in the same response: ✅ while the service is active, ❌ once it
-// is disabled or expired.
-func TestProfileTitleStatusMatchesConfigRemarks(t *testing.T) {
+// The subscription link name carries no status mark: it is always
+// "👤 email | 📊 traffic left | 🕔 time left", built from the live state of the
+// current request (the config names keep their ✅ / ❌).
+func TestProfileTitleHasNoStatusEmoji(t *testing.T) {
 	cases := []struct {
 		name  string
 		stats xray.ClientTraffic
-		want  string
 	}{
-		{"active", xray.ClientTraffic{Email: "8lnydmnsm5", Enable: true}, "✅"},
-		{"disabled", xray.ClientTraffic{Email: "p0vdfx1u1y", Enable: false}, "❌"},
-		{"expired", xray.ClientTraffic{Email: "p0vdfx1u1y", Enable: true, ExpiryTime: 1}, "❌"},
+		{"active", xray.ClientTraffic{Email: "8lnydmnsm5", Enable: true}},
+		{"disabled", xray.ClientTraffic{Email: "p0vdfx1u1y", Enable: false}},
+		{"expired", xray.ClientTraffic{Email: "p0vdfx1u1y", Enable: true, ExpiryTime: 1}},
 	}
 
 	for _, tc := range cases {
@@ -34,16 +33,24 @@ func TestProfileTitleStatusMatchesConfigRemarks(t *testing.T) {
 				t.Fatalf("context lookup failed: ok=%v err=%v", ok, err)
 			}
 			title := gucciProfileTitle(ctx.client.Email, "sub-1", ctx.stats)
-			config := gucciConfigRemark(ctx.client.Email, ctx.stats)
-			if !strings.HasPrefix(title, tc.want) {
-				t.Fatalf("title %q does not start with %q", title, tc.want)
+			if !strings.HasPrefix(title, "👤 ") {
+				t.Fatalf("title %q must start with the user mark", title)
 			}
-			if !strings.HasPrefix(config, tc.want) {
-				t.Fatalf("config remark %q does not start with %q", config, tc.want)
+			if strings.Contains(title, "✅") || strings.Contains(title, "❌") {
+				t.Fatalf("title %q must not carry a status emoji", title)
 			}
-			if !strings.Contains(title, tc.stats.Email) {
-				t.Fatalf("title %q missing email", title)
+			if !strings.Contains(title, tc.stats.Email) ||
+				!strings.Contains(title, "📊") || !strings.Contains(title, "🕔") {
+				t.Fatalf("title %q missing email/traffic/time", title)
 			}
 		})
+	}
+}
+
+func TestProfileTitleUnlimitedFormat(t *testing.T) {
+	got := gucciProfileTitle("r9omvk492b", "sub-1", xray.ClientTraffic{Email: "r9omvk492b", Enable: true})
+	want := "👤 r9omvk492b | 📊 ∞ | 🕔 ∞"
+	if got != want {
+		t.Fatalf("got %q want %q", got, want)
 	}
 }
