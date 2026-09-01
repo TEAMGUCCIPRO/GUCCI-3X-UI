@@ -26,7 +26,7 @@ import {
 } from '@ant-design/icons';
 
 import { ClipboardManager, IntlUtil, LanguageManager } from '@/utils';
-import { switchLanguage } from '@/i18n/react';
+import { prefetchAllLanguages, switchLanguage } from '@/i18n/react';
 import {
   amneziawgConfigFromLink,
   isPostQuantumLink,
@@ -128,6 +128,15 @@ export default function SubPage() {
   const [lang, setLang] = useState<string>(() => LanguageManager.getLanguage());
 
   const [langOpen, setLangOpen] = useState(false);
+
+  // Warm all language bundles right after first paint so the picker opens and
+  // switches with zero delay.
+  useEffect(() => {
+    const idle = (window as unknown as { requestIdleCallback?: (cb: () => void) => number })
+      .requestIdleCallback;
+    if (idle) idle(() => prefetchAllLanguages());
+    else setTimeout(() => prefetchAllLanguages(), 300);
+  }, []);
 
   // Instant switch: no page reload, everything re-renders in the new language
   // the moment a flag is tapped.
@@ -308,6 +317,11 @@ export default function SubPage() {
         trigger="click"
         open={langOpen}
         onOpenChange={setLangOpen}
+        forceRender
+        destroyOnHidden={false}
+        mouseEnterDelay={0}
+        mouseLeaveDelay={0}
+        transitionName="gucci-lang-pop"
         styles={{ content: { padding: 6 } }}
         content={langPanel}
       >

@@ -50,8 +50,8 @@ export default function SubStatusPage({
       <div className="gucci-status-shell">
         {(header || extra) && (
           <div className="gucci-status-topbar">
-            <div className="gucci-status-topbar-user">{header}</div>
             <div className="gucci-status-topbar-extra">{extra}</div>
+            <div className="gucci-status-topbar-user">{header}</div>
           </div>
         )}
 

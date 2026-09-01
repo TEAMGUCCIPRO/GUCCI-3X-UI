@@ -69,4 +69,19 @@ export async function switchLanguage(code: string): Promise<void> {
   }
 }
 
+// Warm every bundle in the background so tapping a flag is instant.
+export function prefetchAllLanguages(): void {
+  for (const [key, loader] of Object.entries(lazyModules)) {
+    const code = key.slice(key.lastIndexOf('/') + 1, -'.json'.length);
+    if (loadedLanguages.has(code)) continue;
+    void (loader as () => Promise<{ default: Record<string, unknown> }>)()
+      .then((mod) => {
+        const messages = (mod.default ?? mod) as Record<string, unknown>;
+        i18next.addResourceBundle(code, 'translation', messages, true, true);
+        loadedLanguages.add(code);
+      })
+      .catch(() => {});
+  }
+}
+
 export { i18next as i18n };
