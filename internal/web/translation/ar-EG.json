@@ -776,6 +776,8 @@
       "actions": "الإجراءات",
       "totalGB": "حد البيانات (جيجابايت)",
       "totalGBDesc": "حصة البيانات لهذا العميل. 0 = غير محدود.",
+      "trafficMultiplier": "معامل الاستهلاك",
+      "trafficMultiplierDesc": "معامل حساب استهلاك البيانات لهذا المستخدم",
       "expiryTime": "انتهاء الصلاحية",
       "addClients": "إضافة عملاء",
       "limitIp": "حد عناوين IP",

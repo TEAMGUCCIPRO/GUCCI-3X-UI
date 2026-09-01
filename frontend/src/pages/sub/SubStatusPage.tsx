@@ -22,13 +22,11 @@ export default function SubStatusPage({
   announce,
   header,
   extra,
-  configName,
 }: {
   kind: SubStatusKind;
   announce: string;
   header?: ReactNode;
   extra?: ReactNode;
-  configName?: string;
 }) {
   const { t } = useTranslation();
   const tone = kind === 'disabled' ? 'amber' : 'red';
@@ -74,15 +72,6 @@ export default function SubStatusPage({
 
           <h1 className="gucci-status-title">{title}</h1>
           <div className="gucci-status-divider" aria-hidden="true" />
-
-          {configName && (
-            <div className="gucci-status-config">
-              <span className="gucci-status-config-label">
-                {t('subscription.gucci.configName')}
-              </span>
-              <span className="gucci-status-config-value">{configName}</span>
-            </div>
-          )}
 
           <p className="gucci-status-body">{body}</p>
 

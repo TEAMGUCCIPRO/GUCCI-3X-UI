@@ -45,4 +45,28 @@ export async function readyI18n() {
   return i18next;
 }
 
+// Instant language switch: loads the bundle on demand and swaps the active
+// language in place, so the UI updates immediately without a page reload.
+const loadedLanguages = new Set<string>([FALLBACK]);
+
+export async function switchLanguage(code: string): Promise<void> {
+  const next = LanguageManager.isSupportLanguage(code) ? code : FALLBACK;
+  LanguageManager.rememberLanguage(next);
+  if (!loadedLanguages.has(next)) {
+    const loader = lazyModules[moduleKeyFor(next)] as
+      | (() => Promise<{ default: Record<string, unknown> }>)
+      | undefined;
+    if (loader) {
+      const mod = await loader();
+      const messages = (mod.default ?? mod) as Record<string, unknown>;
+      i18next.addResourceBundle(next, 'translation', messages, true, true);
+    }
+    loadedLanguages.add(next);
+  }
+  await i18next.changeLanguage(next);
+  if (typeof document !== 'undefined') {
+    document.documentElement.lang = next;
+  }
+}
+
 export { i18next as i18n };

@@ -776,6 +776,8 @@
       "actions": "Дії",
       "totalGB": "Ліміт трафіку (ГБ)",
       "totalGBDesc": "Квота трафіку для цього клієнта. 0 = без обмежень.",
+      "trafficMultiplier": "Множник трафіку",
+      "trafficMultiplierDesc": "Множник підрахунку трафіку для цього клієнта",
       "expiryTime": "Термін дії",
       "addClients": "Додати клієнтів",
       "limitIp": "Ліміт IP",

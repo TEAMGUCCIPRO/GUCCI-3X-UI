@@ -937,6 +937,15 @@ export class LanguageManager {
     return lang;
   }
 
+  // Persist the choice without reloading the page (used by the instant
+  // language switcher on the subscription pages).
+  static rememberLanguage(language: string): void {
+    if (!LanguageManager.isSupportLanguage(language)) {
+      language = 'en-US';
+    }
+    CookieManager.setCookie('lang', language, 365);
+  }
+
   static setLanguage(language: string): void {
     if (!LanguageManager.isSupportLanguage(language)) {
       language = 'en-US';

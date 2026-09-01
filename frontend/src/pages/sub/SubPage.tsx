@@ -9,12 +9,10 @@ import {
   Divider,
   Dropdown,
   Layout,
-  Menu,
   message,
   Popover,
   QRCode,
   Row,
-  Space,
   Tag,
 } from 'antd';
 import {
@@ -28,6 +26,7 @@ import {
 } from '@ant-design/icons';
 
 import { ClipboardManager, IntlUtil, LanguageManager } from '@/utils';
+import { switchLanguage } from '@/i18n/react';
 import {
   amneziawgConfigFromLink,
   isPostQuantumLink,
@@ -128,9 +127,14 @@ export default function SubPage() {
   const { isMobile } = useMediaQuery(576);
   const [lang, setLang] = useState<string>(() => LanguageManager.getLanguage());
 
+  const [langOpen, setLangOpen] = useState(false);
+
+  // Instant switch: no page reload, everything re-renders in the new language
+  // the moment a flag is tapped.
   const onLangChange = useCallback((next: string) => {
     setLang(next);
-    LanguageManager.setLanguage(next);
+    setLangOpen(false);
+    void switchLanguage(next);
   }, []);
 
   const copy = useCallback(
@@ -254,21 +258,33 @@ export default function SubPage() {
     [copy, open, shadowrocketUrl, v2boxUrl, streisandUrl, happUrl, incyUrl],
   );
 
-  const langMenuItems = useMemo(
-    () =>
-      (LanguageManager.supportedLanguages as { value: string; name: string; icon: string }[]).map(
-        (l) => ({
-          key: l.value,
-          label: (
-            <Space size={8}>
-              <span aria-hidden="true">{l.icon}</span>
-              <span>{l.name}</span>
-            </Space>
-          ),
-        }),
-      ),
-    [],
+  const langOptions = LanguageManager.supportedLanguages as readonly {
+    value: string;
+    name: string;
+    icon: string;
+  }[];
+
+  const langPanel = (
+    <div className="gucci-lang-panel" role="listbox" aria-label={t('pages.settings.language')}>
+      {langOptions.map((l) => (
+        <button
+          key={l.value}
+          type="button"
+          role="option"
+          aria-selected={l.value === lang}
+          className={`gucci-lang-chip${l.value === lang ? ' is-active' : ''}`}
+          onClick={() => onLangChange(l.value)}
+        >
+          <span className="gucci-lang-flag" aria-hidden="true">
+            {l.icon}
+          </span>
+          <span className="gucci-lang-name">{l.name}</span>
+        </button>
+      ))}
+    </div>
   );
+
+  const activeLang = langOptions.find((l) => l.value === lang);
 
   const userDisplayName = subEmail || sId || t('subscription.gucci.guest');
 
@@ -287,27 +303,28 @@ export default function SubPage() {
   const cardExtra = (
     <div className="subpage-header-extra">
       <Popover
-        rootClassName="dark"
-        placement="bottomLeft"
+        rootClassName="dark gucci-lang-popover"
+        placement="bottomRight"
         trigger="click"
-        styles={{ content: { padding: 4 } }}
-        content={
-          <Menu
-            mode="vertical"
-            selectable
-            selectedKeys={[lang]}
-            items={langMenuItems}
-            onClick={({ key }) => onLangChange(key)}
-            style={{ border: 'none', minWidth: 160 }}
-          />
-        }
+        open={langOpen}
+        onOpenChange={setLangOpen}
+        styles={{ content: { padding: 6 } }}
+        content={langPanel}
       >
         <Button
           shape="circle"
           size="large"
-          className="toolbar-btn lang-switcher-btn"
+          className={`toolbar-btn lang-switcher-btn${langOpen ? ' is-open' : ''}`}
           aria-label={t('pages.settings.language')}
-          icon={<TranslationOutlined />}
+          icon={
+            activeLang ? (
+              <span className="lang-switcher-flag" aria-hidden="true">
+                {activeLang.icon}
+              </span>
+            ) : (
+              <TranslationOutlined />
+            )
+          }
         />
       </Popover>
     </div>
@@ -363,7 +380,6 @@ export default function SubPage() {
               announce={announce}
               header={cardTitle}
               extra={cardExtra}
-              configName={userDisplayName}
             />
           </Layout.Content>
         </Layout>

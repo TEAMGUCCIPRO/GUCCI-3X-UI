@@ -776,6 +776,8 @@
       "actions": "Ações",
       "totalGB": "Limite de tráfego (GB)",
       "totalGBDesc": "Cota de dados para este cliente. 0 = ilimitado.",
+      "trafficMultiplier": "Multiplicador de tráfego",
+      "trafficMultiplierDesc": "Multiplicador de contagem de tráfego para este cliente",
       "expiryTime": "Expiração",
       "addClients": "Adicionar clientes",
       "limitIp": "Limite de IP",

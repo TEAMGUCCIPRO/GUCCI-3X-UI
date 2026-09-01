@@ -866,7 +866,8 @@ export default function ClientFormModal({
                         <Col xs={24} md={6}>
                           <FormField
                             name="trafficMultiplier"
-                            label="Multiplier"
+                            label={t('pages.clients.trafficMultiplier')}
+                            tooltip={t('pages.clients.trafficMultiplierDesc')}
                             transform={{ output: (v) => Number(v) || 1.0 }}
                           >
                             <Select style={{ width: '100%' }}>

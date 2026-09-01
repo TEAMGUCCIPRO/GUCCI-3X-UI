@@ -776,6 +776,8 @@
       "actions": "İşlemler",
       "totalGB": "Trafik Limiti (GB)",
       "totalGBDesc": "Bu kullanıcı için veri kotası. 0 = sınırsız.",
+      "trafficMultiplier": "Trafik çarpanı",
+      "trafficMultiplierDesc": "Bu istemci için trafik sayım çarpanı",
       "expiryTime": "Son Kullanma",
       "addClients": "Kullanıcı Ekle",
       "limitIp": "IP Limiti",

@@ -776,6 +776,8 @@
       "actions": "操作",
       "totalGB": "トラフィック上限 (GB)",
       "totalGBDesc": "このクライアントのデータ割当量。0 = 無制限。",
+      "trafficMultiplier": "通信量倍率",
+      "trafficMultiplierDesc": "このクライアントの通信量計算倍率",
       "expiryTime": "有効期限",
       "addClients": "クライアントを追加",
       "limitIp": "IP 制限",

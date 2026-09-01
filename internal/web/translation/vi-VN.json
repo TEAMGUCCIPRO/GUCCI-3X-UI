@@ -776,6 +776,8 @@
       "actions": "Hành động",
       "totalGB": "Giới hạn lưu lượng (GB)",
       "totalGBDesc": "Hạn mức dữ liệu cho khách hàng này. 0 = không giới hạn.",
+      "trafficMultiplier": "Hệ số lưu lượng",
+      "trafficMultiplierDesc": "Hệ số tính lưu lượng cho khách hàng này",
       "expiryTime": "Hết hạn",
       "addClients": "Thêm khách hàng",
       "limitIp": "Giới hạn IP",
