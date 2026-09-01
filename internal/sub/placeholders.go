@@ -10,6 +10,7 @@ import (
 	"github.com/mhsanaei/3x-ui/v3/internal/database"
 	"github.com/mhsanaei/3x-ui/v3/internal/database/model"
 	"github.com/mhsanaei/3x-ui/v3/internal/logger"
+	"github.com/mhsanaei/3x-ui/v3/internal/xray"
 )
 
 type subPlaceholderData struct {
@@ -122,6 +123,16 @@ func (s *SubService) subscriptionTemplateContextBySubID(subID string) (remarkCon
 	if subID == "" {
 		return remarkContext{}, false, nil
 	}
+	// Preferred source: the state getSubs already computed for this request.
+	// The subscription link name then always carries the same ✅ / ❌ as the
+	// config names in the very same response.
+	if s != nil && s.lastSubLoaded && s.lastSubID == subID {
+		email := firstNonEmptyEmail(s.lastSubEmails, "")
+		return remarkContext{
+			client: model.Client{Email: email, SubID: subID},
+			stats:  s.lastSubTraffic,
+		}, true, nil
+	}
 	var rec model.ClientRecord
 	err := database.GetDB().Where("sub_id = ?", subID).Order("id ASC").First(&rec).Error
 	if errors.Is(err, gorm.ErrRecordNotFound) {
@@ -159,6 +170,11 @@ func (s *SubService) subscriptionTemplateContextBySubID(subID string) (remarkCon
 		hasEnabledClient = true
 	}
 	traffic, _ := s.AggregateTrafficByEmails(emails)
+	// client_traffics.enable is what the per-config remarks read; honour it too
+	// so a config that renders ✅ never travels under a ❌ profile title.
+	if !hasEnabledClient && s.anyTrafficRowEnabled(emails) {
+		hasEnabledClient = true
+	}
 	traffic.Enable = hasEnabledClient
 	if traffic.ExpiryTime == 0 {
 		traffic.ExpiryTime = client.ExpiryTime
@@ -167,4 +183,26 @@ func (s *SubService) subscriptionTemplateContextBySubID(subID string) (remarkCon
 		traffic.Total = client.TotalGB
 	}
 	return remarkContext{client: client, stats: traffic}, true, nil
+}
+
+// anyTrafficRowEnabled reports whether any of these clients' runtime traffic
+// rows is still enabled — the exact flag statusEmoji uses for config names.
+func (s *SubService) anyTrafficRowEnabled(emails []string) bool {
+	if len(emails) == 0 {
+		return false
+	}
+	for _, email := range emails {
+		if st, ok := s.statsByEmail[email]; ok && st.Enable {
+			return true
+		}
+	}
+	var count int64
+	if err := database.GetDB().Model(&xray.ClientTraffic{}).
+		Where("email IN ?", emails).
+		Where("enable = ?", true).
+		Count(&count).Error; err != nil {
+		logger.Warning("sub: count enabled traffic rows for subscription title:", err)
+		return false
+	}
+	return count > 0
 }
