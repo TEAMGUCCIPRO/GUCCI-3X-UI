@@ -143,7 +143,7 @@ func TestSubsHTTP_ProfileTitleAndConfigRemarks(t *testing.T) {
 	}
 
 	title := parseHappMetaValue(t, w.Header().Get("Profile-Title"))
-	if title != "✅ 👤 Qm5V4Pp5@e | 📊 ∞ | 🕔 ∞" {
+	if title != "👤 Qm5V4Pp5@e | 📊 ∞ | 🕔 ∞" {
 		t.Fatalf("Profile-Title = %q", title)
 	}
 	if got := w.Header().Get("subscription-name"); got != title {
@@ -165,8 +165,8 @@ func TestSubsHTTP_ProfileTitleAndConfigRemarks(t *testing.T) {
 	if got := linkFragment(t, lines[0]); got != gucciUpdateNoticeRemark {
 		t.Fatalf("first config = %q", got)
 	}
-	if got := linkFragment(t, lines[1]); got != title {
-		t.Fatalf("second config = %q, want same as profile title %q", got, title)
+	if got := linkFragment(t, lines[1]); got != "✅ "+title {
+		t.Fatalf("second config = %q, want %q", got, "✅ "+title)
 	}
 	if got := linkFragment(t, lines[2]); got != "✅ 👤 Qm5V4Pp5@e" {
 		t.Fatalf("real config = %q", got)
@@ -249,7 +249,7 @@ func TestSubsHTTP_EncryptedBodyStillCarriesHappDirectives(t *testing.T) {
 		t.Fatalf("status = %d body=%s", w.Code, w.Body.String())
 	}
 	title := parseHappMetaValue(t, w.Header().Get("Profile-Title"))
-	if !strings.HasPrefix(title, "✅ 👤 Qm5V4Pp5@e | 📊") {
+	if !strings.HasPrefix(title, "👤 Qm5V4Pp5@e | 📊") {
 		t.Fatalf("Profile-Title = %q", title)
 	}
 	if got := parseHappMetaValue(t, w.Header().Get("Announce")); got != gucciAnnounceText {
